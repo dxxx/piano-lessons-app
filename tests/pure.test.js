@@ -2,7 +2,7 @@
 const fs = require("fs"), assert = require("assert"), path = require("path");
 const html = fs.readFileSync(path.join(__dirname, "..", "assets", "index.html"), "utf8");
 const src = html.slice(html.indexOf("// <pure>"), html.indexOf("// </pure>"));
-const P = new Function(src + "; return { explain, eqSay, qSay, rightSay, wrongSay, pickIdx, mistakeCount, dayStep, clockBehind, limitLeft, earnStep, qKey, reviewAfter, reviewDue, trickName, splitText, easyIntro, PRAISE, slipAnswers, slipKind, slipSay, hintPick, hintStats, needsRegroup };")();
+const P = new Function(src + "; return { explain, eqSay, qSay, rightSay, wrongSay, pickIdx, mistakeCount, heartState, heartsHtml, dayStep, clockBehind, limitLeft, earnStep, qKey, reviewAfter, reviewDue, trickName, splitText, easyIntro, PRAISE, slipAnswers, slipKind, slipSay, hintPick, hintStats, needsRegroup };")();
 const say = (a, b, plus, lv, l) => P.explain(a, b, plus, lv, l).say;
 const eq = (got, want) => assert.strictEqual(got, want);
 
@@ -103,6 +103,18 @@ eq(P.mistakeCount(log, NOW, 15, 0), 3);
 eq(P.mistakeCount(log, NOW, 30, NOW - 12 * 60000), 3);   // "Unlock now" 12 min ago clears what came before it
 eq(P.mistakeCount(log, NOW + 21 * 60000, 30, 0), 2);     // 21 min later only the fast one is left
 eq(P.mistakeCount([{ t: at(-90), ok: false }], NOW, 30, 0), 1);   // clock set back: a "future" mistake still counts
+
+// hearts: a mistake breaks one (a fast one 2); 5 right in a row (no hint) win one back; nothing banks while all hearts are full
+const H = (l, now) => JSON.stringify(P.heartState(l, now || NOW, 30, 0, 5));
+eq(H(log), JSON.stringify({ lost: 4, run: 0 }));
+const R = k => ({ t: at(4 - k * 0.1), ok: true });
+eq(H(log.concat([R(1), R(2), R(3), R(4)])), JSON.stringify({ lost: 4, run: 4 }));
+eq(H(log.concat([R(1), R(2), R(3), R(4), R(5)])), JSON.stringify({ lost: 3, run: 0 }));
+eq(H(log.concat([R(1), R(2), { t: at(3.5), ok: true, hint: 1 }, R(4), R(5), R(6)])), JSON.stringify({ lost: 3, run: 0 }));   // a hinted answer neither counts nor breaks the run
+eq(H(log.concat([R(1), R(2), { t: at(3.5), ok: false }, R(4), R(5)])), JSON.stringify({ lost: 5, run: 2 }));                 // a mistake restarts the run
+eq(H([R(1), R(2), R(3), R(4), R(5), { t: at(1), ok: false }]), JSON.stringify({ lost: 1, run: 0 }));                         // full hearts: right answers don't bank
+eq(P.heartsHtml(3, 1, 2), '<i class="">❤️</i><i class="off lost">❤️</i><i class="off">❤️</i>');
+eq(P.heartsHtml(3, 2, 1).indexOf('class="won"') > 0, true);
 
 // midnight reset and clock tamper
 let g = { day: "2026-10-25", used: 3500, seen: NOW, x: 15, e: 10, s: 3, lv0: 4, none: true, w: true };

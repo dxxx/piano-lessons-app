@@ -4,6 +4,11 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.10 — 2026-10-25
+- **Hearts** ❤️: the mistake lock is now a row of hearts on the math screen and on the "Stop and think" screen. A wrong answer breaks one (it shakes and goes grey; a too-fast guess breaks two); **5 right in a row win one back** (it pops in, and the voice says "And you won a heart back!"). Answers after a hint don't count toward the 5, and nothing is banked while all hearts are full. No hearts left = the break screen. Menu → ❤️ Hearts sets how many (3 / 5 / 7 / 10)
+- **Voice fix, no more freezes**: when speech was cut off (lock screen, a voice setting switched off, a language change), the screen waiting for it could stay on 🔊 forever; now it always moves on. The safety timer also allows for voices that prepare the whole sentence before speaking (SherpaTTS), and mini-lesson steps are no longer cut off after 15 s
+- Works with the free **SherpaTTS** voice engine (F-Droid) on tablets whose own engine has no English or Spanish voice
+
 ## 1.9 — 2026-10-25
 - **Animated column hints, 3 styles under test** (column sums, levels 4-7). The sum is redrawn in two lanes (blue tens, pink ones) and the digits move: **A ✨ Magic numbers** (copies of the digits fly into the answer box, shrink, the − or + flashes between them and they crash into the result), **B 🧱 Blocks** (tens are sticks, ones are cubes; a stick breaks into 10 cubes for a trade, 10 cubes snap into a stick for a carry), **C 🙋 Do it with me** (he types each column on a keypad; after two misses it shows him). Steps pause at least 2.6 s (or until he taps)
 - **Trading, written like on paper**: "Trade 1 ten for 10 ones" (never "borrow"). The top tens digit is crossed out and the new one is written small above it, so 84 − 39 keeps its 8 on screen with a 7 above it, and the 4 becomes ¹4

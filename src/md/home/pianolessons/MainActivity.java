@@ -328,7 +328,7 @@ public class MainActivity extends Activity {
                     ttsEs = tts.isLanguageAvailable(new Locale("es", "ES")) >= TextToSpeech.LANG_AVAILABLE;
                     ttsReady = true;
                     tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {   // the page waits for "spoke"
-                        @Override public void onStart(String id) {}
+                        @Override public void onStart(String id) { js("started", id); }
                         @Override public void onDone(String id) { js("spoke", id); }
                         @Override public void onError(String id) { js("spoke", id); }
                         @Override public void onStop(String id, boolean interrupted) { js("spoke", id); }

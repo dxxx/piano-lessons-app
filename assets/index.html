@@ -247,6 +247,16 @@
   .qrep:active { transform: scale(.92); }
   .qstreak { font-size: 30px; letter-spacing: 6px; min-height: 36px; }
   .qstreak:empty { display: none; }
+  /* Hearts: a wrong answer breaks one, 5 right in a row win one back */
+  .hearts { font-size: 34px; letter-spacing: 4px; min-height: 40px; }
+  .hearts:empty { display: none; }
+  .hearts i { font-style: normal; display: inline-block; }
+  .hearts i.off { filter: grayscale(1); opacity: .3; }
+  .hearts i.lost { animation: hlost 1.4s ease-out; }
+  .hearts i.won { animation: hwon 1s ease-out; }
+  @keyframes hlost { 0% { filter: none; opacity: 1; transform: scale(1.5); } 30% { transform: scale(1.5) rotate(-18deg); } 50% { transform: scale(1.3) rotate(18deg); } 100% { filter: grayscale(1); opacity: .3; transform: none; } }
+  @keyframes hwon { 0% { transform: scale(0); } 60% { transform: scale(1.7); } 100% { transform: scale(1); } }
+  .quiz.hinting .hearts { display: none; }
   /* Limits: the lock screen covers everything but the Menu button; the earn session shows the quiz instead */
   .lockscr { position: fixed; inset: 0; z-index: 9; display: none; flex-direction: column; align-items: center; justify-content: center;
     gap: 16px; background: #1b2440; color: #fff; text-align: center; padding: 24px; }
@@ -413,6 +423,7 @@
   <div class="qcard">
     <div class="qtitle" id="qtitle">&#129504; Math time! Solve it to play the next lesson</div>
     <div class="qprog" id="qprog"></div>
+    <div class="hearts" id="qhearts"></div>
     <div class="qpic" id="qpic"></div>
     <div class="chint" id="chint" hidden><div class="ch-stage"></div><div class="ch-say"></div><div class="ch-pad" hidden></div></div>
     <div class="qrow" id="qrow"><div class="qhost" id="qhost"><div class="qeq" id="qeq"></div><svg class="arcs" id="qsvg"></svg></div><button class="qrep" id="qrep" aria-label="Hear the question again" hidden>&#128266;</button></div>
@@ -429,6 +440,7 @@
   <div class="qtrick" id="qtrick"><div class="tname" id="tName"></div><div class="qhost" id="tHost"><div class="eq" id="tEq"></div><svg class="arcs" id="tSvg"></svg></div><div class="tcap" id="tCap"></div><button class="tskip" id="tSkip">Skip &#9654;</button></div>
   <div class="qred" id="qred">
     <div class="stop" id="qredStop">&#9995; Stop and think!</div>
+    <div class="hearts" id="qredHearts"></div>
     <div class="qhost" id="qredHost"><div class="eq" id="qredEq"></div><svg class="arcs" id="qredSvg"></svg></div>
     <div class="dots" id="qredDots"></div>
     <div class="steps" id="qredSteps"></div>
@@ -569,6 +581,23 @@
     var from = now - winMin * 60000, n = 0;
     log.forEach(function (e) { var t = Date.parse(e.t); if (!e.ok && t >= from && t > since) n += e.fast ? 2 : 1; });   // a future stamp (clock set back) still counts
     return n;
+  }
+  // Hearts: the same window, but `back` right answers in a row (no hint) win one heart back. Returns { lost, run } (run = toward the next heart).
+  function heartState(log, now, winMin, since, back) {
+    var from = now - winMin * 60000, lost = 0, run = 0;
+    log.forEach(function (e) {
+      var t = Date.parse(e.t);
+      if (!(t >= from && t > since)) return;
+      if (!e.ok) { lost += e.fast ? 2 : 1; run = 0; }
+      else if (!e.hint && lost > 0 && ++run >= back) { lost--; run = 0; }
+    });
+    return { lost: lost, run: run };
+  }
+  // The hearts row: `left` of `max` red; the ones just lost break, the one just won pops (`was` = hearts before).
+  function heartsHtml(max, left, was) {
+    var h = "", k;
+    for (k = 0; k < max; k++) h += '<i class="' + (k < left ? (k >= was ? "won" : "") : k < was ? "off lost" : "off") + '">❤️</i>';
+    return h;
   }
   // The guard's day: a later date resets used / earned minutes and the streak; an earlier date (clock set back) never does.
   function dayStep(g, now, key) {
@@ -1290,12 +1319,22 @@
       if (prev && prev.done) prev.done();
       if (!can()) return false;
       var id = String(++spokenSeq);
-      cur = { id: id, done: done };
-      spokenTimer = setTimeout(function () { spoken(id); }, text.length * 100 + 2000);
+      cur = { id: id, done: done, text: text };
+      arm(id, text, false);
       bridge.speak(text, cfg.lang, rate, id);
       return true;
     }
-    function hush() { cur = null; clearTimeout(spokenTimer); if (bridge && bridge.speakStop) bridge.speakStop(); }   // silence, nobody told
+    // The lost-callback timer: generous until the audio starts (a voice may build the whole sentence first), then sized to the speech.
+    function arm(id, text, started) {
+      clearTimeout(spokenTimer);
+      spokenTimer = setTimeout(function () { spoken(id); }, started ? text.length * 110 + 1500 : text.length * 130 + 6000);
+    }
+    // Silence. Whoever waits is still told (a moment later), so no screen waits forever; `quiet` = the caller has already moved on.
+    function hush(quiet) {
+      var c = cur; cur = null; clearTimeout(spokenTimer);
+      if (bridge && bridge.speakStop) bridge.speakStop();
+      if (c && c.done && !quiet) setTimeout(c.done, 0);
+    }
     window.voiceEvent = function (type, a) {
       if (type === "loading") setState("loading");
       else if (type === "ready") { if (a === cfg.lang && cfg.on) setState("ready"); }
@@ -1303,6 +1342,7 @@
       else if (type === "error") setState("error", a);
       else if (type === "tts") { tts.en = a.charAt(0) === "1"; tts.es = a.charAt(1) === "1"; if (noteCb) noteCb(); }
       else if (type === "spoke") spoken(a);
+      else if (type === "started") { if (cur && cur.id === a) arm(a, cur.text, true); }
       else if (handler) handler(type, a);       // partial / final / timeout / listenError
     };
     var api = {
@@ -1492,7 +1532,7 @@
         .replace(/[←-⇿⬆⬇✓✨\ud83c-􏰀-\udfff]/g, " ").replace(/\s+/g, " ").trim();
     }
     function speak(h) {                                  // resolves when the voice is done (or at once when it won't speak)
-      return new Promise(function (res) { var t = setTimeout(res, 15000); if (!o.tell || !o.tell(strip(h), function () { clearTimeout(t); res(); })) { clearTimeout(t); res(); } });
+      return new Promise(function (res) { var t = setTimeout(res, strip(h).length * 130 + 6000); if (!o.tell || !o.tell(strip(h), function () { clearTimeout(t); res(); })) { clearTimeout(t); res(); } });
     }
     function wait(ms) { return new Promise(function (res) { var t = setTimeout(go, ms); function go() { clearTimeout(t); tapGo = null; res(); } tapGo = go; }); }
     function ask(expect) {                               // style C: the keypad; true = he got it, false = two misses
@@ -1864,7 +1904,7 @@
       if (sp) stages.push({ cap: sp, say: (es ? "Lo separamos: " : "Split it: ") + sp });
       ex.hints.forEach(function (h, k) { stages.push({ k: k + 1, cap: h.arcs[0].l, say: (k ? "" : easyIntro(lang)) + h.say }); });
       stages.push({ end: true, cap: fin });
-      function end() { if (tok !== trickTok) return; trickTok++; $("qtrick").classList.remove("on"); voice.hush(); done(); }
+      function end() { if (tok !== trickTok) return; trickTok++; $("qtrick").classList.remove("on"); voice.hush(true); done(); }
       $("tSkip").onclick = end;
       function run(n) {
         if (tok !== trickTok) return;
@@ -1943,6 +1983,7 @@
       $("qtitle").innerHTML = earnOnly ? "&#10135; Earn more time with math!" : math ? "&#129504; Math time!" : "&#129504; Math time! Solve it to play the next lesson";
       $("qprog").textContent = math ? "\u2b50 " + stars + "   \u00b7   Level " + level : "";
       $("qstreak").textContent = guard.streakText();
+      showHearts();
       var a = q.a, b = q.b, pics = lv === 1 || (lv === 2 && a <= 10 && b <= 10);
       var thing = THINGS[rnd(0, THINGS.length - 1)], size = (q.plus ? a + b : a) > 10 ? 36 : 54;
       $("qpic").innerHTML = !pics ? "" : q.plus ? items(a, thing, a, size) + '<span class="op">+</span>' + items(b, thing, b, size)
@@ -1997,6 +2038,18 @@
       if (!voice.read(qSay(curA, curB, curPlus, voice.cfg.lang), after)) after();
     };
 
+    // The hearts row (on the quiz and on the mistake screen); returns hearts won (+) or lost (-) since it was last drawn.
+    var heartsSeen = -1;
+    function showHearts() {
+      var h = guard.hearts(), html = "", d = 0;
+      if (h) {
+        var was = heartsSeen < 0 ? h.left : heartsSeen;
+        d = h.left - was; heartsSeen = h.left;
+        html = heartsHtml(h.max, h.left, was);
+      } else heartsSeen = -1;
+      $("qhearts").innerHTML = html; $("qredHearts").innerHTML = html;
+      return d;
+    }
     function record(n, ok, heard, ms, fast, hint) {
       var e = { t: new Date().toISOString(), q: curQ, a: n, c: answer, ok: ok, lvl: curLv, ms: ms };
       if (heard !== undefined) { e.v = 1; e.h = heard; }          // a voice answer and what the app heard
@@ -2045,6 +2098,7 @@
       }
       put("quizReview", JSON.stringify(review));
       $("qstreak").textContent = guard.streakText();
+      var heartWon = showHearts() > 0;
       if (ok) {
         if (btn) btn.classList.add("yes");
         sessRight++; sessMiss = 0; put("quizSessMiss", 0); miss = 0; put("quizMiss", 0);
@@ -2057,7 +2111,8 @@
         var pi = pickIdx(PRAISE[lang].length, lastPraise, Math.random()), praise = PRAISE[lang][pi];
         lastPraise = pi;
         var worked = curQ + " = " + answer, text = rightSay(curA, curB, curPlus, lang, praise, up, earned), cheer = up || earned,
-            tail = earned ? "  \u23f1\ufe0f +" + earned + " min!" : "";
+            tail = (earned ? "  \u23f1\ufe0f +" + earned + " min!" : "") + (heartWon ? "  \u2764\ufe0f +1" : "");
+        if (heartWon) text += lang === "es" ? " \u00a1Y recuperaste un coraz\u00f3n!" : " And you won a heart back!";
         if (math) {                                              // math-only: no lesson to unlock, it just goes on
           stars++;
           $("qprog").textContent = "\u2b50 " + stars + "   \u00b7   Level " + level;
@@ -2164,7 +2219,7 @@
       log: function () { return log; },
       practising: function () { return { list: review.slice(), mastered: masteredToday() }; },
       mathStop: function () {
-        open = false; qid++; stopVoice(); stopAnim(); clearTimeout(thinkTimer); earnOnly = false; manual = false; voice.hush();
+        open = false; qid++; stopVoice(); stopAnim(); clearTimeout(thinkTimer); earnOnly = false; manual = false; voice.hush(true);
         clearInterval(freezeTimer); freezeTimer = null;
         $("qred").classList.remove("on"); $("quiz").classList.remove("open");
       },
@@ -2296,7 +2351,7 @@
     if (!g || typeof g !== "object") g = {};
     ["used", "seen", "x", "e", "s", "lv0", "clr"].forEach(function (k) { g[k] = +g[k] || 0; });
     g.day = g.day || ""; g.none = !!g.none; g.w = !!g.w; g.lock = g.lock && g.lock.r ? g.lock : null;   // lock: { r: mistakes|time|break, since, until }
-    var earning = false, was = false, last = performance.now(), ticks = 0, noteCb = null, bannerT = null;
+    var earning = false, was = false, last = performance.now(), ticks = 0, noteCb = null, bannerT = null, HEART_BACK = 5;
     function es() { return voice.cfg.lang === "es"; }
     function two(n) { return n < 10 ? "0" + n : "" + n; }
     function store() { put("guardState", JSON.stringify(g)); }
@@ -2383,7 +2438,11 @@
         put("earnOn", cfg.earn ? 1 : 0); put("earnNeed", cfg.need); put("earnMin", cfg.min); put("earnMax", cfg.cap);
         tick();
       },
-      tooMany: function () { return cfg.lockOn && mistakeCount(quiz.log(), Date.now(), cfg.win, g.clr) >= cfg.max; },
+      tooMany: function () { return cfg.lockOn && heartState(quiz.log(), Date.now(), cfg.win, g.clr, HEART_BACK).lost >= cfg.max; },
+      hearts: function () {                                        // { max, left } or null when the mistake lock is off
+        if (!cfg.lockOn) return null;
+        return { max: cfg.max, left: Math.max(0, cfg.max - heartState(quiz.log(), Date.now(), cfg.win, g.clr, HEART_BACK).lost) };
+      },
       unlockNow: function () { g.clr = Date.now(); unlock("parent"); },
       breakFor: function (m) { lock("break", Date.now() + m * 60000); },
       extend: function (m) { g.x += m; g.w = false; tick(); },
@@ -2659,7 +2718,7 @@
       $("gNeed").textContent = "Streak needed: " + c.need; $("gMin").textContent = "Minutes per streak: " + c.min; $("gCap").textContent = "Max earned per day: " + c.cap;
       $("gNeed").disabled = $("gMin").disabled = $("gCap").disabled = !c.earn;
       $("gLock").textContent = "\ud83d\uded1 Mistake lock: " + (c.lockOn ? "ON" : "OFF");
-      $("gMax").textContent = "Mistakes allowed: " + c.max; $("gWin").textContent = "Within: " + c.win + " min";
+      $("gMax").textContent = "❤️ Hearts: " + c.max + " (a mistake breaks one, 5 right in a row win one back)"; $("gWin").textContent = "Within: " + c.win + " min";
       $("gMax").disabled = $("gWin").disabled = !c.lockOn;
       $("gCalm").textContent = "Mistake screen: " + (c.calm ? "Calm" : "Dramatic");
       $("lkNow").hidden = !lk; $("lkBreak").hidden = lk && guard.reason() === "time";
