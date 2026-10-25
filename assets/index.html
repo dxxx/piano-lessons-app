@@ -175,6 +175,53 @@
   .qred .eq { font-size: 72px; font-weight: 900; background: rgba(0,0,0,.3); border-radius: 22px; padding: 10px 40px; }
   .qred .cnt { font-size: 60px; font-weight: 800; }
   @keyframes flash { from { background: #a80016; } to { background: #e0102a; } }
+  .qred .steps { font-size: 34px; font-weight: 800; line-height: 1.35; background: rgba(0,0,0,.2); border-radius: 18px; padding: 8px 28px; max-width: 92vw; }
+  .qred .steps:empty, .qred .dots:empty { display: none; }
+  .qred .dots i { font-style: normal; font-size: 30px; margin: 0 3px; }
+  .qred .dots i.n { color: #ffe27a; } .qred .dots i.x { opacity: .35; } .qred .dots i.g { margin-right: 22px; }
+  .qred .leg { font-size: 26px; } .qred .leg i { font-style: normal; font-weight: 900; }
+  .qred .leg i.t { color: #ffe27a; } .qred .leg i.o { color: #8ff0ff; }
+  .qred.ex { gap: 10px; overflow-y: auto; }
+  .qred.ex .stop { font-size: 44px; } .qred.ex .eq { font-size: 56px; } .qred.ex .cnt { font-size: 40px; }
+  .qred.calm { background: #5c6475; animation: none; }
+  .vcol i { font-style: normal; } .vcol i.t { color: #ffe27a; } .vcol i.o { color: #8ff0ff; }
+  /* Arcs between digits: hints, mini-lessons and explanations share one drawing engine */
+  .qhost { position: relative; display: inline-block; }
+  .qhost i { font-style: normal; }
+  .qhost.hint { margin-top: 100px; }
+  .arcs { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+  .arcs path { fill: none; stroke: var(--arc, #ff4d6d); stroke-width: 5; stroke-linecap: round; }
+  .arcs .old { opacity: .4; }
+  .arcs .chip { fill: #ffe27a; }
+  .arcs text { font: 900 24px system-ui, sans-serif; fill: #14121f; text-anchor: middle; dominant-baseline: central; }
+  .arcs .pop { animation: pop .45s ease-out .5s both; transform-box: fill-box; transform-origin: center; }
+  [data-r].hl { color: var(--arc, #ff4d6d); }
+  .qhost .pop { display: inline-block; animation: pop .5s ease-out; }
+  .qred { --arc: #fff; } .qred .arcs .chip { fill: #fff; }
+  .qtbtn { margin-top: 10px; font-size: 20px; font-weight: 800; padding: 10px 22px; border: 0; border-radius: 16px; background: #2b2742; color: var(--ink); }
+  .qtrick { position: absolute; inset: 0; z-index: 2; display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; background: var(--bg); text-align: center; padding: 20px; }
+  .qtrick.on { display: flex; }
+  .qtrick .tname { font-size: 46px; font-weight: 900; color: var(--accent); }
+  .qtrick .eq { font-size: 96px; font-weight: 900; }
+  .qtrick .tcap { font-size: 40px; font-weight: 800; min-height: 100px; max-width: 90vw; }
+  .qtrick .tskip { position: absolute; right: 22px; bottom: 18px; font-size: 22px; padding: 12px 22px; border: 0; border-radius: 14px; background: #2b2742; color: var(--ink); }
+  .qrow { display: flex; align-items: center; justify-content: center; gap: 24px; }
+  .qrep { flex: none; width: 84px; height: 84px; border: 0; border-radius: 50%; font-size: 44px; background: #2b2742; color: var(--ink); }
+  .qrep:active { transform: scale(.92); }
+  .qstreak { font-size: 30px; letter-spacing: 6px; min-height: 36px; }
+  .qstreak:empty { display: none; }
+  /* Limits: the lock screen covers everything but the Menu button; the earn session shows the quiz instead */
+  .lockscr { position: fixed; inset: 0; z-index: 9; display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 16px; background: #1b2440; color: #fff; text-align: center; padding: 24px; }
+  body.locked .lockscr { display: flex; } body.locked.earning .lockscr { display: none; }
+  .lockscr .big { font-size: 110px; line-height: 1; } .lockscr .msg { font-size: 50px; font-weight: 800; } .lockscr .sub { font-size: 28px; color: #c7d0f0; }
+  .lockscr button { margin-top: 12px; font-size: 28px; font-weight: 800; padding: 18px 34px; border: 0; border-radius: 18px; background: var(--accent); color: var(--accent-ink); }
+  body.locked header > :not(#lock) { display: none !important; }
+  body.locked #lock { position: fixed; top: 12px; right: 14px; z-index: 10; }
+  .tbanner { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 12; background: #ffd166; color: #14121f;
+    font-weight: 800; font-size: 22px; padding: 8px 20px; border-radius: 14px; display: none; }
+  .tbanner.on { display: block; }
   .gate .card { max-height: 94vh; overflow-y: auto; }
   #res, #act { z-index: 11; }
   /* Eye guard: too close to the screen -> cover everything until he moves back */
@@ -265,9 +312,28 @@
       <button class="set" id="qAct">&#128200; Activity</button>
       <button class="set" id="qRes">&#128202; Results</button>
       <button class="set" id="qSens"></button>
-      <button class="set" id="vOn"></button>
+      <button class="set" id="vRead"></button>
+      <button class="set" id="vFb"></button>
       <button class="set" id="vLang"></button>
+      <button class="set" id="vOn"></button>
       <div class="note" id="vNote"></div>
+      <button class="set" id="rvOn"></button>
+      <button class="set" id="hintOn"></button>
+      <button class="set" id="gLim"></button>
+      <button class="set" id="tP15">&#10133; 15 min today</button>
+      <button class="set" id="tP30">&#10133; 30 min today</button>
+      <button class="set" id="tNone">No limit today</button>
+      <button class="set" id="gEarn"></button>
+      <button class="set" id="gNeed"></button>
+      <button class="set" id="gMin"></button>
+      <button class="set" id="gCap"></button>
+      <button class="set" id="gLock"></button>
+      <button class="set" id="gMax"></button>
+      <button class="set" id="gWin"></button>
+      <button class="set" id="gCalm"></button>
+      <button class="primary" id="lkNow">&#128275; Unlock now</button>
+      <button class="set" id="lkBreak">&#9749; Break 15 min, then unlock</button>
+      <div class="note" id="gNote"></div>
       <button class="set" id="eOn"></button>
       <button class="set" id="eSens"></button>
       <button class="set" id="eCal"></button>
@@ -277,6 +343,9 @@
       <button id="doChange">Change PIN</button>
       <button id="doCancel">Back to lessons</button>
 </template>
+
+<div class="lockscr" id="lockscr"><div class="big" id="lkIcon"></div><div class="msg" id="lkMsg"></div><div class="sub" id="lkSub"></div><button id="lkEarn" hidden></button></div>
+<div class="tbanner" id="tbanner"></div>
 
 <div class="eyecov" id="eyecov"><div class="big">&#128064;</div><div class="msg" id="eyemsg"></div><div class="sub" id="eyesub"></div></div>
 
@@ -308,18 +377,23 @@
     <div class="qtitle" id="qtitle">&#129504; Math time! Solve it to play the next lesson</div>
     <div class="qprog" id="qprog"></div>
     <div class="qpic" id="qpic"></div>
-    <div class="qeq" id="qeq"></div>
+    <div class="qrow"><div class="qhost" id="qhost"><div class="qeq" id="qeq"></div><svg class="arcs" id="qsvg"></svg></div><button class="qrep" id="qrep" aria-label="Hear the question again" hidden>&#128266;</button></div>
+    <div class="qstreak" id="qstreak"></div>
     <div class="qans" id="qans"></div>
     <div class="qvoice" id="qvoice" hidden>
       <div class="mic">&#127908;</div>
       <div class="say">Read it and say the answer!</div>
       <div class="heard" id="qheard"></div>
     </div>
+    <button class="qtbtn" id="qtbtn" hidden>&#129504; Show me the trick</button>
     <div class="qmsg" id="qmsg"></div>
   </div>
+  <div class="qtrick" id="qtrick"><div class="tname" id="tName"></div><div class="qhost" id="tHost"><div class="eq" id="tEq"></div><svg class="arcs" id="tSvg"></svg></div><div class="tcap" id="tCap"></div><button class="tskip" id="tSkip">Skip &#9654;</button></div>
   <div class="qred" id="qred">
-    <div class="stop">&#9995; Stop and think!</div>
-    <div class="eq" id="qredEq"></div>
+    <div class="stop" id="qredStop">&#9995; Stop and think!</div>
+    <div class="qhost" id="qredHost"><div class="eq" id="qredEq"></div><svg class="arcs" id="qredSvg"></svg></div>
+    <div class="dots" id="qredDots"></div>
+    <div class="steps" id="qredSteps"></div>
     <div class="cnt" id="qredCount"></div>
   </div>
 </div>
@@ -328,6 +402,173 @@
   var PLAYLIST = "PLDVezc1Pgjccf0cePq-4SB1K6NExfYT6x";
   var KEY = "lastLesson";
   var player, ids = [], current = -1;
+
+  // <pure> No DOM, no state: unit-tested in node (tests/pure.test.js extracts this block).
+  var PRAISE = { en: ["Great job!", "Well done!", "Awesome!", "Super!", "You got it!"],
+                 es: ["¡Muy bien!", "¡Excelente!", "¡Genial!", "¡Bravo!", "¡Lo lograste!"] };
+  function pickIdx(n, last, r) { return (last + 1 + Math.floor(r * (n - 1))) % n; }   // never the same one twice in a row
+  function wordOp(plus, lang) { return plus ? (lang === "es" ? "más" : "plus") : (lang === "es" ? "menos" : "minus"); }
+  // "12 minus 3 is 9" / "12 menos 3 son 9" (digits: Android's English and Spanish voices both read them as numbers)
+  function eqSay(a, b, plus, lang) {
+    var r = plus ? a + b : a - b;
+    return a + " " + wordOp(plus, lang) + " " + b + " " + (lang === "es" ? (r === 1 ? "es" : "son") : "is") + " " + r;
+  }
+  function qSay(a, b, plus, lang) {
+    return lang === "es" ? "¿Cuánto es " + a + " " + wordOp(plus, lang) + " " + b + "?" : "What is " + a + " " + wordOp(plus, lang) + " " + b + "?";
+  }
+  function rightSay(a, b, plus, lang, praise, up, earned) {
+    var es = lang === "es";
+    return praise + " " + eqSay(a, b, plus, lang) + "." + (up ? (es ? " ¡Subiste de nivel!" : " Level up!") : "") +
+      (earned ? (es ? " ¡Ganaste " + earned + " minutos más!" : " You earned " + earned + " more minutes!") : "");
+  }
+  function wrongSay(a, b, plus, lv, lang, n) {
+    var es = lang === "es";
+    return (es ? "Dijiste " : "You said ") + n + ". " + (es ? "Veamos… " : "Let's see… ") + explain(a, b, plus, lv, lang).say + " " +
+      (es ? "Así que " : "So ") + eqSay(a, b, plus, lang) + ".";
+  }
+  // The four tricks, named the same everywhere (hints, mini-lessons, explanations).
+  var TRICKS = { count: ["👆", "Count on", "Count back", "Contar hacia adelante", "Contar hacia atrás"],
+                 ten: ["🔟", "Make ten", "Make ten", "Hacer diez", "Hacer diez"],
+                 ones: ["1️⃣", "Ones first", "Ones first", "Primero las unidades", "Primero las unidades"],
+                 tens: ["🧱", "Tens and ones", "Tens and ones", "Decenas y unidades", "Decenas y unidades"] };
+  function trickName(t, plus, lang) { var r = TRICKS[t]; return r[0] + " " + r[(lang === "es" ? 3 : 1) + (plus ? 0 : 1)]; }
+  function easyIntro(lang) { return lang === "es" ? "Truco fácil: " : "Easy trick: "; }
+  // "15 = 10 + 5" (ones first) or "5 = 2 + 3" (make ten): the split a mini-lesson shows first; "" when the trick has none
+  function splitText(a, b, plus, trick) {
+    var u = a % 10;
+    if (trick === "ones" && a >= 10) return a + " = " + (a - u) + " + " + u;
+    if (trick === "ten" && plus && u > 0 && b > 10 - u) return b + " = " + (10 - u) + " + " + (b - 10 + u);
+    if (trick === "ten" && !plus && u > 0 && b > u) return b + " = " + u + " + " + (b - u);
+    return "";
+  }
+  // The explanation of a sum, by level: { steps: [{ v: shown, s: spoken, h: hint steps }], say: all of it spoken, trick, hints }.
+  // A hint step { k: order, arcs: [{ f, t, l }], say } draws arcs between digits (refs a b q, a1 a0 b1 b0 q) with a label; the hints
+  // are ordered by k, so hints and explanation always agree.
+  function explain(a, b, plus, lv, lang) {
+    var es = lang === "es", op = plus ? "+" : "−", W = wordOp(plus, lang), steps = [], trick = "count", quiet = false;
+    function T(e, s) { return es ? s : e; }
+    function IS(n) { return es ? (n === 1 ? "es" : "son") : "is"; }
+    function add(v, s, h) { steps.push({ v: v, s: s, h: quiet ? [] : h || [] }); }
+    function eqv(x, y, r) { return x + " " + op + " " + y + " = " + r; }
+    function sy(x, y, r) { return x + " " + W + " " + y + " " + IS(r) + " " + r; }
+    function hs(k, f, t, l, say) { return { k: k, arcs: [{ f: f, t: t, l: l }], say: say }; }
+    function go(a, b) {                                            // 1 <= b <= 9
+      var u = a % 10, r = plus ? a + b : a - b, t = a - u, k, list = [];
+      if (plus ? (a <= 10 && r <= 10) || a === 10 : a <= 10) {      // small: count on / count back
+        var big = plus ? Math.max(a, b) : a, n = plus ? Math.min(a, b) : b, f = plus && a < b ? "b" : "a";
+        for (k = 1; k <= n; k++) list.push(plus ? big + k : big - k);
+        trick = "count";
+        add(T("Start at ", "Empieza en ") + big, T("start at " + big + ",", "empieza en " + big + ","));
+        add(T(plus ? "Count " + n + " more: " : "Count back " + n + ": ", plus ? "Cuenta " + n + " más: " : "Cuenta " + n + " hacia atrás: ") + list.join(", "),
+            T(plus ? "count " + n + " more: " : "count back " + n + ": ", plus ? "cuenta " + n + " más: " : "cuenta " + n + " hacia atrás: ") + list.join(", ") + ".",
+            [hs(1, f, f === "a" ? "b" : "a", big + " → " + list.join(", "), T("start at " + big + " and count " + (plus ? n + " more: " : "back " + n + ": ") + list.join(", ") + ".",
+                "empieza en " + big + " y cuenta " + (plus ? n + " más: " : n + " hacia atrás: ") + list.join(", ") + ".")),
+             hs(2, f === "a" ? "b" : "a", "q", "= " + r, T("so the answer is " + r + ".", "así que la respuesta es " + r + "."))]);
+      } else if (plus ? u + b > (lv >= 4 ? 9 : 10) : u < b && u > 0) {   // across a ten: jump to it, then the rest
+        var gap = plus ? 10 - u : u, rest = b - gap, tg = plus ? a + gap : a - gap, h1;
+        trick = "ten";
+        h1 = hs(1, "a", "b", eqv(a, gap, tg), plus ? (a < 10 ? T("make ten! ", "¡haz diez! ") : T("jump to the next ten! ", "¡salta a la decena! ")) + sy(a, gap, tg) + "."
+          : T("take away to reach the ten! ", "¡quita para llegar a la decena! ") + sy(a, gap, tg) + ".");
+        if (plus && a < 10) add(eqv(a, gap, tg), a + " " + W + " " + gap + " " + T("makes ", "son ") + tg + ",", [h1]);
+        else if (plus) add(eqv(a, gap, tg), T(gap + " more makes " + tg, gap + " más hacen " + tg) + (rest ? "," : "."), [h1]);
+        else add(eqv(a, gap, tg), T("take away " + gap + " to get " + tg + ",", "quita " + gap + " para llegar a " + tg + ","), [h1]);
+        if (rest) add(eqv(tg, rest, r), T("then " + rest + " more: " + r + ".", "luego " + (plus ? "" : "quita ") + rest + " más: " + r + "."),
+          [hs(2, "b", "q", eqv(tg, rest, r), T("then the rest: ", "luego el resto: ") + sy(tg, rest, r) + ".")]);
+        else steps[steps.length - 1].h.push(hs(2, "b", "q", "= " + r, T("so the answer is " + r + ".", "así que la respuesta es " + r + ".")));
+      } else if (!plus && u === 0) {                                // 40 - 7: take a whole ten, give back what was too much
+        trick = "ten";
+        add(eqv(a, 10, a - 10), T("take away 10 to get " + (a - 10) + ",", "quita 10 y quedan " + (a - 10) + ","),
+          [hs(1, "a", "b", eqv(a, 10, a - 10), T("take a whole ten away! ", "¡quita una decena entera! ") + sy(a, 10, a - 10) + ".")]);
+        add((a - 10) + " + " + (10 - b) + " = " + r, T("that is " + (10 - b) + " too many, so add " + (10 - b) + " back: " + r + ".",
+          "son " + (10 - b) + " de más, así que suma " + (10 - b) + ": " + r + "."),
+          [hs(2, "b", "q", (a - 10) + " + " + (10 - b) + " = " + r, T("then give back what was too much: ", "luego devuelve lo que sobró: ") + (a - 10) + " " + (es ? "más" : "plus") + " " + (10 - b) + " " + IS(r) + " " + r + ".")]);
+      } else {                                                      // ones only, the tens stay
+        var o = plus ? u + b : u - b, onesHint = hs(1, "a0", "b", eqv(u, b, o), T("just do the ones first! ", "¡haz primero las unidades! ") + sy(u, b, o) + ".");
+        trick = "ones";
+        if (a >= 20) {
+          add(T("Tens stay ", "Decenas: ") + t / 10, T("tens stay " + t / 10 + ",", "las decenas se quedan en " + t / 10 + ","),
+            [hs(2, "a1", "q", t / 10 + " " + T("tens stay", "decenas se quedan") + " → " + r, T("now the tens stay: " + t / 10 + " tens. So " + r + ".", "ahora las decenas se quedan: " + t / 10 + ". Así que " + r + "."))]);
+          add(eqv(u, b, o), T("ones " + u + " " + W + " " + b + " is " + o + ", so " + r + ".", "unidades " + u + " " + W + " " + b + " " + IS(o) + " " + o + ", así que " + r + "."), [onesHint]);
+        } else add(eqv(u, b, o), u + " " + W + " " + b + " " + IS(o) + " " + o + T(", so ", ", así que ") + r + ".",
+          [onesHint, hs(2, "a1", "q", "10 + " + o + " = " + r, T("now add the ten: 10 plus " + o + " is " + r + ".", "ahora suma la decena: 10 más " + o + " son " + r + "."))]);
+      }
+    }
+    if (lv === 6 && a >= 10 && b >= 10) {                           // tens and ones columns
+      var ta = Math.floor(a / 10), tb = Math.floor(b / 10), ua = a % 10, ub = b % 10, rt = plus ? ta + tb : ta - tb, ro = plus ? ua + ub : ua - ub, rr = plus ? a + b : a - b;
+      trick = "tens";
+      add(T("Tens: ", "Decenas: ") + eqv(ta, tb, rt), T("tens, ", "decenas, ") + ta + " " + W + " " + tb + " " + IS(rt) + " " + rt + ".",
+        [hs(2, "a1", "b1", eqv(ta, tb, rt), T("now the tens: ", "ahora las decenas: ") + sy(ta, tb, rt) + ".")]);
+      add(T("Ones: ", "Unidades: ") + eqv(ua, ub, ro), T("Ones, ", "Unidades, ") + ua + " " + W + " " + ub + " " + IS(ro) + " " + ro + ".",
+        [hs(1, "a0", "b0", eqv(ua, ub, ro), T("ones first! ", "¡primero las unidades! ") + sy(ua, ub, ro) + ".")]);
+      add("= " + rr, T("So ", "Así que ") + rr + ".", [hs(3, "b1", "q", "= " + rr, T("put them together: " + rr + ".", "júntalos: " + rr + "."))]);
+    } else if (b >= 10) {                                           // take the tens first, then the ones
+      var tens = Math.floor(b / 10) * 10, ones = b % 10, mid = plus ? a + tens : a - tens;
+      add(eqv(a, tens, mid), a + " " + W + " " + tens + " " + IS(mid) + " " + mid + (ones ? "," : "."),
+        [hs(1, "a", "b", eqv(a, tens, mid), T("take the tens first! ", "¡primero las decenas! ") + sy(a, tens, mid) + ".")]);
+      if (ones) {
+        quiet = true; go(mid, ones); quiet = false;
+        steps[steps.length - 1].h = [hs(2, "b", "q", eqv(mid, ones, plus ? mid + ones : mid - ones), T("then the rest: ", "luego el resto: ") + sy(mid, ones, plus ? mid + ones : mid - ones) + ".")];
+      } else steps[0].h.push(hs(2, "b", "q", "= " + mid, T("so the answer is " + mid + ".", "así que la respuesta es " + mid + ".")));
+      trick = "tens";
+    } else go(a, b);
+    var say = steps.map(function (s) { return s.s; }).join(" "), hints = [];
+    steps.forEach(function (s) { hints = hints.concat(s.h); });
+    hints.sort(function (x, y) { return x.k - y.k; });
+    return { steps: steps, say: say.charAt(0).toUpperCase() + say.slice(1), trick: trick, hints: hints };
+  }
+  // Wrong answers inside the rolling window (a deliberate-looking fast one counts double); `since` = the parent's last "Unlock now".
+  function mistakeCount(log, now, winMin, since) {
+    var from = now - winMin * 60000, n = 0;
+    log.forEach(function (e) { var t = Date.parse(e.t); if (!e.ok && t >= from && t > since) n += e.fast ? 2 : 1; });   // a future stamp (clock set back) still counts
+    return n;
+  }
+  // The guard's day: a later date resets used / earned minutes and the streak; an earlier date (clock set back) never does.
+  function dayStep(g, now, key) {
+    if (key > g.day) { g.day = key; g.used = 0; g.x = 0; g.none = false; g.w = false; g.e = 0; g.s = 0; g.lv0 = 0; }
+    if (now > g.seen) g.seen = now;
+    return g;
+  }
+  function clockBehind(g, now) { return now < g.seen - 60000; }
+  function limitLeft(g, limitMin) { return !limitMin || g.none ? Infinity : (limitMin + g.x + g.e) * 60 - g.used; }
+  // Earning screen time: `need` right answers in a row = `min` minutes, at most `max` a day. Returns the minutes added now.
+  // A mistake resets the streak; an answer that may not count (parent's quiz, level farmed down) neither grows nor resets it.
+  function earnStep(g, ok, counts, need, min, max) {
+    if (!ok) { g.s = 0; return 0; }
+    if (!counts) return 0;
+    if (++g.s < need) return 0;
+    g.s = 0;
+    var add = Math.min(min, max - g.e);
+    if (add > 0) g.e += add;
+    return Math.max(add, 0);
+  }
+  // Missed questions come back (spaced repetition). q = [{ a, b, plus, lv, st, w }]: st 0 = first return, 1 = last check; w = right answers still to wait.
+  function qKey(a, b, plus) { return a + (plus ? "+" : "-") + b; }
+  var REVIEW_MAX = 30, REVIEW_GAP = 3;          // queue cap; at most one review per REVIEW_GAP questions
+  // After an answer: a mistake (re)schedules it 2-3 right answers away; a right answer ages the others, and moves a review on
+  // (first return right -> one more check after 10 right answers; second right -> mastered and removed; right only with a hint -> stays). Returns true when mastered.
+  function reviewAfter(q, e, r) {
+    var k = qKey(e.a, e.b, e.plus), i, mastered = false;
+    if (!e.ok) {
+      for (i = q.length - 1; i >= 0; i--) if (qKey(q[i].a, q[i].b, q[i].plus) === k) q.splice(i, 1);
+      q.push({ a: e.a, b: e.b, plus: e.plus, lv: e.lv, st: 0, w: 2 + Math.floor(r * 2) });
+      while (q.length > REVIEW_MAX) q.shift();
+      return false;
+    }
+    q.forEach(function (x) { if (x.w > 0 && qKey(x.a, x.b, x.plus) !== k) x.w--; });
+    if (e.rv) for (i = 0; i < q.length; i++) if (qKey(q[i].a, q[i].b, q[i].plus) === k) {
+      if (e.hint) q[i].w = 10;                                   // right, but with a hint: not mastered yet, once more later
+      else if (q[i].st === 0) { q[i].st = 1; q[i].w = 10; } else { q.splice(i, 1); mastered = true; }
+      break;
+    }
+    return mastered;
+  }
+  // The review to ask now, or null: one is due, REVIEW_GAP questions passed since the last one, and it is not the question just asked.
+  function reviewDue(q, since, lastKey) {
+    if (since < REVIEW_GAP) return null;
+    for (var i = 0; i < q.length; i++) if (q[i].w <= 0 && qKey(q[i].a, q[i].b, q[i].plus) !== lastKey) return q[i];
+    return null;
+  }
+  // </pure>
 
   // ---- Activity log for the grown-ups (shown behind the PIN). Small aggregate counters in localStorage "actLog",
   // one record per day (no per-note event log); days older than 90 days keep only their totals. ----
@@ -398,6 +639,9 @@
         save();
       },
       tooClose: function () { var d = day(); d.ey = (d.ey || 0) + 1; save(); },
+      lockEv: function (r) { D.lk = (D.lk || []).concat({ t: new Date().toISOString(), r: r, u: "", ut: "" }).slice(-40); save(); },
+      lockEnd: function (how) { var e = D.lk && D.lk[D.lk.length - 1]; if (e && !e.u) { e.u = how; e.ut = new Date().toISOString(); save(); } },
+      earnEv: function (m) { D.er = (D.er || []).concat({ t: new Date().toISOString(), m: m }).slice(-60); save(); },
       clear: function () { D = { d: {}, les: {}, lv: [] }; newSession(); save(); },
       key: dkey
     };
@@ -466,7 +710,7 @@
     if (!player || !player.getPlaylistIndex) return;
     var i = player.getPlaylistIndex();
     if (i < 0) return;
-    if (quiz.isOpen() && player.getPlayerState() === 1) player.pauseVideo();   // no lesson behind the quiz
+    if ((quiz.isOpen() || guard.locked()) && player.getPlayerState() === 1) player.pauseVideo();   // no lesson behind the quiz
     if (i !== current) {
       var firstLoad = current < 0;
       current = i; save(i);
@@ -886,7 +1130,9 @@
     var bridge = window.Voice, state = "off", msg = "", tts = { en: true, es: true }, handler = null, once = [], noteCb = null;
     function get(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
     function put(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
-    var cfg = { on: get("voiceOn", "0") === "1", lang: get("voiceLang", "en") === "es" ? "es" : "en" };
+    var cfg = { on: get("voiceOn", "0") === "1", lang: get("voiceLang", "en") === "es" ? "es" : "en",
+      read: get("voiceRead", "1") === "1", fb: get("voiceFb", "1") === "1" };   // read = questions aloud, fb = spoken praise and explanations; both work with Voice quiz off
+    var READ_RATE = 0.85, SAY_RATE = 0.95;
     var EN = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
       thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20, thirty: 30, forty: 40,
       fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
@@ -927,7 +1173,7 @@
         state === "ready" ? "Voice is ready." :
         state === "denied" ? "The microphone is not allowed. Turn it on in Android Settings > Apps > Piano Lessons > Permissions > Microphone, then switch Voice quiz OFF and ON." :
         state === "error" ? "Voice could not start: " + msg : "";
-      if (cfg.on && !tts[cfg.lang]) t += (t ? " " : "") + (cfg.lang === "es" ? "Spanish" : "English") + " voice not installed on this tablet (it will listen but not speak).";
+      if ((cfg.read || cfg.fb) && !tts[cfg.lang]) t += (t ? " " : "") + (cfg.lang === "es" ? "Spanish" : "English") + " voice not installed on this tablet (questions and feedback stay on the screen only).";
       return t;
     }
     function setState(s, m) {
@@ -935,12 +1181,29 @@
       var f = once; once = []; f.forEach(function (fn) { try { fn(s); } catch (e) {} });
       if (noteCb) noteCb();
     }
+    // Speech output, separate from listening: speak(text, done, rate) runs `done` when the voice has finished. It always arrives:
+    // the app answers "spoke" even without a voice, and a timer covers a lost callback. A newer speech ends the older one early.
+    var cur = null, spokenTimer = null, spokenSeq = 0;
+    function can() { return !!(bridge && bridge.speak && tts[cfg.lang]); }
+    function spoken(id) { if (!cur || cur.id !== id) return; var d = cur.done; cur = null; clearTimeout(spokenTimer); if (d) d(); }
+    function speak(text, done, rate) {
+      var prev = cur; cur = null; clearTimeout(spokenTimer);
+      if (prev && prev.done) prev.done();
+      if (!can()) return false;
+      var id = String(++spokenSeq);
+      cur = { id: id, done: done };
+      spokenTimer = setTimeout(function () { spoken(id); }, text.length * 100 + 2000);
+      bridge.speak(text, cfg.lang, rate, id);
+      return true;
+    }
+    function hush() { cur = null; clearTimeout(spokenTimer); if (bridge && bridge.speakStop) bridge.speakStop(); }   // silence, nobody told
     window.voiceEvent = function (type, a) {
       if (type === "loading") setState("loading");
       else if (type === "ready") { if (a === cfg.lang && cfg.on) setState("ready"); }
       else if (type === "denied") setState("denied");
       else if (type === "error") setState("error", a);
       else if (type === "tts") { tts.en = a.charAt(0) === "1"; tts.es = a.charAt(1) === "1"; if (noteCb) noteCb(); }
+      else if (type === "spoke") spoken(a);
       else if (handler) handler(type, a);       // partial / final / timeout / listenError
     };
     var api = {
@@ -959,12 +1222,81 @@
         cfg.on = on; put("voiceOn", on ? 1 : 0);
         if (on) api.prepare(); else { api.stop(); if (bridge && bridge.voiceRelease) bridge.voiceRelease(); setState("off"); }
       },
-      setLang: function (l) { cfg.lang = l; put("voiceLang", l); api.stop(); if (cfg.on) api.prepare(); else if (noteCb) noteCb(); },
+      setLang: function (l) { cfg.lang = l; put("voiceLang", l); api.stop(); hush(); if (cfg.on) api.prepare(); else if (noteCb) noteCb(); },
       listen: function (h) { handler = h; if (bridge && bridge.voiceListen) bridge.voiceListen(); },
       stop: function () { handler = null; if (bridge && bridge.voiceStop) bridge.voiceStop(); },
-      say: function (text) { if (cfg.on && bridge && bridge.speak && tts[cfg.lang]) bridge.speak(text, cfg.lang); }
+      setRead: function (on) { cfg.read = on; put("voiceRead", on ? 1 : 0); if (!on) hush(); if (noteCb) noteCb(); },
+      setFb: function (on) { cfg.fb = on; put("voiceFb", on ? 1 : 0); if (!on) hush(); if (noteCb) noteCb(); },
+      can: can, speak: speak, hush: hush,
+      read: function (text, done) { return cfg.read && speak(text, done, READ_RATE); },   // the question
+      tell: function (text, done) { return (cfg.fb || cfg.read) && speak(text, done, SAY_RATE); },   // hints and mini-lessons: either speech setting
+      say: function (text, done) { return cfg.fb && speak(text, done, SAY_RATE); }       // praise, explanations, warnings
     };
     return api;
+  })();
+
+  // ---- Arcs: curved lines between the digits of an equation (data-r refs), with a label. Used by the hints, the mini-lessons and
+  // the red-screen explanation, so they always look and agree the same. Positions come from the real digit boxes and are redrawn on resize. ----
+  var anim = (function () {
+    var NS = "http://www.w3.org/2000/svg";
+    function node(n, at) { var e = document.createElementNS(NS, n); for (var k in at) e.setAttribute(k, at[k]); return e; }
+    function box(host, r) {
+      var e = host.querySelector('[data-r="' + r + '"]'); if (!e) return null;
+      var b = e.getBoundingClientRect(), h = host.getBoundingClientRect();
+      return { l: b.left - h.left, r: b.right - h.left, t: b.top - h.top, b: b.bottom - h.top, e: e };
+    }
+    function clear(host, svg) {
+      svg.textContent = ""; host._h = null; host.classList.remove("hint");
+      [].forEach.call(host.querySelectorAll(".hl"), function (e) { e.classList.remove("hl"); });
+    }
+    // Hints 1..upto: the older ones faded, the newest draws itself in. Side-by-side equations arc over the top; columns arc to the side
+    // (tens on the left, ones on the right).
+    function draw(host, svg, hints, upto, animate) {
+      var col = !!host.querySelector(".vcol"), n = 0;
+      svg.textContent = "";
+      [].forEach.call(host.querySelectorAll(".hl"), function (e) { e.classList.remove("hl"); });
+      host._h = { svg: svg, hints: hints, upto: upto };
+      hints.slice(0, upto).forEach(function (h, i) {
+        var last = i === upto - 1, cls = last ? "" : "old";
+        h.arcs.forEach(function (c) {
+          var A = box(host, c.f), B = box(host, c.t), d, lx, ly, side = 1, hh, x1, y1, x2, y2;
+          if (!A || !B) return;
+          if (last) { A.e.classList.add("hl"); B.e.classList.add("hl"); }
+          if (!col) {
+            x1 = (A.l + A.r) / 2; x2 = (B.l + B.r) / 2; y1 = A.t - 4; y2 = B.t - 4;
+            hh = Math.min(120, 40 + Math.abs(x1 - x2) * 0.2 + n * 26);
+            d = "M" + x1 + " " + y1 + " C" + x1 + " " + (y1 - hh) + " " + x2 + " " + (y2 - hh) + " " + x2 + " " + y2;
+            lx = (x1 + x2) / 2; ly = (y1 + y2) / 2 - 0.75 * hh - 18;
+          } else {
+            side = /1$/.test(c.f) ? -1 : 1;
+            x1 = side > 0 ? A.r + 6 : A.l - 6; x2 = side > 0 ? B.r + 6 : B.l - 6; y1 = (A.t + A.b) / 2; y2 = (B.t + B.b) / 2;
+            hh = Math.min(150, 40 + Math.abs(y1 - y2) * 0.25 + n * 26);
+            d = "M" + x1 + " " + y1 + " C" + (x1 + side * hh) + " " + y1 + " " + (x2 + side * hh) + " " + y2 + " " + x2 + " " + y2;
+            lx = (x1 + x2) / 2 + side * (0.75 * hh + 14); ly = (y1 + y2) / 2;
+          }
+          n++;
+          var p = node("path", { d: d, "class": cls }), g = node("g", { "class": cls + (last && animate ? " pop" : "") }), chip = node("rect", { "class": "chip", rx: 10 }), tx = node("text", { x: lx, y: ly });
+          tx.textContent = c.l; if (col) tx.style.textAnchor = side > 0 ? "start" : "end";
+          svg.appendChild(p); g.appendChild(chip); g.appendChild(tx); svg.appendChild(g);
+          try { var bb = tx.getBBox(); chip.setAttribute("x", bb.x - 10); chip.setAttribute("y", bb.y - 4); chip.setAttribute("width", bb.width + 20); chip.setAttribute("height", bb.height + 8); } catch (e) {}
+          if (last && animate) {
+            var len = p.getTotalLength();
+            p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
+            void p.getBoundingClientRect();
+            p.style.transition = "stroke-dashoffset .6s ease"; p.style.strokeDashoffset = 0;
+          }
+        });
+      });
+    }
+    function answer(host, ans) {                     // the ? turns into the answer
+      var q = host.querySelector('[data-r="q"]'); if (!q) return;
+      q.textContent = ans; q.className = "pop"; q.style.minWidth = "";
+      [].forEach.call(host._h ? host._h.svg.children : [], function (e) { e.classList.add("old"); });
+    }
+    window.addEventListener("resize", function () {
+      [].forEach.call(document.querySelectorAll(".qhost"), function (h) { if (h._h) draw(h, h._h.svg, h._h.hints, h._h.upto, false); });
+    });
+    return { draw: draw, clear: clear, answer: answer };
   })();
 
   // ---- Math quiz: after every N lessons, the next one plays only after small sums are solved ----
@@ -974,7 +1306,7 @@
   var quiz = (function () {
     var $ = function (id) { return document.getElementById(id); };
     var THINGS = ["&#127822;", "&#127827;", "&#11088;", "&#128031;", "&#127880;", "&#128037;", "&#127850;", "&#128663;", "&#127800;", "&#128030;"];
-    var THINK_MS = 2000, LEVEL_UP_AFTER = 5, LEVEL_DOWN_AFTER = 3, MAX_LEVEL = 6, LOG_MAX = 500;
+    var THINK_MS = 2000, FAST_MS = 1500, LEVEL_UP_AFTER = 5, LEVEL_DOWN_AFTER = 3, MAX_LEVEL = 6, LOG_MAX = 500;
     function get(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
     function put(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
     function clamp(n, lo, hi) { return Math.min(hi, Math.max(lo, n)); }
@@ -982,13 +1314,21 @@
     // Level: the old "Numbers up to" setting migrates once (5/10 -> level 1, 20 -> level 2)
     var level = parseInt(get("quizLevel", ""), 10);
     if (!(level >= 1 && level <= MAX_LEVEL)) { level = +get("quizUpTo", "10") >= 20 ? 2 : 1; put("quizLevel", level); }
-    var cfg = { on: get("quizOn", "1") === "1", every: clamp(+get("quizEvery", "2") || 2, 1, 4), need: clamp(+get("quizNeed", "1") || 1, 1, 3) };
+    var cfg = { on: get("quizOn", "1") === "1", review: get("quizRepeat", "1") === "1", hint: [0, 5, 10].indexOf(parseInt(get("hintAfter", "5"), 10)) >= 0 ? parseInt(get("hintAfter", "5"), 10) : 5, every: clamp(+get("quizEvery", "2") || 2, 1, 4), need: clamp(+get("quizNeed", "1") || 1, 1, 3) };
     Object.defineProperty(cfg, "level", {
       enumerable: true,
       get: function () { return level; },
-      set: function (v) { level = clamp(v, 1, MAX_LEVEL); put("quizLevel", level); act.level(level); run = 0; miss = 0; put("quizRun", 0); put("quizMiss", 0); }
+      set: function (v) { level = clamp(v, 1, MAX_LEVEL); put("quizLevel", level); act.level(level); run = 0; miss = 0; put("quizRun", 0); put("quizMiss", 0); guard.base(level); }
     });
     var count = +get("quizCount", "1"), open = false, answer = 0, curQ = "", lastQ = "", curA = 0, curB = 0;
+    var curPlus = true, curLv = 1, curRv = false, manual = false, earnOnly = false, cont = null, lastPraise = -1, sinceRv = REVIEW_GAP;
+    var CHEER = '<div class="qcheer">&#127881;&#11088;&#127881;</div>';
+    var hintT = null, hintN = 0, trickUsed = false, paused = false, trickTok = 0, redT = [];   // hints: the timer, the step shown; the mini-lesson token
+    var review = [], mastered = { d: "", n: 0 };     // missed questions waiting to come back; how many were mastered today
+    try { review = JSON.parse(get("quizReview", "[]")); if (!Array.isArray(review)) review = []; } catch (e) { review = []; }
+    try { mastered = JSON.parse(get("quizMastered", "{}")) || mastered; } catch (e) {}
+    function masteredToday() { return mastered.d === act.key(new Date()) ? mastered.n : 0; }
+    function mathy() { return appMode.math() || earnOnly; }
     var stars = 0, qid = 0, vTries = 0, vTimer = null, vHandler = null;   // math-only stars; voice-quiz state
     var run = +get("quizRun", "0") || 0;        // correct first-try answers in a row at this level
     var miss = +get("quizMiss", "0") || 0;      // mistakes in a row (any level)
@@ -1027,19 +1367,33 @@
     }
 
     // Written column arithmetic: 65 / - 54 / line / ? (the answer replaces the ? box once known)
-    function colHtml(a, plus, b, ans) {
+    // Every digit sits in its own element (data-r: a1 a0 / b1 b0, the whole numbers a b, the answer q) so the arcs can find them.
+    function digs(x, k, hl) {
+      x = String(x);
+      return (x.length > 1 ? '<i data-r="' + k + '1"' + (hl ? ' class="t"' : "") + ">" + x.slice(0, -1) + "</i>" : "") + '<i data-r="' + k + '0"' + (hl ? ' class="o"' : "") + ">" + x.slice(-1) + "</i>";
+    }
+    function colHtml(a, plus, b, ans, hl) {
       var w = String(ans === undefined ? a + (plus ? b : 0) : ans).length;   // box as wide as the answer
-      return '<span class="vcol"><span></span><span class="n">' + a + '</span><span class="op">' + (plus ? "+" : "&minus;") +
-        '</span><span class="n">' + b + '</span><span class="ln"></span><span></span><span class="n' + (ans === undefined ? ' bx" style="min-width:' + w + 'ch' : '') +
-        '">' + (ans === undefined ? "?" : ans) + "</span></span>";
+      return '<span class="vcol"><span></span><span class="n" data-r="a">' + digs(a, "a", hl) + '</span><span class="op">' + (plus ? "+" : "&minus;") +
+        '</span><span class="n" data-r="b">' + digs(b, "b", hl) + '</span><span class="ln"></span><span></span><span class="n' + (ans === undefined ? ' bx" style="min-width:' + w + 'ch' : '') +
+        '" data-r="q">' + (ans === undefined ? "?" : digs(ans, "q", hl)) + "</span></span>";
+    }
+    function rowHtml(a, b, plus, ans) {
+      return '<span data-r="a">' + digs(a, "a") + '</span> ' + (plus ? "+" : "\u2212") + ' <span data-r="b">' + digs(b, "b") + '</span> = <span data-r="q">' + (ans === undefined ? "?" : ans) + "</span>";
+    }
+    function dotsHtml(a, b, plus) {              // L1-L2 red screen: a row of dots, the added ones yellow, the taken-away ones faded; a gap after ten
+      var n = plus ? a + b : a, h = "", k;
+      for (k = 0; k < n; k++) h += '<i class="' + (plus ? (k >= a ? "n" : "") : (k >= a - b ? "x" : "")) + (k === 9 ? " g" : "") + '">&#9679;</i>';
+      return h;
     }
     function buttonsOn() {                       // answer buttons (the normal way, and the voice fallback)
       $("qvoice").hidden = true; $("qans").style.display = "";
       [].forEach.call($("qans").children, function (b) { b.disabled = false; });
       $("qmsg").textContent = ""; locked = false; t0 = Date.now(); eye0 = window.eyeMs || 0;
+      armHint(qid);
     }
     function stopVoice() {
-      clearTimeout(vTimer); clearTimeout(vWait); vBuf = ""; vHandler = null;
+      clearTimeout(vTimer); clearTimeout(vWait); clearTimeout(hintT); vBuf = ""; vHandler = null;
       if (voice.cfg.on) voice.stop();
       $("qvoice").hidden = true;
     }
@@ -1092,11 +1446,76 @@
       $("qvoice").querySelector(".say").textContent = voice.cfg.lang === "es" ? "\u00a1L\u00e9elo y di la respuesta!" : "Read it and say the answer!";
       $("qheard").textContent = ""; $("qvoice").hidden = false;
       vHandler = function (ev, text) { onHeard(my, ev, text); };
-      voice.listen(vHandler); armVoiceTimer(my);
+      voice.listen(vHandler); armVoiceTimer(my); armHint(my);
     }
     document.addEventListener("visibilitychange", function () {   // the app stops listening when paused; pick it up again
       if (!document.hidden && open && vHandler && !$("qvoice").hidden && !locked) voice.listen(vHandler);
     });
+
+    // After HINT seconds without an answer: arcs over the equation show the trick, one step at a time (the same steps as the explanation).
+    function armHint(my) {
+      clearTimeout(hintT);
+      if (!cfg.hint || paused) return;
+      hintT = setTimeout(function () {
+        if (my !== qid || locked || !open) return;
+        if (window.eyeCovered) { armHint(my); return; }           // the clock waits while the eye guard covers the screen
+        showHint(my);
+      }, cfg.hint * 1000);
+    }
+    function showHint(my) {
+      var ex = explain(curA, curB, curPlus, curLv, voice.cfg.lang);
+      if (hintN >= ex.hints.length) return;
+      hintN++;
+      $("qhost").classList.add("hint");
+      anim.draw($("qhost"), $("qsvg"), ex.hints, hintN, true);
+      var back = !!vHandler && !locked && !$("qvoice").hidden;       // the mic stays off while a hint is spoken
+      if (back) voice.stop();
+      function after() { if (back && my === qid && !locked) voice.listen(vHandler); }
+      if (!voice.tell((hintN === 1 ? easyIntro(voice.cfg.lang) : "") + ex.hints[hintN - 1].say, after)) after();
+      if (hintN < ex.hints.length) armHint(my);
+    }
+    // The mini-lesson: a worked example of the level's trick, ~15-20 s: the sum, the split, the arcs one by one, the answer. Skippable.
+    var TRICK_EX = { 1: [5, 3, true], 2: [8, 5, true], 3: [14, 3, true], 4: [39, 4, false], 5: [43, 7, false], 6: [65, 54, false] };
+    function trickSeen(lv) { return ("," + get("trickSeen", "") + ",").indexOf("," + lv + ",") >= 0; }
+    function playTrick(lv, done) {
+      var w = TRICK_EX[lv], a = w[0], b = w[1], plus = w[2], lang = voice.cfg.lang, es = lang === "es", ex = explain(a, b, plus, lv, lang),
+          host = $("tHost"), tok = ++trickTok, stages = [], sp = splitText(a, b, plus, ex.trick), fin = es ? "\u00a1Ves? \u00a1F\u00e1cil! Ahora t\u00fa." : "See? Easy! Now you try.";
+      $("tName").textContent = trickName(ex.trick, plus, lang);
+      $("tEq").innerHTML = lv >= 4 ? colHtml(a, plus, b, undefined, true) : rowHtml(a, b, plus);
+      $("tEq").style.fontSize = lv >= 4 ? "72px" : "";
+      anim.clear(host, $("tSvg")); $("tCap").textContent = "";
+      $("qtrick").classList.add("on");
+      stages.push({ cap: es ? "\u00a1Mira qu\u00e9 f\u00e1cil es!" : "Look how EASY this is!" });
+      if (sp) stages.push({ cap: sp, say: (es ? "Lo separamos: " : "Split it: ") + sp });
+      ex.hints.forEach(function (h, k) { stages.push({ k: k + 1, cap: h.arcs[0].l, say: (k ? "" : easyIntro(lang)) + h.say }); });
+      stages.push({ end: true, cap: fin });
+      function end() { if (tok !== trickTok) return; trickTok++; $("qtrick").classList.remove("on"); voice.hush(); done(); }
+      $("tSkip").onclick = end;
+      function run(n) {
+        if (tok !== trickTok) return;
+        if (n >= stages.length) { end(); return; }
+        var st = stages[n], t = Date.now(), fired = false;
+        $("tCap").textContent = st.cap;
+        if (st.k) { host.classList.add("hint"); anim.draw(host, $("tSvg"), ex.hints, st.k, true); }
+        if (st.end) anim.answer(host, plus ? a + b : a - b);
+        function adv() { if (fired) return; fired = true; setTimeout(function () { run(n + 1); }, Math.max(0, (st.end ? 2200 : 3200) - (Date.now() - t))); }
+        if (!voice.tell(st.say || st.cap, adv)) adv();
+      }
+      run(0);
+    }
+    function stopAnim() { trickTok++; $("qtrick").classList.remove("on"); clearTimeout(hintT); redT.forEach(clearTimeout); redT = []; paused = false; }
+    $("qtbtn").onclick = function () {               // "Show me the trick": a hint for fairness (no streak step), and it hides the mic
+      if (!open || paused) return;
+      var my = qid, back = !!vHandler && !$("qvoice").hidden;
+      trickUsed = true; paused = true; clearTimeout(hintT); clearTimeout(vTimer);
+      if (back) voice.stop();
+      playTrick(curLv, function () {
+        paused = false;
+        if (my !== qid) return;
+        if (back && !locked) { voice.listen(vHandler); armVoiceTimer(my); }
+        if (!locked) armHint(my);
+      });
+    };
 
     // One sum {a, b, plus} for a level. Results are never negative.
     function make(lv) {
@@ -1124,24 +1543,34 @@
     }
 
     function ask() {
-      var q, tries = 0;
-      do { q = make(level); curQ = q.a + (q.plus ? " + " : " − ") + q.b; } while (curQ === lastQ && ++tries < 30);   // never the same one again
-      lastQ = curQ; answer = q.ans; curA = q.a; curB = q.b;
-      var my = ++qid, math = appMode.math(), useVoice = voice.cfg.on && voice.state() !== "denied" && voice.state() !== "error";
-      stopVoice(); vTries = 0;
+      var q, tries = 0, rv = null;
+      sinceRv++;
+      if (cfg.review) rv = reviewDue(review, sinceRv, qKey(curA, curB, curPlus));
+      if (rv) {                                                 // a missed question comes back, at its own level
+        q = { a: rv.a, b: rv.b, plus: rv.plus, ans: rv.plus ? rv.a + rv.b : rv.a - rv.b };
+        curQ = q.a + (q.plus ? " + " : " − ") + q.b; sinceRv = 0; curLv = rv.lv;
+      } else {
+        do { q = make(level); curQ = q.a + (q.plus ? " + " : " − ") + q.b; } while (curQ === lastQ && ++tries < 30);   // never the same one again
+        curLv = level;
+      }
+      lastQ = curQ; answer = q.ans; curA = q.a; curB = q.b; curPlus = q.plus; curRv = !!rv;
+      var my = ++qid, math = mathy(), useVoice = voice.cfg.on && voice.state() !== "denied" && voice.state() !== "error", lv = curLv, es = voice.cfg.lang === "es";
+      stopVoice(); stopAnim(); vTries = 0; hintN = 0; trickUsed = false;
+      anim.clear($("qhost"), $("qsvg"));
       if (useVoice && voice.state() === "off") voice.prepare();
-      $("qtitle").innerHTML = math ? "&#129504; Math time!" : "&#129504; Math time! Solve it to play the next lesson";
+      $("qtitle").innerHTML = earnOnly ? "&#10135; Earn more time with math!" : math ? "&#129504; Math time!" : "&#129504; Math time! Solve it to play the next lesson";
       $("qprog").textContent = math ? "\u2b50 " + stars + "   \u00b7   Level " + level : "";
-      var a = q.a, b = q.b, pics = level === 1 || (level === 2 && a <= 10 && b <= 10);
+      $("qstreak").textContent = guard.streakText();
+      var a = q.a, b = q.b, pics = lv === 1 || (lv === 2 && a <= 10 && b <= 10);
       var thing = THINGS[rnd(0, THINGS.length - 1)], size = (q.plus ? a + b : a) > 10 ? 36 : 54;
       $("qpic").innerHTML = !pics ? "" : q.plus ? items(a, thing, a, size) + '<span class="op">+</span>' + items(b, thing, b, size)
                                                 : items(a, thing, a - b, size);   // take-away: the last b are crossed out
-      if (level >= 4) { $("qeq").innerHTML = colHtml(a, q.plus, b); $("qeq").style.fontSize = "84px"; }   // written like on paper
-      else { $("qeq").textContent = curQ + " = ?"; $("qeq").style.fontSize = pics ? "" : "96px"; }
+      if (lv >= 4) { $("qeq").innerHTML = colHtml(a, q.plus, b); $("qeq").style.fontSize = "84px"; }   // written like on paper
+      else { $("qeq").innerHTML = rowHtml(a, b, q.plus); $("qeq").style.fontSize = pics ? "" : "96px"; }
       var wrong = [], cands = [1, -1, 2, -2];
-      if (level >= 4) cands.push(10, -10);
+      if (lv >= 4) cands.push(10, -10);
       cands.sort(function () { return Math.random() - 0.5; });
-      var cap = level === 1 ? 10 : level === 2 ? 20 : 999;
+      var cap = lv === 1 ? 10 : lv === 2 ? 20 : 999;
       cands.concat([3, -3]).forEach(function (d) {
         var w = answer + d;
         if (wrong.length < 2 && w >= 0 && w <= cap && wrong.indexOf(w) < 0) wrong.push(w);
@@ -1156,104 +1585,163 @@
         btn.onclick = function () { pick(btn, n); };
         $("qans").appendChild(btn);
       });
-      $("qmsg").textContent = "🤔 Think…";
+      var cueSay = es ? "\u00a1Probemos esta otra vez!" : "Let's try this one again!";
+      $("qmsg").textContent = rv ? "\ud83d\udd01 " + cueSay : "\ud83e\udd14 Think\u2026";
+      $("qrep").hidden = !(voice.cfg.read && voice.can());
+      $("qtbtn").hidden = !cfg.hint;
       clearTimeout(thinkTimer);
-      thinkTimer = setTimeout(function () {      // think time: no rapid tapping
-        if (my !== qid) return;
-        if (useVoice) beginVoice(my); else buttonsOn();
-      }, THINK_MS);
+      function go() {
+        thinkTimer = setTimeout(function () {      // think time: no rapid tapping; it starts when the question has been read
+          if (my !== qid) return;
+          if (useVoice) beginVoice(my); else buttonsOn();
+        }, THINK_MS);
+      }
+      function flow() {
+        cont = function () { if (my !== qid) return; cont = null; go(); };
+        if (!voice.read((rv ? cueSay + " " : "") + qSay(q.a, q.b, q.plus, voice.cfg.lang), function () { if (cont) cont(); })) cont();
+      }
+      if (!rv && cfg.hint && !trickSeen(lv)) {       // the first time at a level: the trick, as a short animated lesson
+        put("trickSeen", (get("trickSeen", "") ? get("trickSeen", "") + "," : "") + lv);
+        playTrick(lv, function () { if (my === qid) flow(); });
+      } else flow();
     }
+    $("qrep").onclick = function () {              // hear it again; the mic stays off until it is finished
+      var my = qid, c = cont, back = !!vHandler && !locked && !$("qvoice").hidden;
+      cont = null;
+      if (back) voice.stop();
+      function after() { if (c) c(); else if (back && my === qid && !locked) voice.listen(vHandler); }
+      if (!voice.read(qSay(curA, curB, curPlus, voice.cfg.lang), after)) after();
+    };
 
-    function record(n, ok, heard) {
-      var e = { t: new Date().toISOString(), q: curQ, a: n, c: answer, ok: ok, lvl: level, ms: Date.now() - t0 - ((window.eyeMs || 0) - eye0) };
+    function record(n, ok, heard, ms, fast, hint) {
+      var e = { t: new Date().toISOString(), q: curQ, a: n, c: answer, ok: ok, lvl: curLv, ms: ms };
       if (heard !== undefined) { e.v = 1; e.h = heard; }          // a voice answer and what the app heard
+      if (fast) e.fast = 1;                                        // wrong within FAST_MS of the buttons: counts double for the mistake lock
+      if (curRv) e.rv = 1;                                         // a missed question that came back
+      if (hint) e.hint = hint;                                     // 1-2: the hint step shown; 3: "Show me the trick"
+      if (!ok) e.ex = 1;                                           // the explanation was given
       log.push(e);
       if (log.length > LOG_MAX) log = log.slice(-LOG_MAX);
       put("quizLog", JSON.stringify(log));
     }
 
-    function finish(delay) {
-      setTimeout(function () {
-        open = false; count = 1; sessRight = 0; sessMiss = 0; qid++; stopVoice();
-        put("quizCount", 1); put("quizPending", 0); put("quizSessMiss", 0); put("quizFreezeUntil", 0);
-        $("quiz").classList.remove("open");
-        if (player && player.playVideo) player.playVideo();
-      }, delay);
+    function finish() {
+      open = false; count = 1; sessRight = 0; sessMiss = 0; qid++; stopVoice(); manual = false;
+      put("quizCount", 1); put("quizPending", 0); put("quizSessMiss", 0); put("quizFreezeUntil", 0);
+      $("quiz").classList.remove("open");
+      if (player && player.playVideo) player.playVideo();
+    }
+
+    // Say it, and go on with `fn` when the voice is done and at least minMs have passed (silent: just minMs).
+    function speakThen(text, minMs, fn) {
+      var my = qid, t = Date.now(), fired = false;
+      function go() { if (fired) return; fired = true; setTimeout(function () { if (my === qid) fn(); }, Math.max(0, minMs - (Date.now() - t))); }
+      if (!voice.say(text, go)) go();
     }
 
     function pick(btn, n, heard) {
       if (locked) return;
       locked = true;
       [].forEach.call($("qans").children, function (b) { b.disabled = true; });
-      var ok = n === answer, es = voice.cfg.lang === "es", math = appMode.math();
-      record(n, ok, heard);
+      var ok = n === answer, lang = voice.cfg.lang, math = mathy(), lv = curLv;
+      var ms = Date.now() - t0 - ((window.eyeMs || 0) - eye0), fast = !ok && !!btn && ms < FAST_MS;
+      var hinted = hintN > 0 || trickUsed;
+      clearTimeout(hintT);
+      record(n, ok, heard, ms, fast, trickUsed ? 3 : Math.min(hintN, 2));
+      var earned = guard.earn(ok, !manual && !hinted && lv >= guard.base() - 1);   // streaks earn screen time (not in a parent's quiz, not after a hint, not by farming easy levels)
+      if (reviewAfter(review, { a: curA, b: curB, plus: curPlus, lv: lv, ok: ok, rv: curRv, hint: hinted }, Math.random())) {
+        mastered = { d: act.key(new Date()), n: masteredToday() + 1 }; put("quizMastered", JSON.stringify(mastered));
+      }
+      put("quizReview", JSON.stringify(review));
+      $("qstreak").textContent = guard.streakText();
       if (ok) {
         if (btn) btn.classList.add("yes");
         sessRight++; sessMiss = 0; put("quizSessMiss", 0); miss = 0; put("quizMiss", 0);
         var up = false;
-        if (++run >= LEVEL_UP_AFTER && level < MAX_LEVEL) { level++; run = 0; up = true; put("quizLevel", level); act.level(level); }
-        put("quizRun", run);
+        if (!curRv) {                                                // a repeated question never moves the level
+          if (++run >= LEVEL_UP_AFTER && level < MAX_LEVEL) { level++; run = 0; up = true; put("quizLevel", level); act.level(level); }
+          put("quizRun", run);
+        }
         sound([72, 76, 79, 84], "triangle");
-        var worked = curQ + " = " + answer;
-        voice.say(es ? "\u00a1Muy bien!" : "Great job!");
+        var pi = pickIdx(PRAISE[lang].length, lastPraise, Math.random()), praise = PRAISE[lang][pi];
+        lastPraise = pi;
+        var worked = curQ + " = " + answer, text = rightSay(curA, curB, curPlus, lang, praise, up, earned), cheer = up || earned,
+            tail = earned ? "  \u23f1\ufe0f +" + earned + " min!" : "";
         if (math) {                                              // math-only: no lesson to unlock, it just goes on
           stars++;
           $("qprog").textContent = "\u2b50 " + stars + "   \u00b7   Level " + level;
-          if (up) $("qpic").innerHTML = '<div class="qcheer">&#127881;&#11088;&#127881;</div>';
-          $("qmsg").textContent = (up ? "\u2b50 Level up! Level " + level + "  " : "Great job! ") + worked;
-          setTimeout(ask, up ? 2800 : 1600);
+          if (cheer) $("qpic").innerHTML = CHEER;
+          $("qmsg").textContent = (up ? "\u2b50 Level up! Level " + level + "  " : praise + " ") + worked + tail;
+          speakThen(text, cheer ? 2800 : 1600, function () { guard.afterEarn(); if (open) ask(); });
         } else if (sessRight >= cfg.need) {
-          $("qpic").innerHTML = '<div class="qcheer">&#127881;&#11088;&#127881;</div>';
-          $("qmsg").textContent = (up ? "⭐ Level up! " : "Great job! ") + worked;
-          finish(up ? 2600 : 1800);
+          $("qpic").innerHTML = CHEER;
+          $("qmsg").textContent = (up ? "\u2b50 Level up! " : praise + " ") + worked + tail;
+          speakThen(text, cheer ? 2600 : 1800, finish);
         } else {
-          $("qmsg").textContent = (up ? "⭐ Level up! " : "Great! ") + worked + "  ·  " + (cfg.need - sessRight) + " more";
-          setTimeout(ask, 1600);
+          $("qmsg").textContent = (up ? "\u2b50 Level up! " : praise + " ") + worked + "  \u00b7  " + (cfg.need - sessRight) + " more" + tail;
+          speakThen(text, earned ? 2200 : 1600, ask);
         }
         return;
       }
-      // wrong: red screen, buzzer, the worked answer, a freeze, then a NEW question
+      // wrong: the screen goes red (or grey), the explanation is shown and spoken, a freeze at least as long as the speech, then a NEW question
       run = 0; put("quizRun", 0);
       sessRight = 0; sessMiss++; put("quizSessMiss", sessMiss);
-      if (++miss >= LEVEL_DOWN_AFTER) { miss = 0; if (level > 1) { level--; put("quizLevel", level); act.level(level); } }
+      if (!curRv && ++miss >= LEVEL_DOWN_AFTER) { miss = 0; if (level > 1) { level--; put("quizLevel", level); act.level(level); } }
       put("quizMiss", miss);
       var secs = Math.min(20, 5 * sessMiss), txt = curQ + " = " + answer;
-      put("quizFreezeUntil", Date.now() + secs * 1000); put("quizFreezeTxt", txt);
-      put("quizFreezeCol", level >= 4 ? 1 : 0);
-      buzzer();
-      voice.say(es ? "\u00a1Piensa! " + curA + (curQ.indexOf("+") > 0 ? " m\u00e1s " : " menos ") + curB + " son " + answer
-                   : "Stop and think! " + curA + (curQ.indexOf("+") > 0 ? " plus " : " minus ") + curB + " is " + answer);
-      freeze(Date.now() + secs * 1000, txt, level >= 4);
+      put("quizFreezeUntil", Date.now() + secs * 1000); put("quizFreezeTxt", txt); put("quizFreezeLv", lv);
+      if (!guard.cfg.calm) buzzer();
+      freeze(Date.now() + secs * 1000, txt, lv, wrongSay(curA, curB, curPlus, lv, lang, n));
     }
 
-    function freeze(until, txt, col) {
+    function freeze(until, txt, lv, text) {
       locked = true; qid++; stopVoice();
-      var m = col && txt.match(/^(\d+) ([+\u2212]) (\d+) = (\d+)$/);
-      if (m) $("qredEq").innerHTML = colHtml(+m[1], m[2] === "+", +m[3], +m[4]); else $("qredEq").textContent = txt;
-      $("qredEq").style.fontSize = m ? "84px" : "";
+      var my = qid, m = txt.match(/^(\d+) ([+\u2212]) (\d+) = (\d+)$/), es = voice.cfg.lang === "es", calm = guard.cfg.calm, speaking = false;
+      var ex = m && lv ? explain(+m[1], +m[3], m[2] === "+", lv, voice.cfg.lang) : null;
+      $("qredStop").textContent = calm ? (es ? "\ud83e\udd14 Pensemos juntos" : "\ud83e\udd14 Let's think together") : (es ? "\u270b \u00a1Piensa!" : "\u270b Stop and think!");
+      redT.forEach(clearTimeout); redT = [];
+      anim.clear($("qredHost"), $("qredSvg"));
+      if (m && lv >= 4) $("qredEq").innerHTML = colHtml(+m[1], m[2] === "+", +m[3], +m[4], true); else if (m) $("qredEq").innerHTML = rowHtml(+m[1], +m[3], m[2] === "+", +m[4]); else $("qredEq").textContent = txt;
+      if (ex) ex.hints.forEach(function (h, k) {                      // the trick is drawn on the equation while it is explained
+        redT.push(setTimeout(function () { if (my !== qid) return; $("qredHost").classList.add("hint"); anim.draw($("qredHost"), $("qredSvg"), ex.hints, k + 1, true); }, 900 + k * 2800));
+      });
+      $("qredDots").innerHTML = ex && lv <= 2 ? dotsHtml(+m[1], +m[3], m[2] === "+") : "";
+      $("qredSteps").innerHTML = !ex ? "" : (lv >= 4 ? '<div class="leg"><i class="t">' + (es ? "decenas" : "tens") + '</i> &nbsp; <i class="o">' + (es ? "unidades" : "ones") + "</i></div>" : "") +
+        ex.steps.map(function (st) { return "<div>" + st.v + "</div>"; }).join("");
+      $("qred").classList.toggle("ex", !!ex); $("qred").classList.toggle("calm", calm);
       $("qred").classList.add("on");
+      if (text && voice.cfg.fb && voice.can()) {                     // the freeze waits for the voice: it lasts at least until the speech ends plus 1 s
+        speaking = true;
+        setTimeout(function () {
+          if (my !== qid) return;
+          voice.say(text, function () { speaking = false; until = Math.max(until, Date.now() + 1000); put("quizFreezeUntil", until); });
+        }, calm ? 0 : 900);                                          // after the buzzer
+      }
       clearInterval(freezeTimer); freezeTimer = null;
       var lastT = Date.now();
       function tick() {
         var nowT = Date.now(); if (window.eyeCovered) until += nowT - lastT; lastT = nowT;   // the countdown waits while covered
+        if (speaking) { $("qredCount").textContent = "\ud83d\udd0a"; return; }               // ...and while he is being told
         var left = Math.ceil((until - nowT) / 1000);
         if (left > 0) { $("qredCount").textContent = "⏳ " + left; return; }
         clearInterval(freezeTimer); freezeTimer = null;
         put("quizFreezeUntil", 0);
         $("qred").classList.remove("on");
+        if (guard.tooMany()) { guard.lock("mistakes"); return; }                             // too many mistakes lately: a break, not a new question
         ask();
       }
       tick();
       if (!freezeTimer && $("qred").classList.contains("on")) freezeTimer = setInterval(tick, 250);
     }
 
-    function show() {
-      if (open) return;
-      open = true; if (!appMode.math()) put("quizPending", 1);
+    function show(isManual) {
+      if (open || (guard.locked() && !earnOnly)) return;
+      manual = isManual === true;
+      open = true; if (!mathy()) put("quizPending", 1);
       if (player && player.pauseVideo) player.pauseVideo();
       $("quiz").classList.add("open");
       var until = +get("quizFreezeUntil", "0");
-      if (until > Date.now()) freeze(until, get("quizFreezeTxt", ""), get("quizFreezeCol", "0") === "1"); else ask();   // closing the app doesn't skip a freeze
+      if (until > Date.now()) freeze(until, get("quizFreezeTxt", ""), +get("quizFreezeLv", "0")); else ask();   // closing the app doesn't skip a freeze
     }
 
     function results() {
@@ -1271,16 +1759,20 @@
       };
     }
     function clearRecords() {
-      log = []; run = 0; miss = 0;
-      put("quizLog", "[]"); put("quizRun", 0); put("quizMiss", 0);
+      log = []; run = 0; miss = 0; review = []; mastered = { d: "", n: 0 };
+      put("quizLog", "[]"); put("quizRun", 0); put("quizMiss", 0); put("quizReview", "[]"); put("quizMastered", "{}");
     }
 
     return {
       isOpen: function () { return open; },
       show: show,
       mathStart: function () { stars = 0; sessRight = 0; show(); },
+      earnStart: function () { earnOnly = true; stars = 0; sessRight = 0; show(); },   // locked for screen time: a math session that only earns minutes
+      resume: function () { if (appMode.math()) appMode.start(); else if (get("quizPending", "0") === "1") show(); },   // after a lock
+      log: function () { return log; },
+      practising: function () { return { list: review.slice(), mastered: masteredToday() }; },
       mathStop: function () {
-        open = false; qid++; stopVoice(); clearTimeout(thinkTimer);
+        open = false; qid++; stopVoice(); stopAnim(); clearTimeout(thinkTimer); earnOnly = false; manual = false; voice.hush();
         clearInterval(freezeTimer); freezeTimer = null;
         $("qred").classList.remove("on"); $("quiz").classList.remove("open");
       },
@@ -1294,7 +1786,7 @@
       results: results,
       clearRecords: clearRecords,
       save: function () {
-        put("quizOn", cfg.on ? 1 : 0); put("quizEvery", cfg.every); put("quizNeed", cfg.need);
+        put("quizOn", cfg.on ? 1 : 0); put("quizEvery", cfg.every); put("quizNeed", cfg.need); put("quizRepeat", cfg.review ? 1 : 0); put("hintAfter", cfg.hint);
         if (!cfg.on) { count = 1; put("quizCount", 1); put("quizPending", 0); }
       }
     };
@@ -1331,7 +1823,7 @@
   // ---- Eye guard: the front camera (native side, on-device only) tells when his face is too close ----
   // Too close -> cover the screen, pause the video, hold the quiz clocks; back at a good distance -> uncover.
   var eye = (function () {
-    var bridge = window.Eye, covered = false, pausedVid = false, t0 = 0, st = "off", cb = null, calCb = null, calBusy = false, menuOpen = false;
+    var bridge = window.Eye, covered = false, pausedVid = false, t0 = 0, st = "off", cb = null, calCb = null, calBusy = false, menuOpen = false, held = false;
     window.eyeCovered = false; window.eyeMs = 0;
     function get(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
     function put(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
@@ -1359,7 +1851,7 @@
       if (type === "close") cover();
       else if (type === "ok") uncover();
       else if (type === "state") { st = a; if (a === "noperm" || a === "nocam" || a.indexOf("err:") === 0) calBusy = false; if (cb) cb(); }
-      else if (type === "cal") { calBusy = false; if (calCb) calCb(a); if (bridge) bridge.menu(menuOpen); if (cb) cb(); }
+      else if (type === "cal") { calBusy = false; if (calCb) calCb(a); if (bridge) bridge.menu(menuOpen || held); if (cb) cb(); }
     };
     document.addEventListener("visibilitychange", function () { if (document.hidden) uncover(); });
     function apply() { if (bridge) bridge.config(cfg.on, cfg.strict); }
@@ -1379,7 +1871,8 @@
           cfg.on ? "The camera checks his distance once a second, only while this menu is closed (paused now). Nothing is saved or sent." : "";
         return t + (api.hasCal() ? " Distance: calibrated." : " Distance: automatic (about 30 cm).");
       },
-      menu: function (open) { menuOpen = open; if (open) uncover(); if (bridge) bridge.menu(open); },
+      menu: function (open) { menuOpen = open; if (open) uncover(); if (bridge) bridge.menu(open || held); },
+      hold: function (h) { held = h; if (h) uncover(); if (bridge) bridge.menu(menuOpen || held); },   // camera off while the app is locked
       setOn: function (on) {
         cfg.on = on; put("eyeOn", on ? 1 : 0); apply();
         if (on && bridge && st === "noperm") bridge.ask();
@@ -1391,6 +1884,145 @@
     };
     apply();
     return api;
+  })();
+
+  // ---- Limits: the mistake lock, the daily screen time (earnable with math), the parent's unlock. The state survives a restart.
+  // Minutes are counted by a monotonic clock, so setting the tablet clock back neither gives time back nor lifts a lock. ----
+  var guard = (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    function get(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
+    function put(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
+    function num(k, d, ok) { var v = parseInt(get(k, ""), 10); return ok.indexOf(v) >= 0 ? v : d; }
+    var cfg = {
+      lockOn: get("lockOn", "1") === "1", max: num("lockMax", 5, [3, 5, 7, 10]), win: num("lockWin", 30, [15, 30, 60]), calm: get("calmRed", "0") === "1",
+      limit: num("limitMin", 60, [0, 30, 45, 60, 90, 120]),
+      earn: get("earnOn", "1") === "1", need: num("earnNeed", 5, [3, 5, 10]), min: num("earnMin", 5, [2, 5, 10]), cap: num("earnMax", 30, [15, 30, 60])
+    };
+    var g = null;
+    try { g = JSON.parse(get("guardState", "{}")); } catch (e) {}
+    if (!g || typeof g !== "object") g = {};
+    ["used", "seen", "x", "e", "s", "lv0", "clr"].forEach(function (k) { g[k] = +g[k] || 0; });
+    g.day = g.day || ""; g.none = !!g.none; g.w = !!g.w; g.lock = g.lock && g.lock.r ? g.lock : null;   // lock: { r: mistakes|time|break, since, until }
+    var earning = false, was = false, last = performance.now(), ticks = 0, noteCb = null, bannerT = null;
+    function es() { return voice.cfg.lang === "es"; }
+    function two(n) { return n < 10 ? "0" + n : "" + n; }
+    function store() { put("guardState", JSON.stringify(g)); }
+    function step() { dayStep(g, Date.now(), act.key(new Date())); }
+    step();
+    function words() {                                            // [icon, headline, line under it] for the lock screen
+      var r = g.lock.r, u = g.lock.until ? new Date(g.lock.until) : null;
+      if (r === "time") return ["\u23f0", es() ? "Se acab\u00f3 el tiempo de pantalla por hoy" : "Screen time is over for today", es() ? "Pide a mam\u00e1 o a pap\u00e1" : "Ask Mom or Dad"];
+      return ["\ud83d\uded1", es() ? "Hora de descansar" : "Time for a break",
+        u ? (es() ? "Vuelve a las " : "Back at ") + two(u.getHours()) + ":" + two(u.getMinutes()) : es() ? "Pide a mam\u00e1 o a pap\u00e1 que lo desbloqueen" : "Ask Mom or Dad to unlock"];
+    }
+    function canEarn() { return !!g.lock && g.lock.r === "time" && cfg.earn && g.e < cfg.cap; }
+    function render() {
+      var w = words();
+      $("lkIcon").textContent = w[0]; $("lkMsg").textContent = w[1]; $("lkSub").textContent = w[2];
+      $("lkEarn").hidden = !canEarn(); $("lkEarn").textContent = es() ? "\u2797 Gana m\u00e1s tiempo con mates" : "\u2797 Earn more time with math";
+    }
+    function apply() {
+      var l = !!g.lock;
+      document.body.classList.toggle("locked", l);
+      document.body.classList.toggle("earning", l && earning);
+      if (l) {
+        if (!earning) quiz.mathStop();
+        voice.hush();
+        if (player && player.pauseVideo) { player.pauseVideo(); if (player.mute) player.mute(); }
+        eye.hold(true); render();
+      } else if (was) {
+        earning = false; quiz.mathStop();
+        if (player && player.unMute) player.unMute();
+        eye.hold(false); quiz.resume();
+      }
+      was = l;
+      if (noteCb) noteCb();
+    }
+    function lock(reason, until) {
+      var fresh = !g.lock || (reason === "mistakes" && g.lock.r === "time");   // a mistake lock wins over screen time
+      if (!g.lock) g.lock = { r: reason, since: Date.now(), until: until || 0 };
+      else if (fresh) { g.lock.r = reason; g.lock.until = 0; }
+      else if (until) g.lock.until = until;
+      if (fresh) { act.lockEv(g.lock.r); earning = false; }
+      store(); apply();
+      if (fresh) { var w = words(); voice.say(w[1] + ". " + w[2] + "."); }
+    }
+    function unlock(how) {
+      if (!g.lock) return;
+      act.lockEnd(how); g.lock = null; earning = false; store(); apply();
+    }
+    function banner() {
+      var b = $("tbanner");
+      b.textContent = es() ? "\u23f0 Quedan 5 minutos" : "\u23f0 5 minutes left"; b.classList.add("on");
+      clearTimeout(bannerT); bannerT = setTimeout(function () { b.classList.remove("on"); }, 8000);
+      voice.say(es() ? "Quedan 5 minutos." : "5 minutes left.");
+    }
+    function tick() {
+      var now = Date.now(), t = performance.now(), dt = Math.min((t - last) / 1000, 10);
+      last = t; step();
+      if (!document.hidden && !g.lock && dt > 0) g.used += dt;
+      if (g.lock) {
+        if (g.lock.until && now >= g.lock.until && !clockBehind(g, now)) unlock("auto");
+        else if (g.lock.r === "time" && limitLeft(g, cfg.limit) > 0) unlock(earning ? "earned" : "more time");
+      }
+      if (!g.lock) {
+        var left = limitLeft(g, cfg.limit);
+        if (left <= 0) lock("time");
+        else if (left <= 300 && !g.w) { g.w = true; banner(); }
+      }
+      if (++ticks % 5 === 0) store();
+      if (noteCb && ticks % 15 === 0) noteCb();
+    }
+    setInterval(tick, 2000);
+    $("lkEarn").onclick = function () { if (!canEarn()) return; earning = true; apply(); quiz.earnStart(); };   // a math session that only earns minutes
+    window.addEventListener("pagehide", store);
+    document.addEventListener("visibilitychange", function () { last = performance.now(); if (document.hidden) store(); });
+    function fmt(m) { return m + " min"; }
+    return {
+      cfg: cfg,
+      locked: function () { return !!g.lock; },
+      reason: function () { return g.lock ? g.lock.r : ""; },
+      lock: lock,
+      start: apply,
+      onChange: function (f) { noteCb = f; },
+      save: function () {
+        put("lockOn", cfg.lockOn ? 1 : 0); put("lockMax", cfg.max); put("lockWin", cfg.win); put("calmRed", cfg.calm ? 1 : 0); put("limitMin", cfg.limit);
+        put("earnOn", cfg.earn ? 1 : 0); put("earnNeed", cfg.need); put("earnMin", cfg.min); put("earnMax", cfg.cap);
+        tick();
+      },
+      tooMany: function () { return cfg.lockOn && mistakeCount(quiz.log(), Date.now(), cfg.win, g.clr) >= cfg.max; },
+      unlockNow: function () { g.clr = Date.now(); unlock("parent"); },
+      breakFor: function (m) { lock("break", Date.now() + m * 60000); },
+      extend: function (m) { g.x += m; g.w = false; tick(); },
+      noLimit: function () { g.none = true; tick(); },
+      left: function () { return limitLeft(g, cfg.limit); },
+      // earning
+      base: function (v) { if (v) g.lv0 = v; return g.lv0 || (g.lv0 = quiz.cfg.level); },   // the level the day started at (a parent's change resets it)
+      earn: function (ok, counts) {
+        if (!cfg.earn) return 0;
+        var m = earnStep(g, ok, counts, cfg.need, cfg.min, cfg.cap);
+        if (m) { g.w = false; act.earnEv(m); }
+        store();
+        return m;
+      },
+      streakText: function () {
+        if (!cfg.earn || g.e >= cfg.cap) return "";
+        var h = "", k; for (k = 0; k < cfg.need; k++) h += k < g.s ? "\u2b50" : "\u26aa";
+        return h;
+      },
+      afterEarn: function () {                                     // in an earn session: unlocked once the minutes are in; out when nothing more can be earned
+        if (!earning) return;
+        tick();
+        if (g.lock && !canEarn()) { earning = false; quiz.mathStop(); apply(); }
+      },
+      summary: function () { return cfg.limit ? fmt(Math.floor(g.used / 60)) + " / " + fmt(cfg.limit + g.x + g.e) + (g.none ? " (no limit today)" : "") : "no limit"; },
+      earnedText: function () { return cfg.earn ? fmt(g.e) + " / " + fmt(cfg.cap) : "off"; },
+      note: function () {
+        var t = "Today: " + (cfg.limit ? Math.floor(g.used / 60) + " min used of " + (cfg.limit + g.x + g.e) + (g.e ? " (" + g.e + " earned)" : "") : "no daily limit") + (g.none ? ", no limit today" : "") + ".";
+        if (g.lock) t += " LOCKED (" + (g.lock.r === "time" ? "screen time" : g.lock.r === "break" ? "break" : "too many mistakes") + ") since " + two(new Date(g.lock.since).getHours()) + ":" + two(new Date(g.lock.since).getMinutes()) + ".";
+        return t;
+      }
+    };
   })();
 
   // Grown-up PIN: the Close button asks for it. The first time, it asks to create one
@@ -1469,9 +2101,10 @@
     }
     function vlabel() {
       if (!$("vOn")) return;                    // the menu is not rendered while locked
-      $("vOn").textContent = "Voice quiz: " + (voice.cfg.on ? "ON" : "OFF");
-      $("vLang").textContent = "Voice language: " + (voice.cfg.lang === "es" ? "Espa\u00f1ol" : "English");
-      $("vLang").disabled = !voice.cfg.on;
+      $("vRead").textContent = "\ud83d\udd0a Read questions aloud: " + (voice.cfg.read ? "ON" : "OFF");
+      $("vFb").textContent = "\ud83d\udde3\ufe0f Spoken feedback: " + (voice.cfg.fb ? "ON" : "OFF");
+      $("vLang").textContent = "\ud83c\udf10 Language: " + (voice.cfg.lang === "es" ? "Espa\u00f1ol" : "English");
+      $("vOn").textContent = "\ud83c\udfa4 Voice quiz (answer by voice): " + (voice.cfg.on ? "ON" : "OFF");
       $("vNote").textContent = voice.note();
     }
     function mlabel() {
@@ -1498,6 +2131,8 @@
     $("eReset").onclick = function () { eye.resetCal(); elabel(); };
     voice.onNote(vlabel);
     $("vOn").onclick = function () { voice.setOn(!voice.cfg.on); vlabel(); };
+    $("vRead").onclick = function () { voice.setRead(!voice.cfg.read); vlabel(); };
+    $("vFb").onclick = function () { voice.setFb(!voice.cfg.fb); vlabel(); };
     $("vLang").onclick = function () { voice.setLang(voice.cfg.lang === "es" ? "en" : "es"); vlabel(); };
     $("qMode").onclick = function () { appMode.set(appMode.math() ? "piano" : "math"); mlabel(); closeGate(); };
     function cycle(list, v) { return list[(list.indexOf(v) + 1) % list.length]; }
@@ -1508,12 +2143,28 @@
 
     // Results panel: today / all time, level, streak, and the last 20 mistakes
     function two(n) { return n < 10 ? "0" + n : "" + n; }
+    function practiseHtml() {
+      var p = quiz.practising();
+      return row("Practising", p.list.length + (p.list.length === 1 ? " question" : " questions")) + row("Mastered today", p.mastered) +
+        (p.list.length ? '<div class="miss">' + p.list.map(function (x) { return x.a + (x.plus ? " + " : " \u2212 ") + x.b + " (level " + x.lv + ")"; }).join(" &middot; ") + "</div>" : "");
+    }
+    function lockHtml() {
+      var D = act.data(), LN = { mistakes: "too many mistakes", time: "screen time over", "break": "break" }, h = row("Earned today", guard.earnedText()) + '<div class="sub">Locks</div>';
+      function when(iso) { var t = new Date(iso); return t.getDate() + "/" + (t.getMonth() + 1) + " " + two(t.getHours()) + ":" + two(t.getMinutes()); }
+      (D.lk || []).slice(-8).reverse().forEach(function (e) {
+        h += '<div class="miss">' + when(e.t) + " &middot; " + LN[e.r] + " &middot; " + (e.ut ? "unlocked " + when(e.ut) + " (" + e.u + ")" : "still locked") + "</div>";
+      });
+      if (!(D.lk || []).length) h += '<div class="miss">None</div>';
+      h += '<div class="sub">Minutes earned</div>';
+      (D.er || []).slice(-5).reverse().forEach(function (e) { h += '<div class="miss">' + when(e.t) + " &middot; +" + e.m + " min</div>"; });
+      return D.er && D.er.length ? h : h + '<div class="miss">None</div>';
+    }
     function renderResults() {
       var r = quiz.results(), box = $("resBody");
       function line(name, o) { return '<div class="row"><span>' + name + "</span><b>&#9989; " + o.right + " &nbsp; &#10060; " + o.wrong + " &nbsp; " + o.pct + "%</b></div>"; }
       var h = line("Today", r.today) + line("All time", r.all) +
         '<div class="row"><span>Level</span><b>' + r.level + ' of 6</b></div>' +
-        '<div class="row"><span>Right in a row</span><b>' + r.streak + "</b></div>" +
+        '<div class="row"><span>Right in a row</span><b>' + r.streak + "</b></div>" + practiseHtml() +
         '<div style="margin-top:10px;color:var(--muted)">Last mistakes</div><div class="list">';
       if (!r.mistakes.length) h += '<div class="miss">None yet &#127775;</div>';
       r.mistakes.forEach(function (m) {
@@ -1548,7 +2199,7 @@
       [].forEach.call($("actTabs").children, function (b) { b.onclick = function () { tab = b.dataset.t; renderAct(); }; });
       if (tab === "today") {
         d = D.d[act.key(new Date())] || { s: 0, n: 0, f: "", l: "", pa: 0, mt: 0, nn: 0, ins: {}, nt: {} };
-        h = row("Screen time", mins(d.s)) + row("Times opened", d.n) + row("First / last use", (d.f || "-") + " / " + (d.l || "-")) + dayRows([d]);
+        h = row("Screen time", mins(d.s)) + row("Daily limit", guard.summary()) + row("Times opened", d.n) + row("First / last use", (d.f || "-") + " / " + (d.l || "-")) + dayRows([d]) + lockHtml();
       } else if (tab === "week") {
         var days = [], max = 1, list = [];
         for (i = 6; i >= 0; i--) {
@@ -1570,7 +2221,7 @@
         var r = quiz.results();
         h = row("Today", r.today.right + " right, " + r.today.wrong + " wrong (" + r.today.pct + "%)") +
           row("All time", r.all.right + " right, " + r.all.wrong + " wrong (" + r.all.pct + "%)") +
-          row("Level / streak", r.level + " of 6 / " + r.streak) +
+          row("Level / streak", r.level + " of 6 / " + r.streak) + practiseHtml() +
           '<div class="sub">Level changes</div>' + (D.lv.slice(-5).reverse().map(function (x) { var q = new Date(x.t);
             return '<div class="miss">' + q.getDate() + "/" + (q.getMonth() + 1) + " &middot; level " + x.l + "</div>"; }).join("") || '<div class="miss">None logged yet</div>') +
           '<div class="sub">Last mistakes</div><div class="list">' + (r.mistakes.slice(0, 10).map(function (m) { var q = new Date(m.t);
@@ -1591,8 +2242,44 @@
       if ($("resClear").textContent === "Clear records") { $("resClear").textContent = "Tap again to clear"; return; }
       quiz.clearRecords(); renderResults();
     };
-    $("qTry").onclick = function () { closeGate(); quiz.show(); };
-    label(); vlabel(); mlabel(); elabel();
+    $("qTry").onclick = function () { closeGate(); quiz.show(true); };   // a parent's quiz earns nothing
+    // Limits and earning
+    function glabel() {
+      if (!$("gLock")) return;
+      var c = guard.cfg, lk = guard.locked();
+      $("rvOn").textContent = "\ud83d\udd01 Repeat missed questions: " + (quiz.cfg.review ? "ON" : "OFF");
+      $("hintOn").textContent = "\ud83d\udca1 Hints and tricks: " + (quiz.cfg.hint ? "after " + quiz.cfg.hint + " s" : "OFF");
+      $("gLim").textContent = "\u23f0 Daily screen time: " + (c.limit ? c.limit + " min" : "Off");
+      $("gEarn").textContent = "\u2797 Earn minutes with math: " + (c.earn ? "ON" : "OFF");
+      $("gNeed").textContent = "Streak needed: " + c.need; $("gMin").textContent = "Minutes per streak: " + c.min; $("gCap").textContent = "Max earned per day: " + c.cap;
+      $("gNeed").disabled = $("gMin").disabled = $("gCap").disabled = !c.earn;
+      $("gLock").textContent = "\ud83d\uded1 Mistake lock: " + (c.lockOn ? "ON" : "OFF");
+      $("gMax").textContent = "Mistakes allowed: " + c.max; $("gWin").textContent = "Within: " + c.win + " min";
+      $("gMax").disabled = $("gWin").disabled = !c.lockOn;
+      $("gCalm").textContent = "Mistake screen: " + (c.calm ? "Calm" : "Dramatic");
+      $("lkNow").hidden = !lk; $("lkBreak").hidden = lk && guard.reason() === "time";
+      $("tP15").disabled = $("tP30").disabled = $("tNone").disabled = !c.limit;
+      $("gNote").textContent = guard.note() + " Earned today: " + guard.earnedText() + ".";
+    }
+    guard.onChange(glabel);
+    function gset(k, list) { guard.cfg[k] = list ? cycle(list, guard.cfg[k]) : !guard.cfg[k]; guard.save(); glabel(); }
+    $("rvOn").onclick = function () { quiz.cfg.review = !quiz.cfg.review; quiz.save(); glabel(); };
+    $("hintOn").onclick = function () { quiz.cfg.hint = cycle([5, 10, 0], quiz.cfg.hint); quiz.save(); glabel(); };
+    $("gLim").onclick = function () { gset("limit", [0, 30, 45, 60, 90, 120]); };
+    $("gEarn").onclick = function () { gset("earn"); };
+    $("gNeed").onclick = function () { gset("need", [3, 5, 10]); };
+    $("gMin").onclick = function () { gset("min", [2, 5, 10]); };
+    $("gCap").onclick = function () { gset("cap", [15, 30, 60]); };
+    $("gLock").onclick = function () { gset("lockOn"); };
+    $("gMax").onclick = function () { gset("max", [3, 5, 7, 10]); };
+    $("gWin").onclick = function () { gset("win", [15, 30, 60]); };
+    $("gCalm").onclick = function () { gset("calm"); };
+    $("tP15").onclick = function () { guard.extend(15); glabel(); };
+    $("tP30").onclick = function () { guard.extend(30); glabel(); };
+    $("tNone").onclick = function () { guard.noLimit(); glabel(); };
+    $("lkNow").onclick = function () { guard.unlockNow(); closeGate(); };
+    $("lkBreak").onclick = function () { guard.breakFor(15); closeGate(); };
+    label(); vlabel(); mlabel(); elabel(); glabel();
 
     $("doClose").onclick = function () { if (bridge) bridge.unlock(); };
     $("doChange").onclick = function () { mode = "new"; $("ge").textContent = ""; show("Create a new 4-digit PIN"); };
@@ -1615,6 +2302,8 @@
   })();
 </script>
 <script>
+  if (window.Voice && Voice.ttsInit) Voice.ttsInit();  // the speaking voices (questions, praise, explanations) work without Voice quiz
+  guard.start();                                     // a lock survives a restart
   appMode.start();                                   // Math-only mode comes straight back after a restart
   if (voice.cfg.on) setTimeout(voice.prepare, 1500); // loads the voice model (and asks for the microphone the first time)
 </script>

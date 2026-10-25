@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -312,8 +313,13 @@ public class MainActivity extends Activity {
         else js("denied", "");
     }
 
+    /** Tell the page which languages have a voice: "<en><es>" as 1/0. */
+    private void ttsReport() {
+        js("tts", (ttsReady && ttsEn ? "1" : "0") + (ttsReady && ttsEs ? "1" : "0"));
+    }
+
     private void initTts() {
-        if (tts != null) return;
+        if (tts != null) { ttsReport(); return; }
         tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
@@ -321,8 +327,14 @@ public class MainActivity extends Activity {
                     ttsEn = tts.isLanguageAvailable(new Locale("en", "US")) >= TextToSpeech.LANG_AVAILABLE;
                     ttsEs = tts.isLanguageAvailable(new Locale("es", "ES")) >= TextToSpeech.LANG_AVAILABLE;
                     ttsReady = true;
+                    tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {   // the page waits for "spoke"
+                        @Override public void onStart(String id) {}
+                        @Override public void onDone(String id) { js("spoke", id); }
+                        @Override public void onError(String id) { js("spoke", id); }
+                        @Override public void onStop(String id, boolean interrupted) { js("spoke", id); }
+                    });
                 }
-                js("tts", (ttsReady && ttsEn ? "1" : "0") + (ttsReady && ttsEs ? "1" : "0"));
+                ttsReport();
             }
         });
     }
@@ -433,15 +445,33 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
-        public void speak(final String text, final String lang) {
+        public void ttsInit() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() { initTts(); }
+            });
+        }
+
+        /** Speak, then tell the page "spoke" with the same id (also when it cannot speak, so the quiz never waits). */
+        @JavascriptInterface
+        public void speak(final String text, final String lang, final float rate, final String id) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     boolean es = "es".equals(lang);
-                    if (!ttsReady || tts == null || !(es ? ttsEs : ttsEn)) return;   // no voice installed: stay silent
+                    if (!ttsReady || tts == null || !(es ? ttsEs : ttsEn)) { js("spoke", id); return; }   // no voice installed
                     tts.setLanguage(es ? new Locale("es", "ES") : new Locale("en", "US"));
-                    tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "pl");
+                    tts.setSpeechRate(rate);
+                    if (tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, id) != TextToSpeech.SUCCESS) js("spoke", id);
                 }
+            });
+        }
+
+        @JavascriptInterface
+        public void speakStop() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() { if (tts != null) tts.stop(); }
             });
         }
     }

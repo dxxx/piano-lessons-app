@@ -48,8 +48,7 @@ must be signed with the same key.
 In the grown-up Menu (PIN) switch **Voice quiz** on and pick English or Español. The child reads the question aloud and says the
 answer ("twelve minus three is nine" / "doce menos tres son nueve"); the app listens offline and checks that the two numbers
 and the right answer were said. A wrong answer works like a wrong tap; nothing heard is not penalised (after 3 tries the buttons
-appear). Praise and the stop-and-think line are spoken with Android text-to-speech if the tablet has the voice
-(Settings shows a note if not). Needs the microphone permission (asked the first time; or
+appear). Spoken output uses Android text-to-speech (see Spoken quiz; the Menu shows a note if the tablet lacks the voice). Needs the microphone permission (asked the first time; or
 `adb shell pm grant md.home.pianolessons android.permission.RECORD_AUDIO`).
 
 Speech recognition is [Vosk](https://alphacephei.com/vosk/) (Apache-2.0) with the small models
@@ -57,6 +56,37 @@ Speech recognition is [Vosk](https://alphacephei.com/vosk/) (Apache-2.0) with th
 are in `third_party/vosk/`; the models (~80 MB) are not in git. `build.sh` copies them into `assets/models/<lang>/` from
 `$MODELS_SRC` (default `/e/Home-Apps/_staging/vosk/models`) or downloads them from alphacephei.com when `assets/models/` is missing.
 The APK is about 86 MB; the models unpack to the app's private storage the first time each language is used.
+
+## Spoken quiz
+Questions are read aloud slowly in English or Spanish (Menu: **Read questions aloud**, **Spoken feedback**, **Language**; all independent of
+Voice quiz), with a 🔊 button to hear a question again. A right answer is praised with the full sentence ("Great job! 12 minus 3 is 9.");
+a wrong one is explained, spoken and shown on the red screen as 2-4 short steps chosen by level: counting on/back, make ten / break ten,
+ones only, tens stay and ones change, jump to the ten, tens and ones columns. The freeze lasts at least until the voice finishes plus one second.
+Speech never blocks the quiz: with no installed voice (the Menu says so) everything stays on the screen, and a timer covers a lost "done" signal.
+The explanation generator is a pure function; test it with `node tests/pure.test.js`.
+
+## Hints and tricks
+The explanation generator (`explain` in `assets/index.html`) also produces the *hints*: each step carries arcs between the digits (refs a/b/q and the tens/ones digits).
+After 5 s (Menu: Hints OFF / after 5 s / after 10 s) the first arc draws itself over the question, 5 s later the next one, with a short spoken line
+("Easy trick: just do the ones first! 5 plus 5 is 10."). Four named tricks are used everywhere: 👆 Count on/back (levels 1-2), 🔟 Make ten (2, 3, 5), 1️⃣ Ones first (3, 4),
+🧱 Tens and ones (6). The first time a level is reached, and from the 🧠 "Show me the trick" button, a 15-20 s animated mini-lesson plays on a worked example
+(skippable); the red wrong-answer screen draws the same arcs. Arcs are placed from the real digit boxes (side by side: over the top; columns: to the side) and redrawn on resize.
+A hinted answer counts as right for level and review but does not advance the earn-minutes streak; the quiz log has `hint` 1-2 (step shown) or 3 (trick button).
+The hint steps are unit-tested for all sums at all levels: `node tests/pure.test.js`.
+
+## Limits
+- **Mistake lock** (Menu, default ON): 5 mistakes in 30 minutes, lesson quizzes and Math only together (a wrong tap within 1.5 s of the buttons counts as 2),
+  locks the app with a calm break screen: video paused and muted, piano, quiz and camera stopped, only 🔒 Menu works. Unlock in the Menu with
+  **Unlock now** (also clears the mistake window) or **Break 15 min, then unlock**. "Mistake screen: Calm" swaps the red flash and buzzer for a grey screen.
+- **Daily screen time** (default 60 min, from the screen time the Activity panel counts): a banner and a spoken warning at 5 minutes left, then the
+  lock screen. The Menu offers +15 min, +30 min and No limit today; the day resets at local midnight.
+- **Earn minutes** (default ON): every 5 right answers in a row add 5 minutes to today's limit, at most 30 a day (streak needed, minutes and maximum are
+  settings). Answers from the Menu's "Show a quiz now" and answers at a level more than one below the day's starting level do not count; a mistake resets the streak.
+  The time-over screen offers "Earn more time with math", an earn-only Math session that unlocks the app when the minutes are in; the mistake lock still wins there.
+- **Repeat missed questions** (default ON): a missed question returns after 2-3 right answers (at its own level, at most one review per 3 questions) and once more
+  after about 10; right both times = mastered. Results and Activity list what he is practising.
+- Lock state, minutes used and earned persist across restarts. Minutes are counted with a monotonic clock, and setting the tablet clock back neither
+  gives time back nor lifts a lock (setting it forward past midnight still starts a new day). Lock and earn events are listed in Activity.
 
 ## Math only mode
 The Menu (🔒 Menu) has **Mode: Piano lessons / Math only**. Math only is a non-stop quiz (no videos, no piano) with the same

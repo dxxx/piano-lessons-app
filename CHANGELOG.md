@@ -4,6 +4,17 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.8 — 2026-10-25
+- **Read aloud**: every question is spoken slowly ("What is 12 minus 3?" / "¿Cuánto es 12 menos 3?"), with a 🔊 button next to it to hear it again. With Voice quiz on, the microphone opens only after the question has been read; think time starts after the speech
+- **Spoken praise**: "Great job! 12 minus 3 is 9." (five variants per language, never the same twice in a row)
+- **Spoken + shown explanations** on a wrong answer, calm and kind: "You said 8. Let's see…" then the steps, then the result. Per level: counting on/back (L1-2), make ten / break ten (L1-3), ones only (L3), tens stay and ones change (L4), jump to the ten (L5), tens and ones columns (L6). The red screen shows the same steps (dots at L1-2, tens/ones colours at L4-6) and stays until the voice has finished
+- **Language** setting (English / Español) now governs all speech and voice-answer recognition; "Read questions aloud" and "Spoken feedback" are separate ON/OFF settings that work with Voice quiz off. Quiz log marks explanations (`ex`)
+- **Animated tricks that show how easy each kind of sum is**: four tricks, named the same everywhere (👆 Count on/back, 🔟 Make ten, 1️⃣ Ones first, 🧱 Tens and ones). After 5 seconds without an answer, red arcs draw over the sum between the digits that go together, with a small label ("5 + 5 = 10", then "10 + 10 = 20"), one step per 5 s, spoken as "Easy trick: …" (Menu: Hints OFF / after 5 s / after 10 s). Works side by side and in the written columns (ones on the right, tens on the left). The first time he reaches a level, and from the 🧠 "Show me the trick" button, a 15-20 s animated mini-lesson plays on a worked example ("See? Easy! Now you try."); the red screen draws the same arcs while it explains. An answer after a hint or the trick still counts for level and review, but does not advance the earn-minutes streak (log `hint` 1-2, 3 = trick), and a missed question answered right only with a hint comes back once more
+- **Mistake lock**: 5 mistakes in 30 minutes (a wrong tap within 1.5 s counts double) locks the app with a calm "Time for a break" screen until a grown-up unlocks it in the Menu (or a timed 15-minute break ends). Settings: lock ON/OFF, mistakes allowed, window, and Mistake screen Dramatic / Calm (grey, no buzzer)
+- **Daily screen time** limit (default 60 min; Off/30/45/60/90/120) with a 5-minutes-left warning, the lock screen at the limit, and "+15 min", "+30 min", "No limit today" in the Menu. Locks survive a restart; a tablet clock set back does not give time back
+- **Earn minutes with math**: 5 right answers in a row = +5 minutes today (max 30), with a ⭐ streak meter; also from the "Earn more time with math" button on the time-over screen. A mistake resets the streak and counts toward the mistake lock
+- **Missed questions come back**: after 2-3 right answers, and once more after ~10, then they count as mastered ("🔁 Let's try this one again!"). Results and Activity show what he is practising, what was mastered today, locks and earned minutes
+
 ## 1.7.3 — 2026-10-25
 - Pads are now real recorded sounds (FluidR3 soundfont): 🌌 Warm pad replaces the synth pad, new 🎹 Polysynth
 
