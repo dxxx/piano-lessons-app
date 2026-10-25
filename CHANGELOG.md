@@ -4,6 +4,14 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.7 — 2026-10-25
+- **Voice quiz** (grown-up setting, off by default): he reads the question aloud and says the answer ("twelve minus three is nine"); the tablet listens offline, in English or Spanish, and checks. Nothing is sent anywhere; the first time it asks for the microphone
+- Right answer: "Great job!" / "¡Muy bien!" spoken. Wrong answer (operands said, wrong result): the same red stop-and-think screen, now also spoken with the worked answer. Not heard: no penalty, "try again" and after 3 tries the answer buttons appear. The grown-up can see what it heard under the question
+- **Written column sums** for the two-digit levels 4-6: the sum is shown like on paper, tens over tens and ones over ones, a line, and a "?" box; the red screen shows the worked answer the same way
+- **Math only mode**: the grown-up Menu (the 🔒 button, now called Menu) has a switch Piano lessons / Math only. Math only has no videos or piano, just a non-stop quiz with a star count, the level and a level-up celebration; it comes back after a restart. The Activity panel counts math-only time separately
+- Grown-up menu is locked: PIN asked every time it opens; it relocks when closed, when the app goes to the background, or after 60 s idle
+- Voice answers are logged with what was heard; the grown-up menu has Voice quiz ON/OFF and Voice language English / Español
+
 ## 1.6.1 — 2026-10-25
 - Key sensitivity: louder when a key is pressed nearer its bottom edge or with a bigger touch; grown-up setting Off / Normal / Strong
 - Activity log for parents (behind the PIN): screen time per day, most-watched lessons, play-along time and favourite sound, quiz summary

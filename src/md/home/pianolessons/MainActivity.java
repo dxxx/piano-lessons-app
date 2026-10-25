@@ -1,10 +1,13 @@
 package md.home.pianolessons;
 
 import android.app.Activity;
+import android.Manifest;
 import android.app.ActivityManager;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.speech.tts.TextToSpeech;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -22,6 +25,16 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.security.MessageDigest;
+import java.util.Locale;
+
+import org.json.JSONObject;
+import org.vosk.LibVosk;
+import org.vosk.LogLevel;
+import org.vosk.Model;
+import org.vosk.Recognizer;
+import org.vosk.android.RecognitionListener;
+import org.vosk.android.SpeechService;
+import org.vosk.android.StorageService;
 
 /**
  * One screen, one playlist. The page (assets/index.html) hosts YouTube's official
@@ -39,6 +52,17 @@ public class MainActivity extends Activity {
     private View fullscreenView;
     private WebChromeClient.CustomViewCallback fullscreenCallback;
     private boolean unlocking;
+
+    // Voice quiz (offline Vosk speech recognition + Android text-to-speech); all of it is driven by the page
+    private static final int REQ_MIC = 71;
+    private Model model;
+    private String modelLang, wantLang, pendingLang;
+    private boolean loadingModel;
+    private Recognizer rec;
+    private SpeechService svc;
+    private int listenGen;
+    private TextToSpeech tts;
+    private boolean ttsReady, ttsEn, ttsEs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +89,7 @@ public class MainActivity extends Activity {
             public boolean onLongClick(View v) { return true; }
         });
         web.addJavascriptInterface(new Parent(), "Parent");
+        web.addJavascriptInterface(new Voice(), "Voice");
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -159,7 +184,183 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
+        stopListening();                        // never keep the microphone open in the background
+        if (tts != null) tts.stop();
+        web.evaluateJavascript("window.lockMenu&&window.lockMenu()", null);   // the grown-up menu relocks
         web.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        stopListening();
+        freeModel();
+        if (tts != null) { tts.shutdown(); tts = null; }
+        super.onDestroy();
+    }
+
+    // ---- Voice quiz ----
+
+    /** Tell the page something happened: window.voiceEvent(type, text). */
+    private void js(String type, String arg) {
+        final String call = "window.voiceEvent&&window.voiceEvent(" + JSONObject.quote(type) + ","
+                + JSONObject.quote(arg == null ? "" : arg) + ")";
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() { web.evaluateJavascript(call, null); }
+        });
+    }
+
+    /** Main thread. Permission, then the native libraries, then the model of one language (one model at a time). */
+    private void initVoice(final String lang) {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            pendingLang = lang;
+            requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, REQ_MIC);
+            return;
+        }
+        try {
+            LibVosk.setLogLevel(LogLevel.WARNINGS);   // first touch of the native libraries (libvosk + JNA)
+        } catch (Throwable t) {
+            js("error", "the speech library did not load (" + t.getClass().getSimpleName() + ")");
+            return;
+        }
+        initTts();
+        if (model != null && lang.equals(modelLang)) { js("ready", lang); return; }
+        wantLang = lang;
+        if (loadingModel) return;                    // the running load re-checks wantLang when it ends
+        stopListening();
+        freeModel();
+        loadingModel = true;
+        js("loading", lang);
+        StorageService.unpack(this, "models/" + lang, "model-" + lang,
+                new StorageService.Callback<Model>() {
+                    @Override
+                    public void onComplete(Model m) {
+                        loadingModel = false;
+                        if (isDestroyed()) { m.close(); return; }
+                        model = m;
+                        modelLang = lang;
+                        if (!lang.equals(wantLang)) { initVoice(wantLang); return; }
+                        js("ready", lang);
+                    }
+                },
+                new StorageService.Callback<java.io.IOException>() {
+                    @Override
+                    public void onComplete(java.io.IOException e) {
+                        loadingModel = false;
+                        js("error", "the voice model could not be prepared (" + e.getMessage() + ")");
+                    }
+                });
+    }
+
+    private void freeModel() {
+        if (model != null) { model.close(); model = null; modelLang = null; }
+    }
+
+    private void stopListening() {
+        listenGen++;                                 // results still in flight are ignored
+        if (svc != null) {
+            try { svc.stop(); svc.shutdown(); } catch (Exception ignored) { }
+            svc = null;
+        }
+        if (rec != null) { rec.close(); rec = null; }
+    }
+
+    private void startListening() {
+        stopListening();
+        if (model == null) { js("error", "the voice model is not loaded"); return; }
+        final int gen = ++listenGen;
+        try {
+            // A grammar (number words + plus/minus/is/equals) keeps the recogniser on the maths
+            rec = new Recognizer(model, 16000.0f, readAsset("grammar/" + modelLang + ".json"));
+            svc = new SpeechService(rec, 16000.0f);
+            svc.startListening(new RecognitionListener() {
+                private String text(String json, String key) {
+                    try { return new JSONObject(json).optString(key, ""); } catch (Exception e) { return ""; }
+                }
+                @Override public void onPartialResult(String h) { if (gen == listenGen) js("partial", text(h, "partial")); }
+                @Override public void onResult(String h) { if (gen == listenGen) js("final", text(h, "text")); }
+                @Override public void onFinalResult(String h) { if (gen == listenGen) js("final", text(h, "text")); }
+                @Override public void onError(Exception e) { if (gen == listenGen) js("listenError", String.valueOf(e.getMessage())); }
+                @Override public void onTimeout() { if (gen == listenGen) js("timeout", ""); }
+            });
+        } catch (Exception e) {
+            stopListening();
+            js("listenError", String.valueOf(e.getMessage()));
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int code, String[] perms, int[] results) {
+        super.onRequestPermissionsResult(code, perms, results);
+        if (code != REQ_MIC) return;
+        String lang = pendingLang;
+        pendingLang = null;
+        if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED && lang != null) initVoice(lang);
+        else js("denied", "");
+    }
+
+    private void initTts() {
+        if (tts != null) return;
+        tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS && tts != null) {
+                    ttsEn = tts.isLanguageAvailable(new Locale("en", "US")) >= TextToSpeech.LANG_AVAILABLE;
+                    ttsEs = tts.isLanguageAvailable(new Locale("es", "ES")) >= TextToSpeech.LANG_AVAILABLE;
+                    ttsReady = true;
+                }
+                js("tts", (ttsReady && ttsEn ? "1" : "0") + (ttsReady && ttsEs ? "1" : "0"));
+            }
+        });
+    }
+
+    /** The page's voice calls. Everything that touches the recogniser runs on the main thread. */
+    private class Voice {
+        @JavascriptInterface
+        public void voiceInit(final String lang) {
+            final String l = "es".equals(lang) ? "es" : "en";
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() { initVoice(l); }
+            });
+        }
+
+        @JavascriptInterface
+        public void voiceListen() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() { startListening(); }
+            });
+        }
+
+        @JavascriptInterface
+        public void voiceStop() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() { stopListening(); }
+            });
+        }
+
+        @JavascriptInterface
+        public void voiceRelease() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() { stopListening(); if (!loadingModel) freeModel(); }
+            });
+        }
+
+        @JavascriptInterface
+        public void speak(final String text, final String lang) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    boolean es = "es".equals(lang);
+                    if (!ttsReady || tts == null || !(es ? ttsEs : ttsEn)) return;   // no voice installed: stay silent
+                    tts.setLanguage(es ? new Locale("es", "ES") : new Locale("en", "US"));
+                    tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, "pl");
+                }
+            });
+        }
     }
 
     @Override

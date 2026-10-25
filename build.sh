@@ -15,21 +15,47 @@ export PATH="$JDK:$PATH"
 
 rm -rf build out && mkdir -p build/gen build/classes build/dex out
 
+# Voice quiz (Vosk): jars + arm64 native libs live in third_party/vosk (committed, small);
+# the speech models (~80 MB) are NOT committed: copied from the local staging folder, else downloaded once.
+VOSK="third_party/vosk"
+VJARS="$VOSK/vosk-android-0.3.75-classes.jar $VOSK/jna-5.18.1-classes.jar"
+MODELS_SRC="${MODELS_SRC:-/e/Home-Apps/_staging/vosk/models}"
+for pair in en:vosk-model-small-en-us-0.15 es:vosk-model-small-es-0.42; do
+  L="${pair%%:*}"; N="${pair#*:}"; D="assets/models/$L"
+  [ -d "$D" ] && continue
+  mkdir -p assets/models
+  if [ -d "$MODELS_SRC/$N" ]; then
+    cp -r "$MODELS_SRC/$N" "$D"
+  else
+    echo "downloading speech model $N (~40 MB)"
+    TMP="$(mktemp -d)"
+    curl -fL -o "$TMP/m.zip" "https://alphacephei.com/vosk/models/$N.zip"
+    python -I -c "import zipfile,sys; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" "$(cygpath -w "$TMP/m.zip")" "$(cygpath -w "$TMP")"
+    mv "$TMP/$N" "$D"; rm -rf "$TMP"
+  fi
+  [ -f "$D/uuid" ] || echo "$N" > "$D/uuid"   # StorageService.unpack needs it to know when to re-copy
+done
+
 "$BT/aapt2.exe" compile --dir res -o build/res.zip
 "$BT/aapt2.exe" link -I "$JAR" --manifest AndroidManifest.xml -A assets \
   --min-sdk-version 24 --target-sdk-version 34 \
   --java build/gen -o build/unsigned.apk build/res.zip
 
-"$JDK/javac.exe" -nowarn -Xlint:-options -source 8 -target 8 -cp "$JAR" -d build/classes \
+CP="$(cygpath -w "$JAR")"
+for j in $VJARS; do CP="$CP;$(cygpath -w "$j")"; done
+"$JDK/javac.exe" -nowarn -encoding UTF-8 -Xlint:-options -source 8 -target 8 -cp "$CP" -d build/classes \
   $(find src build/gen -name '*.java') 2>&1 | grep -v "bootstrap classpath" || true
 
 cmd //c "$(cygpath -w "$BT/d8.bat")" --min-api 24 --lib "$(cygpath -w "$JAR")" \
-  --output "$(cygpath -w build/dex)" $(find build/classes -name '*.class' -exec cygpath -w {} \;)
+  --output "$(cygpath -w build/dex)" $(find build/classes -name '*.class' -exec cygpath -w {} \;) \
+  $(for j in $VJARS; do cygpath -w "$j"; done)
 
 python - <<'EOF'
 import zipfile
 with zipfile.ZipFile("build/unsigned.apk", "a", zipfile.ZIP_DEFLATED) as z:
     z.write("build/dex/classes.dex", "classes.dex")
+    for so in ("libvosk.so", "libjnidispatch.so"):        # Vosk + JNA native libraries (arm64 tablets only)
+        z.write("third_party/vosk/lib/arm64-v8a/" + so, "lib/arm64-v8a/" + so)
 EOF
 
 "$BT/zipalign.exe" -f -p 4 build/unsigned.apk build/aligned.apk

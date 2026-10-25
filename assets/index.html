@@ -137,6 +137,28 @@
   .qmsg { min-height: 34px; margin-top: 16px; font-size: 26px; font-weight: 700; }
   .qcheer { font-size: 96px; animation: pop .6s ease-out; }
   .qpic:empty { display: none; }
+  .qprog { font-size: 26px; font-weight: 800; color: var(--accent); margin-top: 6px; }
+  .qprog:empty { display: none; }
+  /* Written column arithmetic (levels 4-6): digits right-aligned, ones under ones, tens under tens */
+  .vcol { display: inline-grid; grid-template-columns: auto auto; column-gap: .3em; text-align: right; line-height: 1.12;
+    font-family: ui-monospace, "Roboto Mono", "Courier New", monospace; font-variant-numeric: tabular-nums; font-weight: 900; letter-spacing: 0; }
+  .vcol .n { grid-column: 2; justify-self: end; }
+  .vcol .op { grid-column: 1; color: var(--accent); text-align: center; }
+  .vcol .ln { grid-column: 1 / 3; height: .08em; margin: .06em 0; background: currentColor; border-radius: 2px; }
+  .vcol .bx { border: .05em dashed var(--accent); border-radius: .14em; color: var(--accent); text-align: center; box-sizing: content-box; }
+  .qred .eq .vcol .bx { color: #fff; border-color: #fff; }
+  /* Voice quiz: read the question aloud and say the answer */
+  .qvoice { margin-top: 6px; }
+  .qvoice .mic { font-size: 84px; line-height: 1.1; animation: pulse 1.2s ease-in-out infinite alternate; }
+  .qvoice .say { font-size: 30px; font-weight: 800; color: var(--accent); }
+  .qvoice .heard { min-height: 24px; margin-top: 6px; font-size: 16px; color: var(--muted); }
+  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.14); } }
+  .gate .note { color: var(--muted); font-size: 14px; min-height: 0; margin: -2px 4px 0; }
+  .gate .note:empty { display: none; }
+  /* Math-only mode: no video, no piano; the quiz fills the screen and only the Menu button remains */
+  body.math .stage > :not(header), body.math aside { display: none !important; }
+  body.math header > :not(#lock) { display: none !important; }
+  body.math #lock { position: fixed; top: 12px; right: 14px; z-index: 10; }
   /* Mistake: the whole screen goes red and freezes for a few seconds */
   .qred { position: fixed; inset: 0; z-index: 12; display: none; flex-direction: column; align-items: center;
     justify-content: center; gap: 22px; background: #c4001a; color: #fff; text-align: center;
@@ -189,7 +211,7 @@
       <span class="hint" id="loadHint" style="display:none">Loading piano…</span>
       <button class="lock" id="playMode" style="margin-left:auto">&#127929; Play along</button>
       <button class="lock" id="mode">&#x26F6; Big video</button>
-      <button class="lock" id="lock" aria-label="Close (grown-ups)">&#128274; Close</button></header>
+      <button class="lock" id="lock" aria-label="Menu (grown-ups)">&#128274; Menu</button></header>
     <div class="player-wrap"><div class="player"><div id="player"></div><div class="shield" id="shield"></div>
       <div class="cover" id="cover"><button class="big" id="coverBtn">&#9654; Play</button>
         <div class="sub" id="coverSub"></div></div></div></div>
@@ -214,7 +236,12 @@
     <div class="ans" id="ga"></div>
     <div class="err" id="ge"></div>
     <div class="pad" id="pad"></div>
-    <div class="choices" id="choices" hidden>
+    <div class="choices" id="choices" hidden></div>
+  </div>
+</div>
+<!-- The grown-up menu is not part of the page until the PIN is accepted: it is cloned in on unlock and removed on lock -->
+<template id="menuTpl">
+      <button class="set" id="qMode"></button>
       <button class="primary" id="doClose">Close the app</button>
       <button class="set" id="qOn"></button>
       <button class="set" id="qEvery"></button>
@@ -223,12 +250,13 @@
       <button class="set" id="qAct">&#128200; Activity</button>
       <button class="set" id="qRes">&#128202; Results</button>
       <button class="set" id="qSens"></button>
+      <button class="set" id="vOn"></button>
+      <button class="set" id="vLang"></button>
+      <div class="note" id="vNote"></div>
       <button class="set" id="qTry">Show a quiz now</button>
       <button id="doChange">Change PIN</button>
       <button id="doCancel">Back to lessons</button>
-    </div>
-  </div>
-</div>
+</template>
 
 <div class="gate" id="act">
   <div class="card">
@@ -255,10 +283,16 @@
 
 <div class="quiz" id="quiz">
   <div class="qcard">
-    <div class="qtitle">&#129504; Math time! Solve it to play the next lesson</div>
+    <div class="qtitle" id="qtitle">&#129504; Math time! Solve it to play the next lesson</div>
+    <div class="qprog" id="qprog"></div>
     <div class="qpic" id="qpic"></div>
     <div class="qeq" id="qeq"></div>
     <div class="qans" id="qans"></div>
+    <div class="qvoice" id="qvoice" hidden>
+      <div class="mic">&#127908;</div>
+      <div class="say">Read it and say the answer!</div>
+      <div class="heard" id="qheard"></div>
+    </div>
     <div class="qmsg" id="qmsg"></div>
   </div>
   <div class="qred" id="qred">
@@ -285,7 +319,7 @@
     if (!D || typeof D !== "object" || !D.d) D = { d: {}, les: {}, lv: [] };
     function day() {
       var k = dkey(new Date());
-      return D.d[k] || (D.d[k] = { s: 0, n: 0, f: "", l: "", pa: 0, nn: 0, ins: {}, nt: {} });
+      return D.d[k] || (D.d[k] = { s: 0, n: 0, f: "", l: "", pa: 0, mt: 0, nn: 0, ins: {}, nt: {} });
     }
     function lesson(id, title) {
       return D.les[id] || (D.les[id] = { t: title || id, st: 0, fin: 0, sec: 0, last: "" });
@@ -303,6 +337,7 @@
       if (!document.hidden && dt > 0) {
         var d = day(); d.s += dt; d.l = hm();
         if (document.body.classList.contains("play")) d.pa += dt;
+        if (document.body.classList.contains("math")) d.mt = (d.mt || 0) + dt;   // math-only mode time
         if (player && player.getPlayerState && player.getPlayerState() === 1) {
           var vd = player.getVideoData ? player.getVideoData() : null, id = vd && vd.video_id;
           if (id) {
@@ -349,6 +384,7 @@
   function save(i) { try { localStorage.setItem(KEY, String(i)); } catch (e) {} }
 
   function onYouTubeIframeAPIReady() {
+    if (player || document.body.classList.contains("math")) return;   // math-only mode never loads the videos
     player = new YT.Player("player", {
       playerVars: {
         listType: "playlist", list: PLAYLIST, index: saved(),
@@ -722,6 +758,93 @@
     btn.onclick = function () { audio(); apply(!document.body.classList.contains("play")); };
   })();
 
+  // ---- Voice quiz: the child reads the question aloud and says the answer; the app listens offline (Vosk) ----
+  // Java side: the "Voice" bridge (model load, SpeechService, TextToSpeech). Here: state, parsing, judging.
+  var voice = (function () {
+    var bridge = window.Voice, state = "off", msg = "", tts = { en: true, es: true }, handler = null, once = [], noteCb = null;
+    function get(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
+    function put(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
+    var cfg = { on: get("voiceOn", "0") === "1", lang: get("voiceLang", "en") === "es" ? "es" : "en" };
+    var EN = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
+      thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20, thirty: 30, forty: 40,
+      fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
+    var ES = { cero: 0, uno: 1, un: 1, una: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10, once: 11,
+      doce: 12, trece: 13, catorce: 14, quince: 15, dieciseis: 16, diecisiete: 17, dieciocho: 18, diecinueve: 19, veinte: 20, veintiuno: 21,
+      veintiun: 21, veintiuna: 21, veintidos: 22, veintitres: 23, veinticuatro: 24, veinticinco: 25, veintiseis: 26, veintisiete: 27,
+      veintiocho: 28, veintinueve: 29, treinta: 30, cuarenta: 40, cincuenta: 50, sesenta: 60, setenta: 70, ochenta: 80, noventa: 90,
+      cien: 100, ciento: 100 };
+    // "twenty one" / "twenty-one" / "treinta y nueve" / "one hundred" / digits -> [numbers in the order spoken]
+    function nums(text, lang) {
+      var w = String(text || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/-/g, " ").split(/\s+/).filter(Boolean);
+      var U = lang === "es" ? ES : EN, out = [], i = 0;
+      while (i < w.length) {
+        var t = w[i], v;
+        if (/^\d+$/.test(t)) v = +t; else if (U.hasOwnProperty(t)) v = U[t]; else { i++; continue; }
+        i++;
+        if (v >= 20 && v < 100 && v % 10 === 0) {              // a tens word, maybe followed by a unit
+          var j = i; if (lang === "es" && w[j] === "y") j++;
+          if (j < w.length && U.hasOwnProperty(w[j]) && U[w[j]] >= 1 && U[w[j]] <= 9 && (lang !== "es" || j > i)) { v += U[w[j]]; i = j + 1; }
+        }
+        if (lang !== "es" && v === 1 && w[i] === "hundred") { v = 100; i++; }
+        out.push(v);
+      }
+      return out;
+    }
+    // ok: the operands and then the right answer were said. wrong: operands said, a different last number.
+    // unheard: no usable answer (nothing, or the operands/answer missing) - never a penalty.
+    function judge(text, a, b, ans) {
+      var ns = nums(text, cfg.lang);
+      if (ns.length < 3) return { k: "unheard" };          // operand, operand, answer: at least three numbers
+      var last = ns[ns.length - 1], rest = ns.slice(0, -1);
+      function take(x) { var i = rest.indexOf(x); if (i < 0) return false; rest.splice(i, 1); return true; }
+      if (!(take(a) && take(b))) return { k: "unheard" };
+      return last === ans ? { k: "ok", n: last } : { k: "wrong", n: last };
+    }
+    function note() {
+      var t = state === "loading" ? "Preparing voice… (the first time takes a few seconds)" :
+        state === "ready" ? "Voice is ready." :
+        state === "denied" ? "The microphone is not allowed. Turn it on in Android Settings > Apps > Piano Lessons > Permissions > Microphone, then switch Voice quiz OFF and ON." :
+        state === "error" ? "Voice could not start: " + msg : "";
+      if (cfg.on && !tts[cfg.lang]) t += (t ? " " : "") + (cfg.lang === "es" ? "Spanish" : "English") + " voice not installed on this tablet (it will listen but not speak).";
+      return t;
+    }
+    function setState(s, m) {
+      state = s; msg = m || "";
+      var f = once; once = []; f.forEach(function (fn) { try { fn(s); } catch (e) {} });
+      if (noteCb) noteCb();
+    }
+    window.voiceEvent = function (type, a) {
+      if (type === "loading") setState("loading");
+      else if (type === "ready") { if (a === cfg.lang && cfg.on) setState("ready"); }
+      else if (type === "denied") setState("denied");
+      else if (type === "error") setState("error", a);
+      else if (type === "tts") { tts.en = a.charAt(0) === "1"; tts.es = a.charAt(1) === "1"; if (noteCb) noteCb(); }
+      else if (handler) handler(type, a);       // partial / final / timeout / listenError
+    };
+    var api = {
+      cfg: cfg,
+      state: function () { return state; },
+      note: note,
+      onNote: function (fn) { noteCb = fn; },
+      once: function (fn) { once.push(fn); },
+      nums: nums, judge: judge,
+      prepare: function () {
+        if (!cfg.on) return;
+        if (!bridge || !bridge.voiceInit) { setState("error", "this app version has no voice"); return; }
+        setState("loading"); bridge.voiceInit(cfg.lang);
+      },
+      setOn: function (on) {
+        cfg.on = on; put("voiceOn", on ? 1 : 0);
+        if (on) api.prepare(); else { api.stop(); if (bridge && bridge.voiceRelease) bridge.voiceRelease(); setState("off"); }
+      },
+      setLang: function (l) { cfg.lang = l; put("voiceLang", l); api.stop(); if (cfg.on) api.prepare(); else if (noteCb) noteCb(); },
+      listen: function (h) { handler = h; if (bridge && bridge.voiceListen) bridge.voiceListen(); },
+      stop: function () { handler = null; if (bridge && bridge.voiceStop) bridge.voiceStop(); },
+      say: function (text) { if (cfg.on && bridge && bridge.speak && tts[cfg.lang]) bridge.speak(text, cfg.lang); }
+    };
+    return api;
+  })();
+
   // ---- Math quiz: after every N lessons, the next one plays only after small sums are solved ----
   // It hooks the lesson change itself, so Next, a thumbnail and YouTube's autoplay are all caught.
   // Strict on purpose: a wrong answer = red screen + a freeze + a NEW question (no guessing), and the
@@ -743,7 +866,8 @@
       get: function () { return level; },
       set: function (v) { level = clamp(v, 1, MAX_LEVEL); put("quizLevel", level); act.level(level); run = 0; miss = 0; put("quizRun", 0); put("quizMiss", 0); }
     });
-    var count = +get("quizCount", "1"), open = false, answer = 0, curQ = "", lastQ = "";
+    var count = +get("quizCount", "1"), open = false, answer = 0, curQ = "", lastQ = "", curA = 0, curB = 0;
+    var stars = 0, qid = 0, vTries = 0, vTimer = null, vHandler = null;   // math-only stars; voice-quiz state
     var run = +get("quizRun", "0") || 0;        // correct first-try answers in a row at this level
     var miss = +get("quizMiss", "0") || 0;      // mistakes in a row (any level)
     var sessRight = 0;                          // correct answers in a row in THIS quiz
@@ -780,6 +904,62 @@
       });
     }
 
+    // Written column arithmetic: 65 / - 54 / line / ? (the answer replaces the ? box once known)
+    function colHtml(a, plus, b, ans) {
+      var w = String(ans === undefined ? a + (plus ? b : 0) : ans).length;   // box as wide as the answer
+      return '<span class="vcol"><span></span><span class="n">' + a + '</span><span class="op">' + (plus ? "+" : "&minus;") +
+        '</span><span class="n">' + b + '</span><span class="ln"></span><span></span><span class="n' + (ans === undefined ? ' bx" style="min-width:' + w + 'ch' : '') +
+        '">' + (ans === undefined ? "?" : ans) + "</span></span>";
+    }
+    function buttonsOn() {                       // answer buttons (the normal way, and the voice fallback)
+      $("qvoice").hidden = true; $("qans").style.display = "";
+      [].forEach.call($("qans").children, function (b) { b.disabled = false; });
+      $("qmsg").textContent = ""; locked = false; t0 = Date.now();
+    }
+    function stopVoice() {
+      clearTimeout(vTimer); vHandler = null;
+      if (voice.cfg.on) voice.stop();
+      $("qvoice").hidden = true;
+    }
+    function armVoiceTimer(my) {
+      clearTimeout(vTimer);
+      vTimer = setTimeout(function () { if (my === qid && !locked) unheard(my); }, 15000);
+    }
+    function unheard(my) {
+      if (my !== qid) return;
+      if (++vTries >= 3) { stopVoice(); buttonsOn(); $("qmsg").textContent = "\ud83d\udc46 Tap the answer"; return; }
+      $("qmsg").textContent = voice.cfg.lang === "es" ? "No te o\u00ed, int\u00e9ntalo otra vez \ud83c\udfa4" : "I didn't hear \u2014 try again \ud83c\udfa4";
+      armVoiceTimer(my);
+    }
+    function onHeard(my, ev, text) {
+      if (my !== qid || !open || locked) return;
+      if (ev === "partial") { $("qheard").textContent = text; if (text) $("qmsg").textContent = ""; return; }
+      if (ev === "final") {
+        if (!text) return;
+        $("qheard").textContent = text;
+        var r = voice.judge(text, curA, curB, answer);
+        if (r.k === "unheard") { unheard(my); return; }
+        stopVoice();
+        pick(null, r.n, text);
+        return;
+      }
+      stopVoice(); buttonsOn();                 // timeout / listenError: the buttons still work
+    }
+    function beginVoice(my) {
+      if (my !== qid || !open) return;
+      if (voice.state() === "loading") { $("qmsg").textContent = "Preparing voice\u2026"; voice.once(function () { beginVoice(my); }); return; }
+      if (voice.state() !== "ready") { buttonsOn(); return; }
+      t0 = Date.now(); locked = false;
+      $("qmsg").textContent = "";
+      $("qvoice").querySelector(".say").textContent = voice.cfg.lang === "es" ? "\u00a1L\u00e9elo y di la respuesta!" : "Read it and say the answer!";
+      $("qheard").textContent = ""; $("qvoice").hidden = false;
+      vHandler = function (ev, text) { onHeard(my, ev, text); };
+      voice.listen(vHandler); armVoiceTimer(my);
+    }
+    document.addEventListener("visibilitychange", function () {   // the app stops listening when paused; pick it up again
+      if (!document.hidden && open && vHandler && !$("qvoice").hidden && !locked) voice.listen(vHandler);
+    });
+
     // One sum {a, b, plus} for a level. Results are never negative.
     function make(lv) {
       var plus = Math.random() < 0.5, a, b, t, u, ta, tb, ua, ub;
@@ -808,13 +988,18 @@
     function ask() {
       var q, tries = 0;
       do { q = make(level); curQ = q.a + (q.plus ? " + " : " − ") + q.b; } while (curQ === lastQ && ++tries < 30);   // never the same one again
-      lastQ = curQ; answer = q.ans;
+      lastQ = curQ; answer = q.ans; curA = q.a; curB = q.b;
+      var my = ++qid, math = appMode.math(), useVoice = voice.cfg.on && voice.state() !== "denied" && voice.state() !== "error";
+      stopVoice(); vTries = 0;
+      if (useVoice && voice.state() === "off") voice.prepare();
+      $("qtitle").innerHTML = math ? "&#129504; Math time!" : "&#129504; Math time! Solve it to play the next lesson";
+      $("qprog").textContent = math ? "\u2b50 " + stars + "   \u00b7   Level " + level : "";
       var a = q.a, b = q.b, pics = level === 1 || (level === 2 && a <= 10 && b <= 10);
       var thing = THINGS[rnd(0, THINGS.length - 1)], size = (q.plus ? a + b : a) > 10 ? 36 : 54;
       $("qpic").innerHTML = !pics ? "" : q.plus ? items(a, thing, a, size) + '<span class="op">+</span>' + items(b, thing, b, size)
                                                 : items(a, thing, a - b, size);   // take-away: the last b are crossed out
-      $("qeq").textContent = curQ + " = ?";
-      $("qeq").style.fontSize = pics ? "" : "96px";
+      if (level >= 4) { $("qeq").innerHTML = colHtml(a, q.plus, b); $("qeq").style.fontSize = "84px"; }   // written like on paper
+      else { $("qeq").textContent = curQ + " = ?"; $("qeq").style.fontSize = pics ? "" : "96px"; }
       var wrong = [], cands = [1, -1, 2, -2];
       if (level >= 4) cands.push(10, -10);
       cands.sort(function () { return Math.random() - 0.5; });
@@ -825,7 +1010,7 @@
       });
       var opts = [answer].concat(wrong);
       opts.sort(function () { return Math.random() - 0.5; });
-      $("qans").innerHTML = "";
+      $("qans").innerHTML = ""; $("qans").style.display = useVoice ? "none" : "";
       locked = true;
       opts.forEach(function (n) {
         var btn = document.createElement("button");
@@ -836,41 +1021,50 @@
       $("qmsg").textContent = "🤔 Think…";
       clearTimeout(thinkTimer);
       thinkTimer = setTimeout(function () {      // think time: no rapid tapping
-        [].forEach.call($("qans").children, function (b) { b.disabled = false; });
-        $("qmsg").textContent = ""; locked = false; t0 = Date.now();
+        if (my !== qid) return;
+        if (useVoice) beginVoice(my); else buttonsOn();
       }, THINK_MS);
     }
 
-    function record(n, ok) {
-      log.push({ t: new Date().toISOString(), q: curQ, a: n, c: answer, ok: ok, lvl: level, ms: Date.now() - t0 });
+    function record(n, ok, heard) {
+      var e = { t: new Date().toISOString(), q: curQ, a: n, c: answer, ok: ok, lvl: level, ms: Date.now() - t0 };
+      if (heard !== undefined) { e.v = 1; e.h = heard; }          // a voice answer and what the app heard
+      log.push(e);
       if (log.length > LOG_MAX) log = log.slice(-LOG_MAX);
       put("quizLog", JSON.stringify(log));
     }
 
     function finish(delay) {
       setTimeout(function () {
-        open = false; count = 1; sessRight = 0; sessMiss = 0;
+        open = false; count = 1; sessRight = 0; sessMiss = 0; qid++; stopVoice();
         put("quizCount", 1); put("quizPending", 0); put("quizSessMiss", 0); put("quizFreezeUntil", 0);
         $("quiz").classList.remove("open");
         if (player && player.playVideo) player.playVideo();
       }, delay);
     }
 
-    function pick(btn, n) {
+    function pick(btn, n, heard) {
       if (locked) return;
       locked = true;
       [].forEach.call($("qans").children, function (b) { b.disabled = true; });
-      var ok = n === answer;
-      record(n, ok);
+      var ok = n === answer, es = voice.cfg.lang === "es", math = appMode.math();
+      record(n, ok, heard);
       if (ok) {
-        btn.classList.add("yes");
+        if (btn) btn.classList.add("yes");
         sessRight++; sessMiss = 0; put("quizSessMiss", 0); miss = 0; put("quizMiss", 0);
         var up = false;
         if (++run >= LEVEL_UP_AFTER && level < MAX_LEVEL) { level++; run = 0; up = true; put("quizLevel", level); act.level(level); }
         put("quizRun", run);
         sound([72, 76, 79, 84], "triangle");
         var worked = curQ + " = " + answer;
-        if (sessRight >= cfg.need) {
+        voice.say(es ? "\u00a1Muy bien!" : "Great job!");
+        if (math) {                                              // math-only: no lesson to unlock, it just goes on
+          stars++;
+          $("qprog").textContent = "\u2b50 " + stars + "   \u00b7   Level " + level;
+          if (up) $("qpic").innerHTML = '<div class="qcheer">&#127881;&#11088;&#127881;</div>';
+          $("qmsg").textContent = (up ? "\u2b50 Level up! Level " + level + "  " : "Great job! ") + worked;
+          setTimeout(ask, up ? 2800 : 1600);
+        } else if (sessRight >= cfg.need) {
           $("qpic").innerHTML = '<div class="qcheer">&#127881;&#11088;&#127881;</div>';
           $("qmsg").textContent = (up ? "⭐ Level up! " : "Great job! ") + worked;
           finish(up ? 2600 : 1800);
@@ -887,13 +1081,18 @@
       put("quizMiss", miss);
       var secs = Math.min(20, 5 * sessMiss), txt = curQ + " = " + answer;
       put("quizFreezeUntil", Date.now() + secs * 1000); put("quizFreezeTxt", txt);
+      put("quizFreezeCol", level >= 4 ? 1 : 0);
       buzzer();
-      freeze(Date.now() + secs * 1000, txt);
+      voice.say(es ? "\u00a1Piensa! " + curA + (curQ.indexOf("+") > 0 ? " m\u00e1s " : " menos ") + curB + " son " + answer
+                   : "Stop and think! " + curA + (curQ.indexOf("+") > 0 ? " plus " : " minus ") + curB + " is " + answer);
+      freeze(Date.now() + secs * 1000, txt, level >= 4);
     }
 
-    function freeze(until, txt) {
-      locked = true;
-      $("qredEq").textContent = txt;
+    function freeze(until, txt, col) {
+      locked = true; qid++; stopVoice();
+      var m = col && txt.match(/^(\d+) ([+\u2212]) (\d+) = (\d+)$/);
+      if (m) $("qredEq").innerHTML = colHtml(+m[1], m[2] === "+", +m[3], +m[4]); else $("qredEq").textContent = txt;
+      $("qredEq").style.fontSize = m ? "84px" : "";
       $("qred").classList.add("on");
       clearInterval(freezeTimer); freezeTimer = null;
       function tick() {
@@ -910,11 +1109,11 @@
 
     function show() {
       if (open) return;
-      open = true; put("quizPending", 1);
+      open = true; if (!appMode.math()) put("quizPending", 1);
       if (player && player.pauseVideo) player.pauseVideo();
       $("quiz").classList.add("open");
       var until = +get("quizFreezeUntil", "0");
-      if (until > Date.now()) freeze(until, get("quizFreezeTxt", "")); else ask();   // closing the app doesn't skip a freeze
+      if (until > Date.now()) freeze(until, get("quizFreezeTxt", ""), get("quizFreezeCol", "0") === "1"); else ask();   // closing the app doesn't skip a freeze
     }
 
     function results() {
@@ -939,6 +1138,12 @@
     return {
       isOpen: function () { return open; },
       show: show,
+      mathStart: function () { stars = 0; sessRight = 0; show(); },
+      mathStop: function () {
+        open = false; qid++; stopVoice(); clearTimeout(thinkTimer);
+        clearInterval(freezeTimer); freezeTimer = null;
+        $("qred").classList.remove("on"); $("quiz").classList.remove("open");
+      },
       lessonChanged: function (firstLoad) {
         if (!cfg.on || open) return;
         if (firstLoad) { if (get("quizPending", "0") === "1") show(); return; }   // closed mid-quiz: ask again
@@ -952,6 +1157,30 @@
         put("quizOn", cfg.on ? 1 : 0); put("quizEvery", cfg.every); put("quizNeed", cfg.need);
         if (!cfg.on) { count = 1; put("quizCount", 1); put("quizPending", 0); }
       }
+    };
+  })();
+
+  // ---- App mode: Piano lessons (videos + play-along + the quiz between lessons) or Math only (a non-stop quiz).
+  // Chosen behind the PIN, remembered in localStorage "appMode".
+  var appMode = (function () {
+    var m = "piano";
+    try { m = localStorage.getItem("appMode") === "math" ? "math" : "piano"; } catch (e) {}
+    function apply(next) {
+      m = next;
+      try { localStorage.setItem("appMode", m); } catch (e) {}
+      document.body.classList.toggle("math", m === "math");
+      if (m === "math") {
+        if (player && player.pauseVideo) player.pauseVideo();
+        quiz.mathStop(); quiz.mathStart();
+      } else {
+        quiz.mathStop();
+        if (!player && window.YT && YT.Player) onYouTubeIframeAPIReady();   // first time in this run
+      }
+    }
+    return {
+      math: function () { return m === "math"; },
+      set: function (next) { if (next !== m) apply(next); },
+      start: function () { if (m === "math") { document.body.classList.add("math"); quiz.mathStart(); } }
     };
   })();
 
@@ -970,22 +1199,44 @@
 
     function show(prompt) {
       ans = ""; $("ga").textContent = ""; $("gq").textContent = prompt;
-      pad.hidden = false; choices.hidden = true;
+      pad.hidden = false; choices.hidden = true; choices.textContent = "";
     }
+    // Unlocked only in memory, only while the menu is open; 60 s without a touch locks it again
+    var idleTimer = null;
+    function armIdle() { clearTimeout(idleTimer); idleTimer = setTimeout(lock, 60000); }
+    function unlock() {
+      pad.hidden = true; choices.textContent = "";
+      choices.appendChild($("menuTpl").content.cloneNode(true));
+      choices.hidden = false; bindMenu(); armIdle();
+    }
+    function lock() {
+      clearTimeout(idleTimer); idleTimer = null;
+      choices.textContent = ""; choices.hidden = true; pad.hidden = false; ans = ""; $("ga").textContent = "";
+      gate.classList.remove("open"); $("act").classList.remove("open"); $("res").classList.remove("open");
+    }
+    window.lockMenu = lock;
+    ["gate", "act", "res"].forEach(function (id) {
+      $(id).addEventListener("pointerdown", function (e) {
+        if (e.target === $(id)) { lock(); return; }          // a tap outside the card closes (and locks) the menu
+        if (idleTimer) armIdle();
+      });
+    });
+    document.addEventListener("visibilitychange", function () { if (document.hidden) lock(); });
+    window.addEventListener("pagehide", lock);
     function open() {
       $("ge").textContent = "";
       if (bridge && !bridge.hasPin()) { mode = "new"; show("Create a 4-digit PIN"); }
       else { mode = "check"; show("Enter the grown-up PIN"); }
       gate.classList.add("open");
     }
-    function closeGate() { gate.classList.remove("open"); }
+    function closeGate() { lock(); }
 
     function submit() {
       if (ans.length !== 4) return;
       if (mode === "check") {
         if (Date.now() < lockedUntil) { $("ge").textContent = "Too many tries, wait a minute"; show("Enter the grown-up PIN"); return; }
         if (bridge && bridge.checkPin(ans)) {
-          fails = 0; $("ge").textContent = ""; pad.hidden = true; choices.hidden = false;
+          fails = 0; $("ge").textContent = ""; unlock();
           $("gq").textContent = "Unlocked"; $("ga").textContent = "";
         } else {
           if (++fails >= 3) { lockedUntil = Date.now() + 60000; fails = 0; }
@@ -999,6 +1250,8 @@
       }
     }
 
+    // The menu content exists only while unlocked; its handlers are bound each time it is cloned in
+    function bindMenu() {
     // Quiz settings, behind the PIN; each tap cycles to the next choice
     function label() {
       var c = quiz.cfg;
@@ -1008,6 +1261,21 @@
       $("qLevel").textContent = "Level: " + c.level + " (tap to change)";
       $("qEvery").disabled = $("qNeed").disabled = $("qLevel").disabled = !c.on;
     }
+    function vlabel() {
+      if (!$("vOn")) return;                    // the menu is not rendered while locked
+      $("vOn").textContent = "Voice quiz: " + (voice.cfg.on ? "ON" : "OFF");
+      $("vLang").textContent = "Voice language: " + (voice.cfg.lang === "es" ? "Espa\u00f1ol" : "English");
+      $("vLang").disabled = !voice.cfg.on;
+      $("vNote").textContent = voice.note();
+    }
+    function mlabel() {
+      $("qMode").textContent = "Mode: " + (appMode.math() ? "\u2797 Math only" : "\ud83c\udfb9 Piano lessons") + " (tap to switch)";
+      $("qTry").disabled = appMode.math();
+    }
+    voice.onNote(vlabel);
+    $("vOn").onclick = function () { voice.setOn(!voice.cfg.on); vlabel(); };
+    $("vLang").onclick = function () { voice.setLang(voice.cfg.lang === "es" ? "en" : "es"); vlabel(); };
+    $("qMode").onclick = function () { appMode.set(appMode.math() ? "piano" : "math"); mlabel(); closeGate(); };
     function cycle(list, v) { return list[(list.indexOf(v) + 1) % list.length]; }
     $("qOn").onclick = function () { quiz.cfg.on = !quiz.cfg.on; quiz.save(); label(); };
     $("qEvery").onclick = function () { quiz.cfg.every = cycle([1, 2, 3, 4], quiz.cfg.every); quiz.save(); label(); };
@@ -1045,8 +1313,8 @@
       return Object.keys(tot).sort(function (a, b) { return tot[b] - tot[a]; }).slice(0, n).map(function (k) { return esc(nameOf ? nameOf(k) : k) + " (" + tot[k] + ")"; }).join(", ") || "-";
     }
     function dayRows(list) {   // list of day records
-      var nn = 0, pa = 0; list.forEach(function (d) { nn += d.nn; pa += d.pa; });
-      return row("Play along", mins(pa)) + row("Notes played", nn) +
+      var nn = 0, pa = 0, mt = 0; list.forEach(function (d) { nn += d.nn; pa += d.pa; mt += d.mt || 0; });
+      return row("Math-only time", mins(mt)) + row("Play along", mins(pa)) + row("Notes played", nn) +
         row("Favourite sound", topOf(list.map(function (d) { return d.ins; }), 1, function (k) { return INAME[k] || k; })) +
         row("Most played notes", topOf(list.map(function (d) { return d.nt; }), 5));
     }
@@ -1055,7 +1323,7 @@
       $("actTabs").innerHTML = TABS.map(function (t) { return '<button data-t="' + t[0] + '"' + (t[0] === tab ? ' class="on"' : "") + ">" + t[1] + "</button>"; }).join("");
       [].forEach.call($("actTabs").children, function (b) { b.onclick = function () { tab = b.dataset.t; renderAct(); }; });
       if (tab === "today") {
-        d = D.d[act.key(new Date())] || { s: 0, n: 0, f: "", l: "", pa: 0, nn: 0, ins: {}, nt: {} };
+        d = D.d[act.key(new Date())] || { s: 0, n: 0, f: "", l: "", pa: 0, mt: 0, nn: 0, ins: {}, nt: {} };
         h = row("Screen time", mins(d.s)) + row("Times opened", d.n) + row("First / last use", (d.f || "-") + " / " + (d.l || "-")) + dayRows([d]);
       } else if (tab === "week") {
         var days = [], max = 1, list = [];
@@ -1100,12 +1368,13 @@
       quiz.clearRecords(); renderResults();
     };
     $("qTry").onclick = function () { closeGate(); quiz.show(); };
-    label();
+    label(); vlabel(); mlabel();
 
-    $("lock").onclick = open;
     $("doClose").onclick = function () { if (bridge) bridge.unlock(); };
     $("doChange").onclick = function () { mode = "new"; $("ge").textContent = ""; show("Create a new 4-digit PIN"); };
     $("doCancel").onclick = closeGate;
+    }
+    $("lock").onclick = open;
 
     ["1","2","3","4","5","6","7","8","9","Cancel","0","⌫"].forEach(function (k) {
       var b = document.createElement("button");
@@ -1120,6 +1389,10 @@
       pad.appendChild(b);
     });
   })();
+</script>
+<script>
+  appMode.start();                                   // Math-only mode comes straight back after a restart
+  if (voice.cfg.on) setTimeout(voice.prepare, 1500); // loads the voice model (and asks for the microphone the first time)
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
 </body>

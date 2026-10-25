@@ -31,8 +31,8 @@ This app keeps the lesson playlist and removes everything around it, so the tabl
 
 ## Set up the lock on the tablet
 - Settings → Security → **Screen pinning** → on, and **Ask for PIN before unpinning** → on.
-- Open the app, accept "pin this app?", then tap **🔒 Close** once to create your PIN.
-- To leave: 🔒 Close → PIN → Close the app.
+- Open the app, accept "pin this app?", then tap **🔒 Menu** once to create your PIN.
+- To leave: 🔒 Menu → PIN → Close the app.
 
 ## Build (no Android Studio, no Gradle)
 Needs the Android command-line SDK (platform 34, build-tools 37) and JDK 21; paths are at the top of `build.sh`.
@@ -41,8 +41,27 @@ bash build.sh                # → out/PianoLessons.apk
 bash build.sh install        # also installs on every adb-connected device
 bash build.sh release 1.3    # builds, tags v1.3 and publishes the APK as a GitHub release (needs gh)
 ```
-`build.sh` creates a signing key in `keystore/` on first run. Keep that file safe and out of git — app updates
+The first build also fetches the voice models (see Voice quiz below). `build.sh` creates a signing key in `keystore/` on first run. Keep that file safe and out of git — app updates
 must be signed with the same key.
+
+## Voice quiz
+In the grown-up Menu (PIN) switch **Voice quiz** on and pick English or Español. The child reads the question aloud and says the
+answer ("twelve minus three is nine" / "doce menos tres son nueve"); the app listens offline and checks that the two numbers
+and the right answer were said. A wrong answer works like a wrong tap; nothing heard is not penalised (after 3 tries the buttons
+appear). Praise and the stop-and-think line are spoken with Android text-to-speech if the tablet has the voice
+(Settings shows a note if not). Needs the microphone permission (asked the first time; or
+`adb shell pm grant md.home.pianolessons android.permission.RECORD_AUDIO`).
+
+Speech recognition is [Vosk](https://alphacephei.com/vosk/) (Apache-2.0) with the small models
+`vosk-model-small-en-us-0.15` and `vosk-model-small-es-0.42` (Apache-2.0, alphacephei.com), plus JNA (Apache-2.0 / LGPL-2.1). Jars and arm64 libraries
+are in `third_party/vosk/`; the models (~80 MB) are not in git. `build.sh` copies them into `assets/models/<lang>/` from
+`$MODELS_SRC` (default `/e/Home-Apps/_staging/vosk/models`) or downloads them from alphacephei.com when `assets/models/` is missing.
+The APK is about 86 MB; the models unpack to the app's private storage the first time each language is used.
+
+## Math only mode
+The Menu (🔒 Menu) has **Mode: Piano lessons / Math only**. Math only is a non-stop quiz (no videos, no piano) with the same
+levels, think time, stop-and-think freeze, voice answering and records, a star count and a level-up celebration. Levels 4-6 show the sum
+as written column arithmetic. The mode is remembered; the Activity panel shows math-only time separately.
 
 ## How it works
 One Activity with a WebView. The page hosts YouTube's official IFrame player (`listType=playlist`,

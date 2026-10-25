@@ -10,3 +10,6 @@ keystore/
 .secrets/
 .secrets/*
 .cache/
+
+# Vosk speech models (~80 MB): fetched by build.sh when missing, never committed
+assets/models/
