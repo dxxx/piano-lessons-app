@@ -59,6 +59,34 @@
     align-items: center; justify-content: center; z-index: 10; }
   .gate.open { display: flex; }
   .gate .card { background: var(--panel); border-radius: 18px; padding: 24px; width: 340px; text-align: center; }
+  /* Play along: keyboard under the video, narrow lesson strip, no Back/Next row */
+  .piano { display: none; height: 36vh; min-height: 190px; gap: 8px; align-items: stretch; }
+  body.play .piano { display: flex; }
+  /* short video area: size the 16:9 box by height so the video is letterboxed, not cropped */
+  body.play .player, body.big .player { width: auto; height: 100%; max-width: 100%; }
+  body.play .controls { display: none; }
+  body.play .app { grid-template-columns: 1fr 150px; gap: 10px; padding: 8px 10px; }
+  body.play .stage { gap: 8px; }
+  body.play header .keys, body.play aside h2 { display: none; }
+  body.play aside { padding: 6px; }
+  body.play .lesson { margin-bottom: 6px; border-width: 2px; border-radius: 8px; }
+  body.play .lesson .num { font-size: 12px; padding: 1px 6px; left: 4px; top: 4px; }
+  .oct { flex: none; width: 46px; border: 0; border-radius: 12px; background: #2b2742; color: var(--ink); font-size: 20px; }
+  .keys-row { position: relative; flex: 1; display: flex; touch-action: none; border-radius: 10px; overflow: hidden;
+    background: #000; padding-top: 4px; }
+  .wk { position: relative; flex: 1; margin: 0 1.5px; background: linear-gradient(#f4f1ea, #fffdf8 70%, #e9e4d8);
+    border-radius: 0 0 8px 8px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px;
+    color: #4a4560; font-weight: 700; font-size: 20px; }
+  .bk { position: absolute; top: 4px; height: 60%; background: linear-gradient(#2b2836, #111018);
+    border-radius: 0 0 6px 6px; z-index: 2; box-shadow: 0 3px 4px rgba(0,0,0,.5); }
+  .wk.on { background: linear-gradient(#f5b841, #ffd77a); color: #1e1b2e; }
+  .bk.on { background: linear-gradient(#c98a12, #f5b841); }
+  .wk .c-oct { position: absolute; top: 8px; font-size: 12px; color: #a39fbd; font-weight: 600; }
+  .vol { display: none; align-items: center; gap: 6px; color: var(--muted); font-size: 15px; margin-left: auto; }
+  body.play .vol { display: flex; }
+  body.play #playMode { margin-left: 0 !important; }
+  .vol input { width: 130px; accent-color: var(--accent); }
+
   /* Big video mode: no Back/Next row, a narrow thumbnail strip, the video takes the room */
   body.big .app { grid-template-columns: 1fr 150px; gap: 10px; padding: 8px 10px; }
   body.big .stage { gap: 6px; }
@@ -78,6 +106,35 @@
   .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
   .pad button { font-size: 24px; padding: 14px 0; border: 0; border-radius: 12px; background: #2b2742; color: var(--ink); }
   .pad .wide { grid-column: span 2; }
+  /* Math quiz between lessons: big pictures, big answers, made for a 5-year-old */
+  .quiz { position: fixed; inset: 0; background: rgba(10,9,16,.96); display: none;
+    align-items: center; justify-content: center; z-index: 9; }
+  .quiz.open { display: flex; }
+  .qcard { background: var(--panel); border-radius: 24px; padding: 24px 32px; width: min(900px, 94vw);
+    text-align: center; }
+  .qtitle { color: var(--muted); font-size: 20px; }
+  .qpic { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 18px;
+    min-height: 120px; margin: 14px 0 4px; }
+  .qpic .grp { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; max-width: 46%; }
+  .qpic .it { position: relative; line-height: 1.15; }
+  .qpic .it.gone { opacity: .3; }
+  .qpic .it.gone::after { content: "\2715"; position: absolute; inset: 0; color: #ff6b6b; font-weight: 900;
+    display: flex; align-items: center; justify-content: center; }
+  .qpic .op { font-size: 56px; font-weight: 900; color: var(--accent); }
+  .qeq { font-size: 64px; font-weight: 900; letter-spacing: 4px; margin: 4px 0 14px; }
+  .qans { display: flex; justify-content: center; gap: 22px; }
+  .qans button { width: 130px; height: 110px; border: 0; border-radius: 22px; font-size: 58px; font-weight: 900;
+    color: var(--accent-ink); background: #8fd3ff; box-shadow: 0 6px 0 rgba(0,0,0,.35); }
+  .qans button:nth-child(2) { background: #b6f09c; }
+  .qans button:nth-child(3) { background: #ffc4e1; }
+  .qans button:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,.35); }
+  .qans button.no { opacity: .25; animation: shake .4s; }
+  .qans button.yes { background: var(--accent); transform: scale(1.12); }
+  .qmsg { min-height: 34px; margin-top: 16px; font-size: 26px; font-weight: 700; }
+  .qcheer { font-size: 96px; animation: pop .6s ease-out; }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-12px); } 75% { transform: translateX(12px); } }
+  @keyframes pop { 0% { transform: scale(.3); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+  .gate .set { font-size: 17px !important; }
   @media (max-width: 800px) {
     .app { grid-template-columns: 1fr; grid-template-rows: 1fr 140px; }
     aside { display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; }
@@ -91,7 +148,9 @@
 <div class="app">
   <section class="stage">
     <header id="title"><span class="keys" aria-hidden="true"></span><h1>Piano Lessons</h1>
-      <button class="lock" id="mode" style="margin-left:auto">&#x26F6; Big video</button>
+      <label class="vol" id="volBox">&#127916; <input type="range" id="vol" min="0" max="100" value="50"></label>
+      <button class="lock" id="playMode" style="margin-left:auto">&#127929; Play along</button>
+      <button class="lock" id="mode">&#x26F6; Big video</button>
       <button class="lock" id="lock" aria-label="Close (grown-ups)">&#128274; Close</button></header>
     <div class="player-wrap"><div class="player"><div id="player"></div><div class="shield" id="shield"></div>
       <div class="cover" id="cover"><button class="big" id="coverBtn">&#9654; Play</button>
@@ -100,6 +159,11 @@
       <button class="btn" id="prev" disabled>&#9664; Back</button>
       <div class="now"><div class="n" id="num">&nbsp;</div><div class="t" id="vt">Loading lessons…</div></div>
       <button class="btn" id="next" disabled>Next &#9654;</button>
+    </div>
+    <div class="piano" id="piano">
+      <button class="oct" id="octDown" aria-label="Lower octave">&#9664;</button>
+      <div class="keys-row" id="keys"></div>
+      <button class="oct" id="octUp" aria-label="Higher octave">&#9654;</button>
     </div>
   </section>
   <aside><h2>All lessons</h2><div id="list"></div></aside>
@@ -114,9 +178,23 @@
     <div class="pad" id="pad"></div>
     <div class="choices" id="choices" hidden>
       <button class="primary" id="doClose">Close the app</button>
+      <button class="set" id="qOn"></button>
+      <button class="set" id="qEvery"></button>
+      <button class="set" id="qLevel"></button>
+      <button class="set" id="qTry">Show a quiz now</button>
       <button id="doChange">Change PIN</button>
       <button id="doCancel">Back to lessons</button>
     </div>
+  </div>
+</div>
+
+<div class="quiz" id="quiz">
+  <div class="qcard">
+    <div class="qtitle">&#129504; Math time! Solve it to play the next lesson</div>
+    <div class="qpic" id="qpic"></div>
+    <div class="qeq" id="qeq"></div>
+    <div class="qans" id="qans"></div>
+    <div class="qmsg" id="qmsg"></div>
   </div>
 </div>
 
@@ -141,6 +219,7 @@
 
   function waitForPlaylist(tries) {
     tries = typeof tries === "number" ? tries : 0;
+    if (tries === 0 && window.applyPlayVol) window.applyPlayVol();
     var list = player.getPlaylist && player.getPlaylist();
     if (list && list.length) { ids = list; buildList(); refresh(); return; }
     if (tries < 40) setTimeout(function () { waitForPlaylist(tries + 1); }, 250);
@@ -186,8 +265,11 @@
     if (!player || !player.getPlaylistIndex) return;
     var i = player.getPlaylistIndex();
     if (i < 0) return;
+    if (quiz.isOpen() && player.getPlayerState() === 1) player.pauseVideo();   // no lesson behind the quiz
     if (i !== current) {
+      var firstLoad = current < 0;
       current = i; save(i);
+      quiz.lessonChanged(firstLoad);
       document.querySelectorAll(".lesson").forEach(function (el) {
         var on = +el.dataset.i === i;
         el.classList.toggle("current", on);
@@ -227,6 +309,227 @@
     btn.onclick = function () { apply(!document.body.classList.contains("big")); };
   })();
 
+  // ---- Play along: an on-screen piano with a synthesized piano-like tone (Web Audio, no samples) ----
+  (function () {
+    var NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    var WHITE = [0, 2, 4, 5, 7, 9, 11];
+    var keysEl = document.getElementById("keys"), btn = document.getElementById("playMode");
+    var volEl = document.getElementById("vol");
+    var base = 48;            // MIDI note of the leftmost C (48 = C3); two octaves + the top C are shown
+    var ctx = null, master = null, wave = null, voices = {}, held = {};
+
+    function audio() {
+      if (!ctx) {
+        ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: "interactive" });
+        var vol = ctx.createGain(); vol.gain.value = 0.6;        // headroom for chords before the compressor
+        master = ctx.createDynamicsCompressor(); vol.connect(master); master.connect(ctx.destination); master = vol;
+        // Harmonic mix that sounds roughly like a struck string
+        var real = new Float32Array([0, 1, 0.55, 0.3, 0.2, 0.12, 0.08, 0.05, 0.03]);
+        wave = ctx.createPeriodicWave(real, new Float32Array(real.length));
+      }
+      if (ctx.state === "suspended") ctx.resume();
+      return ctx;
+    }
+    window.pianoAudio = audio;   // the quiz reuses it for its sounds
+
+    function noteOn(midi) {
+      var ac = audio(), t = ac.currentTime, f = 440 * Math.pow(2, (midi - 69) / 12);
+      noteOff(midi, true);
+      var g = ac.createGain(), lp = ac.createBiquadFilter(), o1 = ac.createOscillator(), o2 = ac.createOscillator();
+      o1.setPeriodicWave(wave); o2.setPeriodicWave(wave);
+      o1.frequency.value = f; o2.frequency.value = f * 1.002;          // slight detune = warmer
+      lp.type = "lowpass"; lp.frequency.setValueAtTime(Math.min(f * 8, 12000), t);
+      lp.frequency.exponentialRampToValueAtTime(Math.max(f * 1.5, 300), t + 1.5); // tone darkens as it rings
+      var decay = 1.2 + (84 - midi) / 30;                               // low notes ring longer
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.35, t + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.0008, t + Math.max(decay, 0.6));
+      o1.connect(lp); o2.connect(lp); lp.connect(g); g.connect(master);
+      o1.start(t); o2.start(t); o1.stop(t + decay + 0.1); o2.stop(t + decay + 0.1);
+      voices[midi] = { g: g, o: [o1, o2] };
+    }
+
+    function noteOff(midi, instant) {
+      var v = voices[midi]; if (!v || !ctx) return;
+      var t = ctx.currentTime;
+      v.g.gain.cancelScheduledValues(t);
+      v.g.gain.setValueAtTime(Math.max(v.g.gain.value, 0.0001), t);
+      v.g.gain.exponentialRampToValueAtTime(0.0001, t + (instant ? 0.02 : 0.25));
+      v.o.forEach(function (o) { try { o.stop(t + 0.3); } catch (e) {} });
+      delete voices[midi];
+    }
+
+    function releaseAll() { Object.keys(held).forEach(function (k) { release(k); }); }
+
+    function build() {
+      releaseAll();
+      keysEl.innerHTML = "";
+      var whites = [];
+      for (var m = base; m <= base + 24; m++) if (WHITE.indexOf(m % 12) >= 0) whites.push(m);
+      var w = 100 / whites.length;
+      whites.forEach(function (m) {
+        var k = document.createElement("div");
+        k.className = "wk"; k.dataset.m = m;
+        k.innerHTML = (m % 12 === 0 ? '<span class="c-oct">C' + (Math.floor(m / 12) - 1) + "</span>" : "") + NAMES[m % 12];
+        keysEl.appendChild(k);
+      });
+      whites.forEach(function (m, i) {                       // black key sits on the border after this white key
+        if (m === base + 24 || [4, 11].indexOf(m % 12) >= 0) return;
+        var b = document.createElement("div");
+        b.className = "bk"; b.dataset.m = m + 1;
+        b.style.left = "calc(" + ((i + 1) * w) + "% - " + (w * 0.32) + "%)"; b.style.width = (w * 0.64) + "%";
+        keysEl.appendChild(b);
+      });
+    }
+
+    function keyAt(x, y) {
+      var el = document.elementFromPoint(x, y);
+      while (el && el !== keysEl && !(el.dataset && el.dataset.m)) el = el.parentNode;
+      return el && el.dataset && el.dataset.m ? el : null;
+    }
+    var fingers = {};   // fingers per note, so two fingers on one key don't cut each other off
+    function press(id, el) {
+      var prev = held[id];
+      if (prev === el) return;
+      if (prev) {
+        var pm = +prev.dataset.m;
+        if (--fingers[pm] <= 0) { fingers[pm] = 0; prev.classList.remove("on"); noteOff(pm); }
+      }
+      held[id] = el;
+      if (el) {
+        var m = +el.dataset.m;
+        fingers[m] = (fingers[m] || 0) + 1;
+        el.classList.add("on");
+        if (fingers[m] === 1) noteOn(m);
+      }
+    }
+    function release(id) { press(id, null); delete held[id]; }
+
+    keysEl.addEventListener("pointerdown", function (e) { e.preventDefault(); press(e.pointerId, keyAt(e.clientX, e.clientY)); });
+    keysEl.addEventListener("pointermove", function (e) { if (e.pointerId in held) press(e.pointerId, keyAt(e.clientX, e.clientY)); });
+    ["pointerup", "pointercancel", "pointerleave"].forEach(function (ev) {
+      keysEl.addEventListener(ev, function (e) { release(e.pointerId); });
+    });
+    keysEl.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+    window.addEventListener("blur", releaseAll);
+    document.addEventListener("visibilitychange", releaseAll);
+    window.applyPlayVol = function () {    // called again once the YouTube player exists
+      if (player && player.setVolume) player.setVolume(document.body.classList.contains("play") ? +volEl.value : 100);
+    };
+
+    document.getElementById("octDown").onclick = function () { if (base > 24) { base -= 12; build(); } };
+    document.getElementById("octUp").onclick = function () { if (base < 72) { base += 12; build(); } };
+    volEl.oninput = function () { if (player && player.setVolume) player.setVolume(+volEl.value); };
+
+    function apply(on) {
+      document.body.classList.toggle("play", on);
+      btn.innerHTML = on ? "&#10005; Close piano" : "&#127929; Play along";
+      if (!on) releaseAll();
+      window.applyPlayVol();
+      try { localStorage.setItem("playMode", on ? "1" : "0"); } catch (e) {}
+    }
+    build();
+    var start = false;
+    try { start = localStorage.getItem("playMode") === "1"; } catch (e) {}
+    apply(start);
+    btn.onclick = function () { audio(); apply(!document.body.classList.contains("play")); };
+  })();
+
+  // ---- Math quiz: after every N lessons, the next one plays only after a small sum is solved ----
+  // It hooks the lesson change itself, so Next, a thumbnail and YouTube's autoplay are all caught.
+  var quiz = (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var THINGS = ["&#127822;", "&#127827;", "&#11088;", "&#128031;", "&#127880;", "&#128037;", "&#127850;", "&#128663;", "&#127800;", "&#128030;"];
+    function get(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
+    function put(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
+    var cfg = { on: get("quizOn", "1") === "1", every: +get("quizEvery", "2"), upTo: +get("quizUpTo", "10") };
+    var count = +get("quizCount", "1"), open = false, answer = 0;
+
+    function rnd(lo, hi) { return lo + Math.floor(Math.random() * (hi - lo + 1)); }
+    function items(n, thing, goneFrom, size) {
+      var s = "";
+      for (var k = 0; k < n; k++) s += '<span class="it' + (k >= goneFrom ? " gone" : "") + '" style="font-size:' + size + 'px">' + thing + "</span>";
+      return '<span class="grp">' + s + "</span>";
+    }
+    function sound(notes, type) {
+      if (!window.pianoAudio) return;
+      var ac = window.pianoAudio(), t = ac.currentTime;
+      notes.forEach(function (m, k) {
+        var o = ac.createOscillator(), g = ac.createGain(), at = t + k * 0.11;
+        o.type = type; o.frequency.value = 440 * Math.pow(2, (m - 69) / 12);
+        g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.25, at + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, at + 0.5);
+        o.connect(g); g.connect(ac.destination); o.start(at); o.stop(at + 0.55);
+      });
+    }
+
+    function ask() {
+      var L = cfg.upTo, plus = Math.random() < 0.5, a, b;
+      if (plus) { a = rnd(1, L - 1); b = rnd(1, L - a); answer = a + b; }
+      else { a = rnd(2, L); b = rnd(1, a - 1); answer = a - b; }
+      var thing = THINGS[rnd(0, THINGS.length - 1)], size = (plus ? a + b : a) > 10 ? 36 : 54;
+      $("qpic").innerHTML = plus ? items(a, thing, a, size) + '<span class="op">+</span>' + items(b, thing, b, size)
+                                 : items(a, thing, a - b, size);   // take-away: the last b are crossed out
+      $("qeq").textContent = a + (plus ? " + " : " − ") + b + " = ?";
+      var opts = [answer];
+      while (opts.length < 3) {
+        var w = answer + rnd(-2, 2);
+        if (w >= 0 && w <= L && opts.indexOf(w) < 0) opts.push(w);
+      }
+      opts.sort(function () { return Math.random() - 0.5; });
+      $("qans").innerHTML = "";
+      $("qmsg").textContent = "";
+      opts.forEach(function (n) {
+        var btn = document.createElement("button");
+        btn.textContent = n;
+        btn.onclick = function () { pick(btn, n); };
+        $("qans").appendChild(btn);
+      });
+    }
+
+    function pick(btn, n) {
+      if (n !== answer) {
+        btn.classList.add("no"); btn.disabled = true;
+        $("qmsg").textContent = "Almost! Count the pictures and try again 🙂";
+        sound([52, 48], "sine");
+        return;
+      }
+      btn.classList.add("yes");
+      [].forEach.call($("qans").children, function (b) { b.disabled = true; });
+      $("qpic").innerHTML = '<div class="qcheer">&#127881;&#11088;&#127881;</div>';
+      $("qmsg").textContent = "Great job! " + $("qeq").textContent.replace("?", answer);
+      sound([72, 76, 79, 84], "triangle");
+      setTimeout(function () {
+        open = false; count = 1; put("quizCount", 1); put("quizPending", 0);
+        $("quiz").classList.remove("open");
+        if (player && player.playVideo) player.playVideo();
+      }, 1800);
+    }
+
+    function show() {
+      open = true; put("quizPending", 1);
+      if (player && player.pauseVideo) player.pauseVideo();
+      ask();
+      $("quiz").classList.add("open");
+    }
+
+    return {
+      isOpen: function () { return open; },
+      show: show,
+      lessonChanged: function (firstLoad) {
+        if (!cfg.on || open) return;
+        if (firstLoad) { if (get("quizPending", "0") === "1") show(); return; }   // closed mid-quiz: ask again
+        count++; put("quizCount", count);
+        if (count > cfg.every) show();
+      },
+      cfg: cfg,
+      save: function () {
+        put("quizOn", cfg.on ? 1 : 0); put("quizEvery", cfg.every); put("quizUpTo", cfg.upTo);
+        if (!cfg.on) { count = 1; put("quizCount", 1); put("quizPending", 0); }
+      }
+    };
+  })();
+
   document.getElementById("prev").onclick = function () { player.previousVideo(); };
   document.getElementById("next").onclick = function () { player.nextVideo(); };
   setInterval(refresh, 1500); // titles arrive a moment after the video switches
@@ -247,7 +550,7 @@
     function open() {
       $("ge").textContent = "";
       if (bridge && !bridge.hasPin()) { mode = "new"; show("Create a 4-digit PIN"); }
-      else { mode = "check"; show("Enter the PIN to close"); }
+      else { mode = "check"; show("Enter the grown-up PIN"); }
       gate.classList.add("open");
     }
     function closeGate() { gate.classList.remove("open"); }
@@ -255,13 +558,13 @@
     function submit() {
       if (ans.length !== 4) return;
       if (mode === "check") {
-        if (Date.now() < lockedUntil) { $("ge").textContent = "Too many tries, wait a minute"; show("Enter the PIN to close"); return; }
+        if (Date.now() < lockedUntil) { $("ge").textContent = "Too many tries, wait a minute"; show("Enter the grown-up PIN"); return; }
         if (bridge && bridge.checkPin(ans)) {
           fails = 0; $("ge").textContent = ""; pad.hidden = true; choices.hidden = false;
           $("gq").textContent = "Unlocked"; $("ga").textContent = "";
         } else {
           if (++fails >= 3) { lockedUntil = Date.now() + 60000; fails = 0; }
-          $("ge").textContent = "Wrong PIN"; show("Enter the PIN to close");
+          $("ge").textContent = "Wrong PIN"; show("Enter the grown-up PIN");
         }
       } else if (mode === "new") {
         first = ans; mode = "confirm"; $("ge").textContent = ""; show("Type the same PIN again");
@@ -270,6 +573,21 @@
         else { mode = "new"; $("ge").textContent = "The PINs didn't match"; show("Create a 4-digit PIN"); }
       }
     }
+
+    // Quiz settings, behind the PIN; each tap cycles to the next choice
+    function label() {
+      var c = quiz.cfg;
+      $("qOn").textContent = "Math quiz: " + (c.on ? "ON" : "OFF");
+      $("qEvery").textContent = "Quiz after every " + c.every + " lesson" + (c.every > 1 ? "s" : "");
+      $("qLevel").textContent = "Numbers up to " + c.upTo;
+      $("qEvery").disabled = $("qLevel").disabled = !c.on;
+    }
+    function cycle(list, v) { return list[(list.indexOf(v) + 1) % list.length]; }
+    $("qOn").onclick = function () { quiz.cfg.on = !quiz.cfg.on; quiz.save(); label(); };
+    $("qEvery").onclick = function () { quiz.cfg.every = cycle([1, 2, 3, 4], quiz.cfg.every); quiz.save(); label(); };
+    $("qLevel").onclick = function () { quiz.cfg.upTo = cycle([5, 10, 20], quiz.cfg.upTo); quiz.save(); label(); };
+    $("qTry").onclick = function () { closeGate(); quiz.show(); };
+    label();
 
     $("lock").onclick = open;
     $("doClose").onclick = function () { if (bridge) bridge.unlock(); };
