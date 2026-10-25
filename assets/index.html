@@ -87,6 +87,13 @@
   body.play #playMode { margin-left: 0 !important; }
   #instBtn { display: none; }
   body.play #instBtn { display: block; }
+  #instPop { position: fixed; inset: 0; z-index: 8; display: none; align-items: center; justify-content: center; background: rgba(10,8,20,.6); }
+  #instPop.open { display: flex; }
+  #instPop .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; background: var(--panel); padding: 18px; border-radius: 22px; width: min(760px, 94vw); }
+  #instPop button { border: 3px solid transparent; border-radius: 16px; background: #2b2742; color: var(--ink); padding: 14px 4px; font: inherit; font-size: 15px; cursor: pointer; }
+  #instPop button b { display: block; font-size: 44px; line-height: 1.2; font-weight: 400; }
+  #instPop button.cur { border-color: var(--accent); background: #3a3459; }
+  @media (max-width: 560px) { #instPop .grid { grid-template-columns: repeat(2, 1fr); } }
   .hint { color: var(--muted); font-size: 13px; white-space: nowrap; }
   body:not(.play) .hint { display: none !important; }
   .vol input { width: 130px; accent-color: var(--accent); }
@@ -210,6 +217,7 @@
 </style>
 </head>
 <body>
+<div id="instPop"><div class="grid" id="instGrid"></div></div>
 <div class="app">
   <section class="stage">
     <header id="title"><span class="keys" aria-hidden="true"></span><h1>Piano Lessons</h1>
@@ -509,10 +517,13 @@
     var keysEl = document.getElementById("keys"), btn = document.getElementById("playMode");
     var volEl = document.getElementById("vol");
     var base = 48;            // MIDI note of the leftmost C (48 = C3); two octaves + the top C are shown
-    var ctx = null, master = null, wave = null, organWave = null, voices = {}, held = {};
+    var ctx = null, master = null, wave = null, organWave = null, pulseWave = null, driveCurve = null, voices = {}, held = {};
+    var robotLast = null, robotOffT = -9, glideFrom = null;   // robot voice: previous note, for the portamento
     var instrument = "grand";
     var INSTR = [["grand", "&#127929;", "Grand piano"], ["soft", "&#127932;", "Soft piano"], ["musicbox", "&#127925;", "Music box"],
-                 ["epiano", "&#127928;", "Electric piano"], ["organ", "&#127926;", "Organ"]];
+                 ["epiano", "&#127928;", "Electric piano"], ["organ", "&#127926;", "Organ"],
+                 ["robot", "&#129302;", "Robot voice"], ["lead", "&#127899;&#65039;", "Synth lead"], ["808", "&#128266;", "808 bass"],
+                 ["chip", "&#128126;", "Chiptune"], ["pad", "&#127756;", "Space pad"]];
     try { var si = localStorage.getItem("instrument"); if (INSTR.some(function (x) { return x[0] === si; })) instrument = si; } catch (e) {}
     var instBtn = document.getElementById("instBtn"), loadHint = document.getElementById("loadHint");
 
@@ -527,6 +538,12 @@
         // Organ: a few drawbar-like harmonics (1, 2, 3, 4, 6, 8)
         var imag = new Float32Array([0, 1, 0.6, 0.35, 0.3, 0, 0.2, 0, 0.12]);
         organWave = ctx.createPeriodicWave(new Float32Array(imag.length), imag);
+        // Chiptune: 25% pulse (cosine series of a pulse train) and the 808's soft-clip curve
+        var pr = new Float32Array(48);
+        for (var n = 1; n < 48; n++) pr[n] = 2 / (n * Math.PI) * Math.sin(n * Math.PI * 0.25);
+        pulseWave = ctx.createPeriodicWave(pr, new Float32Array(48));
+        driveCurve = new Float32Array(1024);
+        for (var q = 0; q < 1024; q++) driveCurve[q] = Math.tanh((q / 511.5 - 1) * 2);
       }
       if (ctx.state === "suspended") ctx.resume();
       return ctx;
@@ -632,23 +649,96 @@
         o1.connect(lp); o2.connect(lp); lp.connect(g); g.connect(master);
         o1.start(t); o2.start(t); o1.stop(t + 60); o2.stop(t + 60);
         return { g: g, o: [o1, o2], rel: 0.08 };
+      },
+      robot: function (ac, midi, t, s, v) {                  // talkbox: saw through "oo"->"ah" formants + glide from the last note
+        var f = hz(midi), gm = vg(v), br = vb(v), g = ac.createGain(), mix = ac.createGain(), os = [];
+        var OO = [300, 870, 2240], AH = [730, 1090, 2440], LV = [1, 0.7, 0.35];
+        [1, 1.004].forEach(function (d) {
+          var o = ac.createOscillator(); o.type = "sawtooth";
+          if (glideFrom) { o.frequency.setValueAtTime(hz(glideFrom) * d, t); o.frequency.exponentialRampToValueAtTime(f * d, t + 0.08); }
+          else o.frequency.value = f * d;
+          o.connect(mix); o.start(t); o.stop(t + 60); os.push(o);
+        });
+        for (var i = 0; i < 3; i++) {
+          var bp = ac.createBiquadFilter(), fg = ac.createGain();
+          bp.type = "bandpass"; bp.Q.value = 7;
+          bp.frequency.setValueAtTime(OO[i], t); bp.frequency.exponentialRampToValueAtTime(AH[i], t + 0.25);   // the "wah"
+          fg.gain.value = LV[i] * 1.6 * br; mix.connect(bp); bp.connect(fg); fg.connect(g);
+        }
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3 * gm, t + 0.012);
+        g.connect(master);
+        return { g: g, o: os, rel: 0.12, robot: midi };
+      },
+      lead: function (ac, midi, t, s, v) {                   // bright saw, resonant filter sweep, vibrato after 0.3 s
+        var f = hz(midi), gm = vg(v), br = vb(v), g = ac.createGain(), lp = ac.createBiquadFilter();
+        var o1 = ac.createOscillator(), o2 = ac.createOscillator(), lfo = ac.createOscillator(), lg = ac.createGain();
+        o1.type = o2.type = "sawtooth"; o1.frequency.value = f; o2.frequency.value = f * 1.006;
+        lp.type = "lowpass"; lp.Q.value = 6;
+        lp.frequency.setValueAtTime(Math.min(f * 10 * br, 12000), t);
+        lp.frequency.exponentialRampToValueAtTime(Math.min(f * 3 * br, 8000), t + 0.35);
+        lfo.frequency.value = 5.5; lg.gain.setValueAtTime(0, t); lg.gain.setValueAtTime(0, t + 0.3); lg.gain.linearRampToValueAtTime(14, t + 0.6);   // cents
+        lfo.connect(lg); lg.connect(o1.detune); lg.connect(o2.detune);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.17 * gm, t + 0.01);
+        o1.connect(lp); o2.connect(lp); lp.connect(g); g.connect(master);
+        [o1, o2, lfo].forEach(function (o) { o.start(t); o.stop(t + 60); });
+        return { g: g, o: [o1, o2, lfo], rel: 0.15 };
+      },
+      "808": function (ac, midi, t, s, v) {                  // sine one octave down, pitch drops in 60 ms, soft-clipped
+        var f = hz(midi - 12), gm = vg(v), g = ac.createGain(), o = ac.createOscillator(), ws = ac.createWaveShaper(), pre = ac.createGain();
+        o.type = "sine"; o.frequency.setValueAtTime(f * 2, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.06);
+        ws.curve = driveCurve; pre.gain.value = 1.4;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3 * gm, t + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.0008, t + 1.8);
+        o.connect(pre); pre.connect(ws); ws.connect(g); g.connect(master);
+        o.start(t); o.stop(t + 1.9);
+        return { g: g, o: [o], rel: 0.25 };
+      },
+      chip: function (ac, midi, t, s, v) {                   // 25% pulse, instant attack, sustains
+        var f = hz(midi), gm = vg(v), g = ac.createGain(), o = ac.createOscillator(), lp = ac.createBiquadFilter();
+        o.setPeriodicWave(pulseWave); o.frequency.value = f;
+        lp.type = "lowpass"; lp.frequency.value = Math.min(6000 * vb(v), 12000);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.14 * gm, t + 0.002);
+        o.connect(lp); lp.connect(g); g.connect(master); o.start(t); o.stop(t + 60);
+        return { g: g, o: [o], rel: 0.04 };
+      },
+      pad: function (ac, midi, t, s, v) {                    // three detuned saws, slow attack, long release
+        var f = hz(midi), gm = vg(v), br = vb(v), g = ac.createGain(), lp = ac.createBiquadFilter(), os = [];
+        lp.type = "lowpass"; lp.Q.value = 1.5;
+        lp.frequency.setValueAtTime(Math.min(f * 2 * br, 6000), t); lp.frequency.exponentialRampToValueAtTime(Math.min(f * 5 * br, 9000), t + 0.8);
+        [-9, 0, 9].forEach(function (c) {
+          var o = ac.createOscillator(); o.type = "sawtooth"; o.frequency.value = f; o.detune.value = c;
+          o.connect(lp); o.start(t); o.stop(t + 60); os.push(o);
+        });
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.1 * gm, t + 0.4);
+        lp.connect(g); g.connect(master);
+        return { g: g, o: os, rel: 1.0 };
       }
     };
 
     function noteOn(midi, vel) {
       var ac = audio(), kind = instrument, s = null;
       noteOff(midi, true);
+      glideFrom = null;
+      if (kind === "robot") {                              // mono, last note wins; glide if a key is held or was just released
+        var held_ = Object.keys(voices).filter(function (k) { return voices[k].robot != null; });
+        if (held_.length) glideFrom = voices[held_[held_.length - 1]].robot;
+        else if (robotLast != null && ac.currentTime - robotOffT < 0.15) glideFrom = robotLast;
+        held_.forEach(function (k) { noteOff(+k); });
+        robotLast = midi;
+      }
       if (kind === "grand") {
         loadGrand();
         s = nearest(midi);
         if (!buffers[s.m]) kind = "soft";                  // not loaded yet: never leave a key silent
       }
       voices[midi] = VOICE[kind](ac, midi, ac.currentTime, s, vel || 0.8);
+      glideFrom = null;
     }
 
     function noteOff(midi, instant) {
       var v = voices[midi]; if (!v || !ctx) return;
       var t = ctx.currentTime, rel = instant ? 0.02 : v.rel, gp = v.g.gain;
+      if (v.robot != null) { robotLast = v.robot; robotOffT = t; }
       if (gp.cancelAndHoldAtTime) gp.cancelAndHoldAtTime(t);
       else { gp.cancelScheduledValues(t); gp.setValueAtTime(Math.max(gp.value, 0.0001), t); }
       gp.setTargetAtTime(0, t, rel / 5);
@@ -755,17 +845,25 @@
     function apply(on) {
       document.body.classList.toggle("play", on);
       btn.innerHTML = on ? "&#10005; Close piano" : "&#127929; Play along";
-      if (!on) releaseAll();
+      if (!on) { releaseAll(); instPop.classList.remove("open"); }
       else if (instrument === "grand") loadGrand();
       window.applyPlayVol();
       try { localStorage.setItem("playMode", on ? "1" : "0"); } catch (e) {}
     }
     build();
     setInstrument(instrument, false);
+    var instPop = document.getElementById("instPop"), instGrid = document.getElementById("instGrid");
+    INSTR.forEach(function (x) {                           // the sound picker: a grid of big buttons
+      var b = document.createElement("button"); b.dataset.id = x[0];
+      b.innerHTML = "<b>" + x[1] + "</b>" + x[2];
+      b.onclick = function (e) { e.stopPropagation(); audio(); setInstrument(x[0], true); instPop.classList.remove("open"); };
+      instGrid.appendChild(b);
+    });
+    instPop.onclick = function () { instPop.classList.remove("open"); };   // tap outside = close
     instBtn.onclick = function () {
       audio();
-      var i = 0; INSTR.forEach(function (x, k) { if (x[0] === instrument) i = k; });
-      setInstrument(INSTR[(i + 1) % INSTR.length][0], true);
+      Array.prototype.forEach.call(instGrid.children, function (b) { b.classList.toggle("cur", b.dataset.id === instrument); });
+      instPop.classList.add("open");
     };
     var start = false;
     try { start = localStorage.getItem("playMode") === "1"; } catch (e) {}
