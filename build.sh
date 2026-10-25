@@ -51,8 +51,16 @@ if [ "${1:-}" = "release" ]; then
   cp out/PianoLessons.apk "out/PianoLessons-$VER.apk"
   git tag -a "v$VER" -m "Piano Lessons $VER" 2>/dev/null || true
   git push origin "v$VER"
+  # Release notes = this version's section of CHANGELOG.md (every release says what it added)
+  SECTION="$(awk -v v="## $VER " 'index($0, v) == 1 {on = 1; next} on && /^## / {exit} on' CHANGELOG.md)"
+  [ -n "$SECTION" ] || { echo "CHANGELOG.md has no '## $VER ' section - add one first" >&2; exit 1; }
   gh release create "v$VER" "out/PianoLessons-$VER.apk" --title "Piano Lessons $VER" \
-    --notes "${NOTES:-Download PianoLessons-$VER.apk and install it on Android 7+.}"
+    --notes "${NOTES:-$SECTION
+
+Download PianoLessons-$VER.apk and install it on Android 7+. Full history: CHANGELOG.md}"
+  # Keep the Obsidian WORK_BRAIN copy of the changelog in sync
+  VAULT="/e/BRAINS-MEMMORIES/WORK_BRAIN/PC & Hardware/Phones"
+  [ -d "$VAULT" ] && cp CHANGELOG.md "$VAULT/Piano Lessons changelog.md" && echo "changelog synced to Obsidian"
 fi
 
 if [ "${1:-}" = "install" ]; then
