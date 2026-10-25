@@ -89,9 +89,9 @@
   body.play #instBtn { display: block; }
   #instPop { position: fixed; inset: 0; z-index: 8; display: none; align-items: center; justify-content: center; background: rgba(10,8,20,.6); }
   #instPop.open { display: flex; }
-  #instPop .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; background: var(--panel); padding: 18px; border-radius: 22px; width: min(760px, 94vw); }
+  #instPop .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; background: var(--panel); padding: 18px; border-radius: 22px; width: min(640px, 94vw); max-height: 94vh; overflow-y: auto; }
   #instPop button { border: 3px solid transparent; border-radius: 16px; background: #2b2742; color: var(--ink); padding: 14px 4px; font: inherit; font-size: 15px; cursor: pointer; }
-  #instPop button b { display: block; font-size: 44px; line-height: 1.2; font-weight: 400; }
+  #instPop button b { display: block; font-size: 38px; line-height: 1.2; font-weight: 400; }
   #instPop button.cur { border-color: var(--accent); background: #3a3459; }
   @media (max-width: 560px) { #instPop .grid { grid-template-columns: repeat(2, 1fr); } }
   .hint { color: var(--muted); font-size: 13px; white-space: nowrap; }
@@ -223,7 +223,7 @@
     <header id="title"><span class="keys" aria-hidden="true"></span><h1>Piano Lessons</h1>
       <label class="vol" id="volBox">&#127916; <input type="range" id="vol" min="0" max="100" value="50"></label>
       <button class="lock" id="instBtn" aria-label="Choose the piano sound"></button>
-      <span class="hint" id="loadHint" style="display:none">Loading piano…</span>
+      <span class="hint" id="loadHint" style="display:none">Loading sound…</span>
       <button class="lock" id="playMode" style="margin-left:auto">&#127929; Play along</button>
       <button class="lock" id="mode">&#x26F6; Big video</button>
       <button class="lock" id="lock" aria-label="Menu (grown-ups)">&#128274; Menu</button></header>
@@ -523,8 +523,9 @@
     var INSTR = [["grand", "&#127929;", "Grand piano"], ["soft", "&#127932;", "Soft piano"], ["musicbox", "&#127925;", "Music box"],
                  ["epiano", "&#127928;", "Electric piano"], ["organ", "&#127926;", "Organ"],
                  ["robot", "&#129302;", "Robot voice"], ["lead", "&#127899;&#65039;", "Synth lead"], ["808", "&#128266;", "808 bass"],
-                 ["chip", "&#128126;", "Chiptune"], ["pad", "&#127756;", "Space pad"]];
-    try { var si = localStorage.getItem("instrument"); if (INSTR.some(function (x) { return x[0] === si; })) instrument = si; } catch (e) {}
+                 ["chip", "&#128126;", "Chiptune"], ["warmpad", "&#127756;", "Warm pad"], ["polysynth", "&#127898;&#65039;", "Polysynth"]];
+    try { var si = localStorage.getItem("instrument"); if (si === "pad") si = "warmpad";   // the old synth pad is now the sampled warm pad
+          if (INSTR.some(function (x) { return x[0] === si; })) instrument = si; } catch (e) {}
     var instBtn = document.getElementById("instBtn"), loadHint = document.getElementById("loadHint");
 
     function audio() {
@@ -550,34 +551,52 @@
     }
     window.pianoAudio = audio;   // the quiz reuses it for its sounds
 
-    // ---- Grand piano samples (Salamander): lazy-loaded from the app's bundled assets ----
-    var SAMPLES = [], buffers = {}, loading = false, loadTries = 0, grandReady = false;
-    (function () {
-      var names = ["C", "Ds", "Fs", "A"], offs = [0, 3, 6, 9];
-      for (var o = 1; o <= 6; o++) for (var i = 0; i < 4; i++) SAMPLES.push({ n: names[i] + o, m: 24 + 12 * (o - 1) + offs[i] });
-      SAMPLES.push({ n: "C7", m: 96 });
-    })();
-    function nearest(midi) {
-      var best = SAMPLES[0];
-      SAMPLES.forEach(function (s) { if (Math.abs(s.m - midi) < Math.abs(best.m - midi)) best = s; });
+    // ---- Sampled instruments: lazy-loaded from the app's bundled assets/sounds/<dir>/ ----
+    // Grand piano = Salamander; pads = FluidR3_GM renders. Notes every 3 semitones (C, D#/Eb, F#/Gb, A) over MIDI 24-96.
+    // loop: pads sustain while held by looping a steady region of the sample; rel = release seconds; gain = level.
+    var SETS = {
+      grand:     { dir: "grand",     acc: ["Ds", "Fs"], gain: 0.9, rel: 0.35 },
+      warmpad:   { dir: "warmpad",   acc: ["Eb", "Gb"], gain: 1.5, rel: 0.8, loop: true },
+      polysynth: { dir: "polysynth", acc: ["Eb", "Gb"], gain: 1.5, rel: 0.8, loop: true }
+    };
+    Object.keys(SETS).forEach(function (id) {
+      var set = SETS[id], names = ["C", set.acc[0], set.acc[1], "A"], offs = [0, 3, 6, 9];
+      set.samples = []; set.buffers = {}; set.loading = false; set.tries = 0; set.ready = false;
+      for (var o = 1; o <= 6; o++) for (var i = 0; i < 4; i++) set.samples.push({ n: names[i] + o, m: 24 + 12 * (o - 1) + offs[i] });
+      set.samples.push({ n: "C7", m: 96 });
+    });
+    function nearest(set, midi) {
+      var best = set.samples[0];
+      set.samples.forEach(function (s) { if (Math.abs(s.m - midi) < Math.abs(best.m - midi)) best = s; });
       return best;
     }
-    function hint() { loadHint.style.display = (instrument === "grand" && loading) ? "" : "none"; }
-    function loadGrand() {
-      if (grandReady || loading || loadTries >= 3) return;
-      loading = true; loadTries++; hint();
-      var ac = audio(), todo = SAMPLES.slice().sort(function (a, b) { return Math.abs(a.m - 60) - Math.abs(b.m - 60); });
+    function hint() { var set = SETS[instrument]; loadHint.style.display = (set && set.loading) ? "" : "none"; }
+    // Loop 40%..~80% of the sample (the steady part, before the rendered release tail). The end is nudged to the
+    // point where value and slope best match the start, so the seam does not click.
+    function loopPoints(buf) {
+      var d = buf.getChannelData(0), sr = buf.sampleRate, s = Math.round(d.length * 0.4), best = 0, bestErr = Infinity;
+      for (var e = Math.round(d.length * 0.72); e <= Math.round(d.length * 0.8); e++) {
+        var dv = d[e] - d[s], ds = (d[e] - d[e - 1]) - (d[s] - d[s - 1]), err = dv * dv + ds * ds;
+        if (err < bestErr) { bestErr = err; best = e; }
+      }
+      return { a: s / sr, b: best / sr };
+    }
+    function loadSet(id) {
+      var set = SETS[id];
+      if (set.ready || set.loading || set.tries >= 3) return;
+      set.loading = true; set.tries++; hint();
+      var ac = audio(), todo = set.samples.slice().sort(function (a, b) { return Math.abs(a.m - 60) - Math.abs(b.m - 60); });
       var pending = todo.length;
       function done() {
         if (--pending > 0) return;
-        loading = false; grandReady = Object.keys(buffers).length === SAMPLES.length; hint();
+        set.loading = false; set.ready = Object.keys(set.buffers).length === set.samples.length; hint();
       }
       todo.forEach(function (s) {
-        if (buffers[s.m]) { done(); return; }
-        fetch("sounds/grand/" + s.n + ".mp3")
+        if (set.buffers[s.m]) { done(); return; }
+        fetch("sounds/" + set.dir + "/" + s.n + ".mp3")
           .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.arrayBuffer(); })
           .then(function (ab) { return new Promise(function (ok, no) { ac.decodeAudioData(ab, ok, no); }); })
-          .then(function (buf) { buffers[s.m] = buf; }, function () {})
+          .then(function (buf) { if (set.loop) buf.loop = loopPoints(buf); set.buffers[s.m] = buf; }, function () {})
           .then(done);
       });
     }
@@ -587,13 +606,14 @@
     function hz(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
     function vg(v) { return Math.pow(v / 0.8, 1.3); }
     function vb(v) { return 0.6 + 0.5 * v; }
+    function sampled(set, ac, midi, t, s, v) {
+      var src = ac.createBufferSource(), g = ac.createGain(), buf = set.buffers[s.m];
+      src.buffer = buf; src.playbackRate.value = Math.pow(2, (midi - s.m) / 12);
+      if (buf.loop) { src.loop = true; src.loopStart = buf.loop.a; src.loopEnd = buf.loop.b; }   // sustains while held
+      g.gain.value = set.gain * vg(v); src.connect(g); g.connect(master); src.start(t);
+      return { g: g, o: [src], rel: set.rel };          // piano rings by itself (key release = damper fade); pads fade over rel
+    }
     var VOICE = {
-      grand: function (ac, midi, t, s, v) {
-        var src = ac.createBufferSource(), g = ac.createGain();
-        src.buffer = buffers[s.m]; src.playbackRate.value = Math.pow(2, (midi - s.m) / 12);
-        g.gain.value = 0.9 * vg(v); src.connect(g); g.connect(master); src.start(t);
-        return { g: g, o: [src], rel: 0.35 };           // the sample rings by itself; key release = damper fade
-      },
       soft: function (ac, midi, t, s, v) {
         var f = hz(midi), gm = vg(v), br = vb(v);
         var g = ac.createGain(), lp = ac.createBiquadFilter(), o1 = ac.createOscillator(), o2 = ac.createOscillator();
@@ -700,18 +720,6 @@
         g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.14 * gm, t + 0.002);
         o.connect(lp); lp.connect(g); g.connect(master); o.start(t); o.stop(t + 60);
         return { g: g, o: [o], rel: 0.04 };
-      },
-      pad: function (ac, midi, t, s, v) {                    // three detuned saws, slow attack, long release
-        var f = hz(midi), gm = vg(v), br = vb(v), g = ac.createGain(), lp = ac.createBiquadFilter(), os = [];
-        lp.type = "lowpass"; lp.Q.value = 1.5;
-        lp.frequency.setValueAtTime(Math.min(f * 2 * br, 6000), t); lp.frequency.exponentialRampToValueAtTime(Math.min(f * 5 * br, 9000), t + 0.8);
-        [-9, 0, 9].forEach(function (c) {
-          var o = ac.createOscillator(); o.type = "sawtooth"; o.frequency.value = f; o.detune.value = c;
-          o.connect(lp); o.start(t); o.stop(t + 60); os.push(o);
-        });
-        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.1 * gm, t + 0.4);
-        lp.connect(g); g.connect(master);
-        return { g: g, o: os, rel: 1.0 };
       }
     };
 
@@ -726,12 +734,13 @@
         held_.forEach(function (k) { noteOff(+k); });
         robotLast = midi;
       }
-      if (kind === "grand") {
-        loadGrand();
-        s = nearest(midi);
-        if (!buffers[s.m]) kind = "soft";                  // not loaded yet: never leave a key silent
+      var set = SETS[kind];
+      if (set) {
+        loadSet(kind);
+        s = nearest(set, midi);
+        if (!set.buffers[s.m]) set = null, kind = "soft";  // not loaded yet: never leave a key silent
       }
-      voices[midi] = VOICE[kind](ac, midi, ac.currentTime, s, vel || 0.8);
+      voices[midi] = set ? sampled(set, ac, midi, ac.currentTime, s, vel || 0.8) : VOICE[kind](ac, midi, ac.currentTime, s, vel || 0.8);
       glideFrom = null;
     }
 
@@ -752,7 +761,7 @@
       var x = INSTR.filter(function (i) { return i[0] === id; })[0];
       instBtn.innerHTML = x[1] + " " + x[2];
       if (save) try { localStorage.setItem("instrument", id); } catch (e) {}
-      if (id === "grand" && document.body.classList.contains("play")) loadGrand();
+      if (SETS[id] && document.body.classList.contains("play")) loadSet(id);
       hint();
     }
 
@@ -846,7 +855,7 @@
       document.body.classList.toggle("play", on);
       btn.innerHTML = on ? "&#10005; Close piano" : "&#127929; Play along";
       if (!on) { releaseAll(); instPop.classList.remove("open"); }
-      else if (instrument === "grand") loadGrand();
+      else if (SETS[instrument]) loadSet(instrument);
       window.applyPlayVol();
       try { localStorage.setItem("playMode", on ? "1" : "0"); } catch (e) {}
     }

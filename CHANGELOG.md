@@ -4,6 +4,9 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.7.3 — 2026-10-25
+- Pads are now real recorded sounds (FluidR3 soundfont): 🌌 Warm pad replaces the synth pad, new 🎹 Polysynth
+
 ## 1.7.2 — 2026-10-25
 - 5 new synth sounds: 🤖 Robot voice (talkbox/auto-tune style with glide), 🎛️ Synth lead, 🔊 808 bass, 👾 Chiptune, 🌌 Space pad
 - Sound picker is now a grid of big buttons instead of tap-to-cycle

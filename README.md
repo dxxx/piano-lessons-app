@@ -87,7 +87,10 @@ The PIN check goes through a small JavaScript bridge to the app (SHA-256 in priv
 
 ## Sounds
 The play-along piano can sound like a grand piano (default), a soft synth piano, a music box, an electric piano
-or an organ; the choice is remembered. The grand piano uses recorded samples bundled in `assets/sounds/grand/`
+or an organ, plus synth voices and two sampled pads (Warm pad, Polysynth; they sustain by looping the steady part of
+the sample); the choice is remembered. Sampled sounds use recordings bundled in `assets/sounds/<instrument>/`
 and served to the page by the WebView (no network needed).
 
 Grand piano samples: Salamander Grand Piano by Alexander Holm, CC-BY 3.0.
+Synth pads: FluidR3_GM soundfont by Frank Wen, MIT licence (per-note renders from gleitz/midi-js-soundfonts; that
+project's README labels the renders CC-BY 3.0, so credit is given here either way).
