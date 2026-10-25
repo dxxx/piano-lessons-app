@@ -4,7 +4,7 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
-## 1.6.1 — 2026-10-25 (in progress)
+## 1.6.1 — 2026-10-25
 - Key sensitivity: louder when a key is pressed nearer its bottom edge or with a bigger touch; grown-up setting Off / Normal / Strong
 - Activity log for parents (behind the PIN): screen time per day, most-watched lessons, play-along time and favourite sound, quiz summary
 
