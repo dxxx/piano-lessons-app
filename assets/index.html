@@ -170,6 +170,13 @@
   @keyframes flash { from { background: #a80016; } to { background: #e0102a; } }
   .gate .card { max-height: 94vh; overflow-y: auto; }
   #res, #act { z-index: 11; }
+  /* Eye guard: too close to the screen -> cover everything until he moves back */
+  .eyecov { position: fixed; inset: 0; z-index: 13; display: none; flex-direction: column; align-items: center;
+    justify-content: center; gap: 18px; background: #14121f; color: #fff; text-align: center; padding: 24px; }
+  .eyecov.on { display: flex; }
+  .eyecov .big { font-size: 110px; line-height: 1; }
+  .eyecov .msg { font-size: 54px; font-weight: 800; }
+  .eyecov .sub { font-size: 26px; color: var(--muted); }
   #res .card, #act .card { width: min(600px, 94vw); text-align: left; }
   #res h3, #act h3 { margin: 0 0 8px; text-align: center; }
   #act .tabs { display: flex; gap: 6px; margin-bottom: 8px; }
@@ -253,10 +260,17 @@
       <button class="set" id="vOn"></button>
       <button class="set" id="vLang"></button>
       <div class="note" id="vNote"></div>
+      <button class="set" id="eOn"></button>
+      <button class="set" id="eSens"></button>
+      <button class="set" id="eCal"></button>
+      <button class="set" id="eReset">Use the automatic distance</button>
+      <div class="note" id="eNote"></div>
       <button class="set" id="qTry">Show a quiz now</button>
       <button id="doChange">Change PIN</button>
       <button id="doCancel">Back to lessons</button>
 </template>
+
+<div class="eyecov" id="eyecov"><div class="big">&#128064;</div><div class="msg" id="eyemsg"></div><div class="sub" id="eyesub"></div></div>
 
 <div class="gate" id="act">
   <div class="card">
@@ -375,6 +389,7 @@
         if (D.lv.length > 30) D.lv = D.lv.slice(-30);
         save();
       },
+      tooClose: function () { var d = day(); d.ey = (d.ey || 0) + 1; save(); },
       clear: function () { D = { d: {}, les: {}, lv: [] }; newSession(); save(); },
       key: dkey
     };
@@ -872,7 +887,7 @@
     var miss = +get("quizMiss", "0") || 0;      // mistakes in a row (any level)
     var sessRight = 0;                          // correct answers in a row in THIS quiz
     var sessMiss = +get("quizSessMiss", "0") || 0;   // consecutive mistakes in THIS quiz (sets the freeze)
-    var locked = true, t0 = 0, thinkTimer = null, freezeTimer = null;
+    var locked = true, t0 = 0, eye0 = 0, thinkTimer = null, freezeTimer = null;
     var log = [];
     try { log = JSON.parse(get("quizLog", "[]")); if (!Array.isArray(log)) log = []; } catch (e) { log = []; }
 
@@ -914,34 +929,50 @@
     function buttonsOn() {                       // answer buttons (the normal way, and the voice fallback)
       $("qvoice").hidden = true; $("qans").style.display = "";
       [].forEach.call($("qans").children, function (b) { b.disabled = false; });
-      $("qmsg").textContent = ""; locked = false; t0 = Date.now();
+      $("qmsg").textContent = ""; locked = false; t0 = Date.now(); eye0 = window.eyeMs || 0;
     }
     function stopVoice() {
-      clearTimeout(vTimer); vHandler = null;
+      clearTimeout(vTimer); clearTimeout(vWait); vBuf = ""; vHandler = null;
       if (voice.cfg.on) voice.stop();
       $("qvoice").hidden = true;
     }
     function armVoiceTimer(my) {
       clearTimeout(vTimer);
-      vTimer = setTimeout(function () { if (my === qid && !locked) unheard(my); }, 15000);
+      vTimer = setTimeout(function () { if (my !== qid || locked) return; if (window.eyeCovered) armVoiceTimer(my); else unheard(my); }, 15000);
     }
     function unheard(my) {
       if (my !== qid) return;
+      vBuf = ""; clearTimeout(vWait);           // a fresh try starts a fresh sentence
       if (++vTries >= 3) { stopVoice(); buttonsOn(); $("qmsg").textContent = "\ud83d\udc46 Tap the answer"; return; }
       $("qmsg").textContent = voice.cfg.lang === "es" ? "No te o\u00ed, int\u00e9ntalo otra vez \ud83c\udfa4" : "I didn't hear \u2014 try again \ud83c\udfa4";
       armVoiceTimer(my);
     }
+    // The recogniser ends a "result" at every pause, and a child pauses mid-sentence ("twelve minus three ... is nine").
+    // So the pieces are joined into one sentence per question: a right sentence passes at once; a wrong-looking one
+    // is judged only after SETTLE_MS of silence, in case he is still going.
+    var SETTLE_MS = 2500, vBuf = "", vWait = null;
     function onHeard(my, ev, text) {
       if (my !== qid || !open || locked) return;
-      if (ev === "partial") { $("qheard").textContent = text; if (text) $("qmsg").textContent = ""; return; }
+      if (ev === "partial") {
+        if (text) { clearTimeout(vWait); armVoiceTimer(my); $("qmsg").textContent = ""; }
+        $("qheard").textContent = (vBuf + " " + (text || "")).trim();
+        return;
+      }
       if (ev === "final") {
         if (!text) return;
-        $("qheard").textContent = text;
-        var r = voice.judge(text, curA, curB, answer);
-        if (r.k === "unheard") { unheard(my); return; }
-        stopVoice();
-        pick(null, r.n, text);
-        return;
+        vBuf = (vBuf + " " + text).trim();
+        $("qheard").textContent = vBuf;
+        armVoiceTimer(my);
+        var r = voice.judge(vBuf, curA, curB, answer);
+        if (r.k === "ok") { var heard = vBuf; stopVoice(); pick(null, r.n, heard); return; }
+        if (r.k === "wrong") {
+          clearTimeout(vWait);
+          vWait = setTimeout(function () {
+            if (my !== qid || !open || locked) return;
+            var heard = vBuf; stopVoice(); pick(null, r.n, heard);
+          }, SETTLE_MS);
+        }
+        return;                                 // not a full sentence yet: keep listening
       }
       stopVoice(); buttonsOn();                 // timeout / listenError: the buttons still work
     }
@@ -949,7 +980,7 @@
       if (my !== qid || !open) return;
       if (voice.state() === "loading") { $("qmsg").textContent = "Preparing voice\u2026"; voice.once(function () { beginVoice(my); }); return; }
       if (voice.state() !== "ready") { buttonsOn(); return; }
-      t0 = Date.now(); locked = false;
+      t0 = Date.now(); eye0 = window.eyeMs || 0; locked = false;
       $("qmsg").textContent = "";
       $("qvoice").querySelector(".say").textContent = voice.cfg.lang === "es" ? "\u00a1L\u00e9elo y di la respuesta!" : "Read it and say the answer!";
       $("qheard").textContent = ""; $("qvoice").hidden = false;
@@ -1027,7 +1058,7 @@
     }
 
     function record(n, ok, heard) {
-      var e = { t: new Date().toISOString(), q: curQ, a: n, c: answer, ok: ok, lvl: level, ms: Date.now() - t0 };
+      var e = { t: new Date().toISOString(), q: curQ, a: n, c: answer, ok: ok, lvl: level, ms: Date.now() - t0 - ((window.eyeMs || 0) - eye0) };
       if (heard !== undefined) { e.v = 1; e.h = heard; }          // a voice answer and what the app heard
       log.push(e);
       if (log.length > LOG_MAX) log = log.slice(-LOG_MAX);
@@ -1095,8 +1126,10 @@
       $("qredEq").style.fontSize = m ? "84px" : "";
       $("qred").classList.add("on");
       clearInterval(freezeTimer); freezeTimer = null;
+      var lastT = Date.now();
       function tick() {
-        var left = Math.ceil((until - Date.now()) / 1000);
+        var nowT = Date.now(); if (window.eyeCovered) until += nowT - lastT; lastT = nowT;   // the countdown waits while covered
+        var left = Math.ceil((until - nowT) / 1000);
         if (left > 0) { $("qredCount").textContent = "⏳ " + left; return; }
         clearInterval(freezeTimer); freezeTimer = null;
         put("quizFreezeUntil", 0);
@@ -1188,6 +1221,71 @@
   document.getElementById("next").onclick = function () { player.nextVideo(); };
   setInterval(refresh, 1500); // titles arrive a moment after the video switches
 
+  // ---- Eye guard: the front camera (native side, on-device only) tells when his face is too close ----
+  // Too close -> cover the screen, pause the video, hold the quiz clocks; back at a good distance -> uncover.
+  var eye = (function () {
+    var bridge = window.Eye, covered = false, pausedVid = false, t0 = 0, st = "off", cb = null, calCb = null, calBusy = false, menuOpen = false;
+    window.eyeCovered = false; window.eyeMs = 0;
+    function get(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
+    function put(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
+    var cfg = { on: get("eyeOn", "1") === "1", strict: get("eyeStrict", "0") === "1" };
+    function es() { return voice.cfg.lang === "es"; }
+    function cover() {
+      if (covered) return;
+      covered = true; window.eyeCovered = true; t0 = Date.now();
+      document.getElementById("eyemsg").textContent = es() ? "\u00a1Al\u00e9jate un poquito!" : "Move back a little!";
+      document.getElementById("eyesub").textContent = es() ? "La pantalla vuelve enseguida" : "The screen comes back when you do";
+      document.getElementById("eyecov").classList.add("on");
+      pausedVid = !!(player && player.getPlayerState && player.getPlayerState() === 1);
+      if (pausedVid) player.pauseVideo();
+      act.tooClose();
+      voice.say(es() ? "\u00a1Al\u00e9jate un poquito!" : "Move back a little!");
+    }
+    function uncover() {
+      if (!covered) return;
+      covered = false; window.eyeCovered = false; window.eyeMs += Date.now() - t0;
+      document.getElementById("eyecov").classList.remove("on");
+      if (pausedVid && player && player.playVideo && !quiz.isOpen()) player.playVideo();
+      pausedVid = false;
+    }
+    window.eyeEvent = function (type, a) {
+      if (type === "close") cover();
+      else if (type === "ok") uncover();
+      else if (type === "state") { st = a; if (a === "noperm" || a === "nocam" || a.indexOf("err:") === 0) calBusy = false; if (cb) cb(); }
+      else if (type === "cal") { calBusy = false; if (calCb) calCb(a); if (bridge) bridge.menu(menuOpen); if (cb) cb(); }
+    };
+    document.addEventListener("visibilitychange", function () { if (document.hidden) uncover(); });
+    function apply() { if (bridge) bridge.config(cfg.on, cfg.strict); }
+    var api = {
+      cfg: cfg,
+      has: function () { return !!bridge; },
+      state: function () { return st; },
+      busy: function () { return calBusy; },
+      onNote: function (f) { cb = f; },
+      hasCal: function () { return !!(bridge && bridge.hasCal()); },
+      note: function () {
+        var t = !bridge ? "Eye guard is not available here." :
+          calBusy ? "Calibrating: he should sit at a good distance and look at the screen (7 seconds)." :
+          st === "noperm" ? "Tap \u201cEye guard\u201d to allow the camera." :
+          st === "nocam" ? "This tablet has no front camera." :
+          st.indexOf("err:") === 0 ? "Camera problem: " + st.slice(4) :
+          cfg.on ? "The camera checks his distance once a second, only while this menu is closed (paused now). Nothing is saved or sent." : "";
+        return t + (api.hasCal() ? " Distance: calibrated." : " Distance: automatic (about 30 cm).");
+      },
+      menu: function (open) { menuOpen = open; if (open) uncover(); if (bridge) bridge.menu(open); },
+      setOn: function (on) {
+        cfg.on = on; put("eyeOn", on ? 1 : 0); apply();
+        if (on && bridge && st === "noperm") bridge.ask();
+      },
+      tapOn: function () { if (cfg.on && st === "noperm") { bridge.ask(); return; } api.setOn(!cfg.on); },
+      setStrict: function (s2) { cfg.strict = s2; put("eyeStrict", s2 ? 1 : 0); apply(); },
+      calibrate: function (done) { if (!bridge) return; calBusy = true; calCb = done; apply(); bridge.calibrate(); },
+      resetCal: function () { if (bridge) bridge.resetCal(); }
+    };
+    apply();
+    return api;
+  })();
+
   // Grown-up PIN: the Close button asks for it. The first time, it asks to create one
   // (4 digits, typed twice). After the right PIN: close the app, change the PIN, or go back.
   (function () {
@@ -1213,6 +1311,7 @@
       clearTimeout(idleTimer); idleTimer = null;
       choices.textContent = ""; choices.hidden = true; pad.hidden = false; ans = ""; $("ga").textContent = "";
       gate.classList.remove("open"); $("act").classList.remove("open"); $("res").classList.remove("open");
+      eye.menu(false);
     }
     window.lockMenu = lock;
     ["gate", "act", "res"].forEach(function (id) {
@@ -1227,7 +1326,7 @@
       $("ge").textContent = "";
       if (bridge && !bridge.hasPin()) { mode = "new"; show("Create a 4-digit PIN"); }
       else { mode = "check"; show("Enter the grown-up PIN"); }
-      gate.classList.add("open");
+      gate.classList.add("open"); eye.menu(true);          // the camera rests while the grown-up menu is open
     }
     function closeGate() { lock(); }
 
@@ -1272,6 +1371,24 @@
       $("qMode").textContent = "Mode: " + (appMode.math() ? "\u2797 Math only" : "\ud83c\udfb9 Piano lessons") + " (tap to switch)";
       $("qTry").disabled = appMode.math();
     }
+    function elabel() {
+      if (!$("eOn")) return;
+      var st = eye.state();
+      $("eOn").textContent = "Eye guard: " + (eye.cfg.on ? "ON" : "OFF") + (eye.cfg.on && st === "noperm" ? " (tap to allow the camera)" : "");
+      $("eSens").textContent = "Eye guard sensitivity: " + (eye.cfg.strict ? "Strict" : "Normal");
+      $("eCal").textContent = eye.busy() ? "Calibrating\u2026" : "Calibrate distance" + (eye.hasCal() ? " (done)" : "");
+      $("eCal").disabled = eye.busy() || !eye.has();
+      $("eSens").disabled = !eye.cfg.on; $("eReset").hidden = !eye.hasCal();
+      $("eNote").textContent = eye.note();
+    }
+    eye.onNote(elabel);
+    $("eOn").onclick = function () { eye.tapOn(); elabel(); };
+    $("eSens").onclick = function () { eye.setStrict(!eye.cfg.strict); elabel(); };
+    $("eCal").onclick = function () {
+      eye.calibrate(function (r) { if ($("eNote")) $("eNote").textContent = r === "none" ? "No face was seen. Try again, with his face in view." : "Calibrated. Closer than this (plus a margin) covers the screen."; });
+      elabel();
+    };
+    $("eReset").onclick = function () { eye.resetCal(); elabel(); };
     voice.onNote(vlabel);
     $("vOn").onclick = function () { voice.setOn(!voice.cfg.on); vlabel(); };
     $("vLang").onclick = function () { voice.setLang(voice.cfg.lang === "es" ? "en" : "es"); vlabel(); };
@@ -1313,8 +1430,8 @@
       return Object.keys(tot).sort(function (a, b) { return tot[b] - tot[a]; }).slice(0, n).map(function (k) { return esc(nameOf ? nameOf(k) : k) + " (" + tot[k] + ")"; }).join(", ") || "-";
     }
     function dayRows(list) {   // list of day records
-      var nn = 0, pa = 0, mt = 0; list.forEach(function (d) { nn += d.nn; pa += d.pa; mt += d.mt || 0; });
-      return row("Math-only time", mins(mt)) + row("Play along", mins(pa)) + row("Notes played", nn) +
+      var nn = 0, pa = 0, mt = 0, ey = 0; list.forEach(function (d) { nn += d.nn; pa += d.pa; mt += d.mt || 0; ey += d.ey || 0; });
+      return row("Too close to the screen", ey + (ey === 1 ? " time" : " times")) + row("Math-only time", mins(mt)) + row("Play along", mins(pa)) + row("Notes played", nn) +
         row("Favourite sound", topOf(list.map(function (d) { return d.ins; }), 1, function (k) { return INAME[k] || k; })) +
         row("Most played notes", topOf(list.map(function (d) { return d.nt; }), 5));
     }
@@ -1368,7 +1485,7 @@
       quiz.clearRecords(); renderResults();
     };
     $("qTry").onclick = function () { closeGate(); quiz.show(); };
-    label(); vlabel(); mlabel();
+    label(); vlabel(); mlabel(); elabel();
 
     $("doClose").onclick = function () { if (bridge) bridge.unlock(); };
     $("doChange").onclick = function () { mode = "new"; $("ge").textContent = ""; show("Create a new 4-digit PIN"); };

@@ -4,6 +4,10 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.7.1 — 2026-10-25
+- Voice quiz hears the whole sentence: pauses no longer cut it off ("twelve minus three … is nine" counts as one answer); a wrong-sounding answer is judged only after 2.5 s of silence, so he can finish
+- **Eye guard**: the front camera checks his distance once a second; too close covers the screen and pauses the video until he moves back (on-device only, nothing saved or sent); calibrate in the Menu. The Activity panel counts how many times per day
+
 ## 1.7 — 2026-10-25
 - **Voice quiz** (grown-up setting, off by default): he reads the question aloud and says the answer ("twelve minus three is nine"); the tablet listens offline, in English or Spanish, and checks. Nothing is sent anywhere; the first time it asks for the microphone
 - Right answer: "Great job!" / "¡Muy bien!" spoken. Wrong answer (operands said, wrong result): the same red stop-and-think screen, now also spoken with the worked answer. Not heard: no penalty, "try again" and after 3 tries the answer buttons appear. The grown-up can see what it heard under the question

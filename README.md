@@ -63,6 +63,16 @@ The Menu (🔒 Menu) has **Mode: Piano lessons / Math only**. Math only is a non
 levels, think time, stop-and-think freeze, voice answering and records, a star count and a level-up celebration. Levels 4-6 show the sum
 as written column arithmetic. The mode is remembered; the Activity panel shows math-only time separately.
 
+## Eye guard (distance check)
+Too close to the screen? The front camera looks for one face about once a second (Android's built-in face finder, tiny frames,
+rotated as needed). Two "too close" looks in a row cover the screen ("Move back a little!" / "¡Aléjate un poquito!", spoken if a voice is
+installed and the Voice quiz is on), pause the video and hold the quiz clocks; it uncovers after 2 s at a good distance. No face seen = nothing happens.
+Menu settings: **Eye guard ON/OFF** (asks for the camera the first time), **sensitivity Normal/Strict**, **Calibrate distance** (he sits at a
+good distance, the grown-up taps it, 7 seconds; "too close" is then 35% (Normal) / 15% (Strict) nearer than that; without calibration it uses the camera's
+field of view and a 5.5 cm eye spacing: about 30 cm Normal, 40 cm Strict). The camera is off while the Menu is open and while the app is in the
+background. **Privacy:** frames are examined in memory and discarded; nothing is saved, logged or sent. On Android 12+ a green camera dot shows while it runs.
+The Activity panel counts "too close" times per day.
+
 ## How it works
 One Activity with a WebView. The page hosts YouTube's official IFrame player (`listType=playlist`,
 `controls=0`); the iframe is drawn 120 px taller than its box so YouTube's edge overlays fall outside the

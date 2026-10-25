@@ -64,6 +64,11 @@ public class MainActivity extends Activity {
     private TextToSpeech tts;
     private boolean ttsReady, ttsEn, ttsEs;
 
+    // Eye-distance guard (front camera, on-device only); the page decides when it is wanted
+    private static final int REQ_CAM = 72;
+    private EyeGuard eye;
+    private boolean eyeOn, eyeMenuOpen, eyeResumed;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +95,11 @@ public class MainActivity extends Activity {
         });
         web.addJavascriptInterface(new Parent(), "Parent");
         web.addJavascriptInterface(new Voice(), "Voice");
+        eye = new EyeGuard(this, new EyeGuard.Listener() {
+            @Override
+            public void onEvent(String type, String arg) { jsEye(type, arg); }
+        });
+        web.addJavascriptInterface(new Eye(), "Eye");
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -185,6 +195,7 @@ public class MainActivity extends Activity {
     protected void onPause() {
         super.onPause();
         stopListening();                        // never keep the microphone open in the background
+        eyeResumed = false; eye.stop();         // ...nor the camera
         if (tts != null) tts.stop();
         web.evaluateJavascript("window.lockMenu&&window.lockMenu()", null);   // the grown-up menu relocks
         web.onPause();
@@ -192,6 +203,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        eye.stop();
         stopListening();
         freeModel();
         if (tts != null) { tts.shutdown(); tts = null; }
@@ -292,6 +304,7 @@ public class MainActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int code, String[] perms, int[] results) {
         super.onRequestPermissionsResult(code, perms, results);
+        if (code == REQ_CAM) { eyeRefresh(); return; }
         if (code != REQ_MIC) return;
         String lang = pendingLang;
         pendingLang = null;
@@ -312,6 +325,76 @@ public class MainActivity extends Activity {
                 js("tts", (ttsReady && ttsEn ? "1" : "0") + (ttsReady && ttsEs ? "1" : "0"));
             }
         });
+    }
+
+    // ---- Eye-distance guard ----
+
+    private void jsEye(String type, String arg) {
+        final String call = "window.eyeEvent&&window.eyeEvent(" + JSONObject.quote(type) + ","
+                + JSONObject.quote(arg == null ? "" : arg) + ")";
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() { web.evaluateJavascript(call, null); }
+        });
+    }
+
+    /** Main thread: run the camera only when wanted, allowed, in front, and the grown-up menu is closed. */
+    private void eyeRefresh() {
+        boolean perm = checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+        boolean cal = eye.isCalibrating();
+        if (eyeResumed && perm && (cal || (eyeOn && !eyeMenuOpen))) eye.start(); else eye.stop();
+        jsEye("state", !eyeOn && !cal ? "off" : !perm ? "noperm" : eyeMenuOpen && !cal ? "menu" : "on");
+    }
+
+    /** The page's eye-guard calls. */
+    private class Eye {
+        @JavascriptInterface
+        public void config(final boolean on, final boolean strict) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() { eyeOn = on; eye.setStrict(strict); eyeRefresh(); }
+            });
+        }
+
+        @JavascriptInterface
+        public void menu(final boolean open) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() { eyeMenuOpen = open; eyeRefresh(); }
+            });
+        }
+
+        @JavascriptInterface
+        public void ask() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
+                        requestPermissions(new String[]{Manifest.permission.CAMERA}, REQ_CAM);
+                    else eyeRefresh();
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void calibrate() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                        requestPermissions(new String[]{Manifest.permission.CAMERA}, REQ_CAM);
+                        return;
+                    }
+                    eye.calibrate(); eyeRefresh();
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void resetCal() { eye.resetCal(); }
+
+        @JavascriptInterface
+        public boolean hasCal() { return eye.hasCal(); }
     }
 
     /** The page's voice calls. Everything that touches the recogniser runs on the main thread. */
@@ -367,6 +450,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         web.onResume();
+        eyeResumed = true; eyeRefresh();
         ensurePinned();
     }
 
