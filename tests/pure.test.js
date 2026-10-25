@@ -2,7 +2,7 @@
 const fs = require("fs"), assert = require("assert"), path = require("path");
 const html = fs.readFileSync(path.join(__dirname, "..", "assets", "index.html"), "utf8");
 const src = html.slice(html.indexOf("// <pure>"), html.indexOf("// </pure>"));
-const P = new Function(src + "; return { explain, eqSay, qSay, rightSay, wrongSay, pickIdx, mistakeCount, dayStep, clockBehind, limitLeft, earnStep, qKey, reviewAfter, reviewDue, trickName, splitText, easyIntro, PRAISE };")();
+const P = new Function(src + "; return { explain, eqSay, qSay, rightSay, wrongSay, pickIdx, mistakeCount, dayStep, clockBehind, limitLeft, earnStep, qKey, reviewAfter, reviewDue, trickName, splitText, easyIntro, PRAISE, slipAnswers, slipKind, slipSay, hintPick, hintStats, needsRegroup };")();
 const say = (a, b, plus, lv, l) => P.explain(a, b, plus, lv, l).say;
 const eq = (got, want) => assert.strictEqual(got, want);
 
@@ -32,11 +32,22 @@ eq(say(38, 2, true, 5, "en"), "2 more makes 40.");
 eq(say(40, 7, false, 5, "en"), "Take away 10 to get 30, that is 3 too many, so add 3 back: 33.");
 eq(say(43, 7, false, 5, "es"), "Quita 3 para llegar a 40, luego quita 4 más: 36.");
 // L6
-eq(say(65, 54, false, 6, "en"), "Tens, 6 minus 5 is 1. Ones, 5 minus 4 is 1. So 11.");
-eq(say(23, 41, true, 6, "es"), "Decenas, 2 más 4 son 6. Unidades, 3 más 1 son 4. Así que 64.");
-eq(say(70, 20, false, 6, "en"), "Tens, 7 minus 2 is 5. Ones, 0 minus 0 is 0. So 50.");
+eq(say(65, 54, false, 6, "en"), "Ones, 5 minus 4 is 1. Tens, 6 minus 5 is 1. So 11.");
+eq(say(23, 41, true, 6, "es"), "Unidades, 3 más 1 son 4. Decenas, 2 más 4 son 6. Así que 64.");
+eq(say(70, 20, false, 6, "en"), "Ones, 0 minus 0 is 0. Tens, 7 minus 2 is 5. So 50.");
+// L7: carry and trade, ones first; the crossed-out tens digit is named
+eq(say(84, 39, false, 7, "en"), "Ones, 4 take away 9? Not enough ones, so trade 1 ten for 10 ones: 8 becomes 7, 4 becomes 14. 14 minus 9 is 5. Tens, 7 minus 3 is 4. So 45.");
+eq(say(59, 27, true, 7, "en"), "Ones, 9 plus 7 is 16: write 6 and the ten goes up to the tens. Tens, 1 plus 5 plus 2 is 8. So 86.");
+// slips: the classic wrong answers of column sums
+eq(P.slipAnswers(84, 39, false).join(","), "55"); eq(P.slipAnswers(72, 38, false).join(","), "46,44"); eq(P.slipAnswers(38, 27, true).join(","), "55");
+eq(P.slipAnswers(65, 54, false).length, 0);
+eq(P.slipKind(72, 38, false, 46), "flip"); eq(P.slipKind(72, 38, false, 44), "kept"); eq(P.slipKind(38, 27, true, 55), "carry"); eq(P.slipKind(72, 38, false, 40), "");
+// the hint test: least-shown style first; score = right on the next same-kind column sum without a hint
+eq(P.hintPick([{ hs: "A" }, { hs: "B" }], 0), "C"); eq(P.hintPick([], 0.99), "C"); eq(P.hintPick([], 0), "A");
+{ const L = [{ hs: "A", col: 1, reg: 1, ok: 0 }, { col: 1, reg: 0, ok: 1 }, { col: 1, reg: 1, ok: 1 }, { hs: "B", col: 1, reg: 1, ok: 1, hint: 2 }, { col: 1, reg: 1, ok: 0 }];
+  const st = P.hintStats(L); eq(st.s.A.nx + "/" + st.s.A.nok, "1/1"); eq(st.s.B.nx + "/" + st.s.B.nok, "1/0"); eq(st.s.C.n, 0); eq(st.win, ""); }
 // every sum of every level: 1-4 steps, and the last number said is the answer
-for (const l of ["en", "es"]) for (let lv = 1; lv <= 6; lv++) for (let a = 1; a <= 99; a++) for (let b = 1; b <= 99; b++) for (const plus of [true, false]) {
+for (const l of ["en", "es"]) for (let lv = 1; lv <= 7; lv++) for (let a = 1; a <= 99; a++) for (let b = 1; b <= 99; b++) for (const plus of [true, false]) {
   if (!plus && a <= b) continue; if (plus && a + b > 99) continue; if (lv <= 2 && a > 20) continue; if (lv === 3 && a > 19) continue;
   const r = plus ? a + b : a - b, x = P.explain(a, b, plus, lv, l), nums = x.say.match(/\d+/g);
   assert(x.steps.length >= 1 && x.steps.length <= 4, `steps ${a}${plus}${b} L${lv}`);
@@ -46,7 +57,7 @@ for (const l of ["en", "es"]) for (let lv = 1; lv <= 6; lv++) for (let a = 1; a 
 // hints (arcs) come from the same steps: refs exist, the order is 1..n, the last label ends in the answer
 const REFS = (a, b) => { const r = ["a", "b", "q", "a0", "b0"]; if (a >= 10) r.push("a1"); if (b >= 10) r.push("b1"); return r; };
 let nh = 0;
-for (const l of ["en", "es"]) for (let lv = 1; lv <= 6; lv++) for (let a = 1; a <= 99; a++) for (let b = 1; b <= 99; b++) for (const plus of [true, false]) {
+for (const l of ["en", "es"]) for (let lv = 1; lv <= 7; lv++) for (let a = 1; a <= 99; a++) for (let b = 1; b <= 99; b++) for (const plus of [true, false]) {
   if (!plus && a <= b) continue; if (plus && a + b > 99) continue; if (lv <= 2 && a > 20) continue; if (lv === 3 && a > 19) continue;
   const r = plus ? a + b : a - b, x = P.explain(a, b, plus, lv, l), hs = x.hints, ok = REFS(a, b);
   assert(hs.length >= 2 && hs.length <= 3, `hints count ${a}${plus}${b} L${lv}: ${hs.length}`);

@@ -122,7 +122,9 @@
     align-items: center; justify-content: center; z-index: 9; }
   .quiz.open { display: flex; }
   .qcard { background: var(--panel); border-radius: 24px; padding: 24px 32px; width: min(900px, 94vw);
-    text-align: center; }
+    text-align: center; max-height: 100vh; overflow-y: auto; }
+  .quiz.hinting .qpic, .quiz.hinting .qtitle, .quiz.hinting .qprog, .quiz.hinting .qstreak { display: none; }   /* room for the column hint */
+  @media (max-width: 500px) { .qcard { padding: 14px 10px; } }
   .qtitle { color: var(--muted); font-size: 20px; }
   .qpic { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 18px;
     min-height: 120px; margin: 14px 0 4px; }
@@ -199,6 +201,40 @@
   .qhost .pop { display: inline-block; animation: pop .5s ease-out; }
   .qred { --arc: #fff; } .qred .arcs .chip { fill: #fff; }
   .qtbtn { margin-top: 10px; font-size: 20px; font-weight: 800; padding: 10px 22px; border: 0; border-radius: 16px; background: #2b2742; color: var(--ink); }
+  /* Column hints (colHint): lanes, flying digits, blocks, the keypad of "do it with me" */
+  .chint[hidden] { display: none; }
+  .chint { margin: 0 auto 6px; width: 340px; max-width: 100%; }
+  .ch-stage { position: relative; height: 330px; overflow: hidden; border-radius: 18px; background: #1b1930; }
+  .ch-stage.blocks { height: 410px; }
+  .ch-lane { position: absolute; top: 0; bottom: 0; width: 60px; border-radius: 16px; background: #ffffff08; transition: background .4s, box-shadow .4s; }
+  .ch-lane span { position: absolute; bottom: 6px; width: 100%; text-align: center; font-size: 12px; font-weight: 700; opacity: .8; }
+  .ch-lane.o span { color: #ff5a7a; } .ch-lane.t span { color: #4cc9ff; }
+  .ch-lane.o.live { background: #ff5a7a22; box-shadow: 0 0 30px #ff5a7a44 inset; }
+  .ch-lane.t.live { background: #4cc9ff22; box-shadow: 0 0 30px #4cc9ff44 inset; }
+  .ch-bar { position: absolute; height: 6px; border-radius: 3px; background: var(--ink); top: 222px; }
+  .ch-tok, .ch-cube, .ch-stick, .ch-flash, .ch-spark { position: absolute; left: 0; top: 0; will-change: transform; }
+  .ch-tok { font: 800 72px/1 ui-monospace, "Roboto Mono", "Courier New", monospace; white-space: nowrap; }
+  .ch-tok.o { color: #ff5a7a; } .ch-tok.t { color: #4cc9ff; } .ch-tok.g { color: #ffd23f; text-shadow: 0 0 18px #ffd23f88; }
+  .ch-tok.m { color: var(--muted); } .ch-tok.q { color: #ffffff30; } .ch-tok.small { font-size: 40px; } .ch-tok.used { opacity: .35; }
+  .ch-tok.struck { text-decoration: line-through; text-decoration-color: #ffd23f; text-decoration-thickness: 7px; }
+  .ch-tok.res { color: #5ee6a0; text-shadow: 0 0 22px #5ee6a099; }
+  .ch-tok small { font-size: .55em; color: #ffd23f; vertical-align: .55em; }
+  .ch-cube { width: 10px; height: 10px; border-radius: 2px; background: #ff5a7a; } .ch-cube.b { background: #ffb3c1; } .ch-cube.g { background: #ffd23f; }
+  .ch-stick { width: 5px; height: 50px; border-radius: 2px; background: repeating-linear-gradient(#4cc9ff 0 4px, #1b1930 4px 5px); }
+  .ch-stick.b { background: repeating-linear-gradient(#a8e6ff 0 4px, #1b1930 4px 5px); } .ch-stick.g { background: repeating-linear-gradient(#ffd23f 0 4px, #1b1930 4px 5px); }
+  .ch-flash { z-index: 5; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 50%;
+    background: #14131fdd; box-shadow: 0 0 24px #ffd23f99; font: 900 40px/1 system-ui, sans-serif; color: #ffd23f; }
+  .ch-spark { width: 10px; height: 10px; border-radius: 50%; }
+  .ch-say { min-height: 2.8em; margin: 8px 4px 2px; font-size: 22px; font-weight: 800; line-height: 1.3; }
+  .ch-say b.o { color: #ff5a7a; } .ch-say b.t { color: #4cc9ff; } .ch-say b.g { color: #ffd23f; } .ch-say b.r { color: #5ee6a0; }
+  .ch-pad { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin: 4px 0; }
+  .ch-pad[hidden] { display: none; }
+  .ch-pad button { padding: 10px 0; font-size: 24px; font-weight: 800; border: 0; border-radius: 12px; background: #2b2742; color: var(--ink); }
+  .ch-pad .ok { background: #2f9e6b; }
+  .ch-entry { grid-column: 1 / -1; text-align: center; font: 800 34px ui-monospace, monospace; min-height: 42px; color: #ffd23f; }
+  .vcol i.nudge { display: inline-block; color: #ff5a7a !important; animation: nudge .8s ease-in-out infinite alternate; }
+  @keyframes nudge { to { transform: translateY(-10px) scale(1.15); } }
+  .qred .slip { font-size: 26px; color: #ffe27a; margin-bottom: 6px; }
   .qtrick { position: absolute; inset: 0; z-index: 2; display: none; flex-direction: column; align-items: center; justify-content: center;
     gap: 14px; background: var(--bg); text-align: center; padding: 20px; }
   .qtrick.on { display: flex; }
@@ -319,6 +355,7 @@
       <div class="note" id="vNote"></div>
       <button class="set" id="rvOn"></button>
       <button class="set" id="hintOn"></button>
+      <button class="set" id="hintSty"></button>
       <button class="set" id="gLim"></button>
       <button class="set" id="tP15">&#10133; 15 min today</button>
       <button class="set" id="tP30">&#10133; 30 min today</button>
@@ -377,7 +414,8 @@
     <div class="qtitle" id="qtitle">&#129504; Math time! Solve it to play the next lesson</div>
     <div class="qprog" id="qprog"></div>
     <div class="qpic" id="qpic"></div>
-    <div class="qrow"><div class="qhost" id="qhost"><div class="qeq" id="qeq"></div><svg class="arcs" id="qsvg"></svg></div><button class="qrep" id="qrep" aria-label="Hear the question again" hidden>&#128266;</button></div>
+    <div class="chint" id="chint" hidden><div class="ch-stage"></div><div class="ch-say"></div><div class="ch-pad" hidden></div></div>
+    <div class="qrow" id="qrow"><div class="qhost" id="qhost"><div class="qeq" id="qeq"></div><svg class="arcs" id="qsvg"></svg></div><button class="qrep" id="qrep" aria-label="Hear the question again" hidden>&#128266;</button></div>
     <div class="qstreak" id="qstreak"></div>
     <div class="qans" id="qans"></div>
     <div class="qvoice" id="qvoice" hidden>
@@ -493,13 +531,23 @@
           [onesHint, hs(2, "a1", "q", "10 + " + o + " = " + r, T("now add the ten: 10 plus " + o + " is " + r + ".", "ahora suma la decena: 10 más " + o + " son " + r + "."))]);
       }
     }
-    if (lv === 6 && a >= 10 && b >= 10) {                           // tens and ones columns
-      var ta = Math.floor(a / 10), tb = Math.floor(b / 10), ua = a % 10, ub = b % 10, rt = plus ? ta + tb : ta - tb, ro = plus ? ua + ub : ua - ub, rr = plus ? a + b : a - b;
+    if (lv >= 6 && a >= 10 && b >= 10) {                            // tens and ones columns, ones first; a carry goes up, a trade comes down
+      var ta = Math.floor(a / 10), tb = Math.floor(b / 10), ua = a % 10, ub = b % 10, rr = plus ? a + b : a - b,
+          cy = plus && ua + ub >= 10, tr = !plus && ua < ub, ut = tr ? ua + 10 : ua, tt = tr ? ta - 1 : ta,
+          ro = plus ? (ua + ub) % 10 : ut - ub, rt = plus ? ta + tb + (cy ? 1 : 0) : tt - tb;
       trick = "tens";
-      add(T("Tens: ", "Decenas: ") + eqv(ta, tb, rt), T("tens, ", "decenas, ") + ta + " " + W + " " + tb + " " + IS(rt) + " " + rt + ".",
-        [hs(2, "a1", "b1", eqv(ta, tb, rt), T("now the tens: ", "ahora las decenas: ") + sy(ta, tb, rt) + ".")]);
-      add(T("Ones: ", "Unidades: ") + eqv(ua, ub, ro), T("Ones, ", "Unidades, ") + ua + " " + W + " " + ub + " " + IS(ro) + " " + ro + ".",
+      if (cy) add(T("Ones: ", "Unidades: ") + eqv(ua, ub, ua + ub) + T(" → write ", " → escribe ") + ro + T(", carry 1", ", llevas 1"),
+        T("Ones, ", "Unidades, ") + sy(ua, ub, ua + ub) + T(": write " + ro + " and the ten goes up to the tens.", ": escribe " + ro + " y la decena sube a las decenas."),
+        [hs(1, "a0", "b0", eqv(ua, ub, ua + ub), T("ones first! ", "¡primero las unidades! ") + sy(ua, ub, ua + ub) + ".")]);
+      else if (tr) add(T("Trade 1 ten: ", "Cambia 1 decena: ") + eqv(ut, ub, ro),
+        T("Ones, " + ua + " take away " + ub + "? Not enough ones, so trade 1 ten for 10 ones: " + ta + " becomes " + tt + ", " + ua + " becomes " + ut + ". ",
+          "Unidades, ¿" + ua + " menos " + ub + "? Faltan unidades: cambia 1 decena por 10 unidades: " + ta + " se vuelve " + tt + ", " + ua + " se vuelve " + ut + ". ") + sy(ut, ub, ro) + ".",
+        [hs(1, "a0", "b0", eqv(ut, ub, ro), T("trade 1 ten for 10 ones! ", "¡cambia 1 decena por 10 unidades! ") + sy(ut, ub, ro) + ".")]);
+      else add(T("Ones: ", "Unidades: ") + eqv(ua, ub, ro), T("Ones, ", "Unidades, ") + sy(ua, ub, ro) + ".",
         [hs(1, "a0", "b0", eqv(ua, ub, ro), T("ones first! ", "¡primero las unidades! ") + sy(ua, ub, ro) + ".")]);
+      var tv = (cy ? "1 + " : "") + eqv(tt, tb, rt);
+      add(T("Tens: ", "Decenas: ") + tv, T("Tens, ", "Decenas, ") + (cy ? T("1 plus ", "1 más ") : "") + sy(tt, tb, rt) + ".",
+        [hs(2, "a1", "b1", tv, T("now the tens: ", "ahora las decenas: ") + (cy ? T("1 plus ", "1 más ") : "") + sy(tt, tb, rt) + ".")]);
       add("= " + rr, T("So ", "Así que ") + rr + ".", [hs(3, "b1", "q", "= " + rr, T("put them together: " + rr + ".", "júntalos: " + rr + "."))]);
     } else if (b >= 10) {                                           // take the tens first, then the ones
       var tens = Math.floor(b / 10) * 10, ones = b % 10, mid = plus ? a + tens : a - tens;
@@ -567,6 +615,57 @@
     if (since < REVIEW_GAP) return null;
     for (var i = 0; i < q.length; i++) if (q[i].w <= 0 && qKey(q[i].a, q[i].b, q[i].plus) !== lastKey) return q[i];
     return null;
+  }
+  // Column sums that need a carry (59 + 67) or a trade (84 - 39), and the classic wrong answers they invite:
+  // "flip" = the smaller ones digit taken from the bigger (84 - 39 -> 55), "kept" = traded but the tens never went down
+  // (72 - 38 -> 44), "carry" = the carried ten forgotten (38 + 27 -> 55). They are offered as answer buttons, so a slip shows.
+  function needsRegroup(a, b, plus) { return plus ? a % 10 + b % 10 >= 10 : a % 10 < b % 10; }
+  function slipAnswers(a, b, plus) {
+    var ao = a % 10, bo = b % 10, d = Math.floor(a / 10) - Math.floor(b / 10), r = plus ? a + b : a - b, out = [];
+    if (!needsRegroup(a, b, plus)) return out;
+    if (plus) out.push(a + b - 10); else out.push(d * 10 + (bo - ao), d * 10 + (ao + 10 - bo));
+    return out.filter(function (n, i, l) { return n >= 0 && n !== r && l.indexOf(n) === i; });
+  }
+  function slipKind(a, b, plus, n) {
+    if (!needsRegroup(a, b, plus)) return "";
+    var ao = a % 10, bo = b % 10, d = Math.floor(a / 10) - Math.floor(b / 10);
+    if (plus) return n === a + b - 10 ? "carry" : "";
+    return n === d * 10 + (bo - ao) ? "flip" : n === d * 10 + (ao + 10 - bo) ? "kept" : "";
+  }
+  function slipSay(kind, a, b, lang) {
+    var es = lang === "es", ao = a % 10, bo = b % 10, at = Math.floor(a / 10);
+    if (kind === "flip") return es ? "¡Cuidado! Es " + ao + " menos " + bo + ", no " + bo + " menos " + ao + ". Faltan unidades: ¡cambia una decena por 10 unidades!"
+      : "Careful! It's " + ao + " take away " + bo + ", not " + bo + " take away " + ao + ". We need more ones, so trade 1 ten for 10 ones!";
+    if (kind === "kept") return es ? "¡Buen cambio! Pero esa decena salió del " + at + ", así que ahora es " + (at - 1) + "."
+      : "Good trade! But that ten came from the " + at + ", so now it is " + (at - 1) + ".";
+    if (kind === "carry") return es ? "¡Casi! " + (ao + bo) + " unidades esconden una decena: sube a las decenas."
+      : "So close! " + (ao + bo) + " ones have a ten hiding inside. It goes up to the tens.";
+    return "";
+  }
+  // The column-hint test: styles A (magic numbers), B (blocks), C (do it with me) take turns, the least-shown first.
+  // A style wins when its hints lead to more right answers on the NEXT column sum of the same kind solved without a hint.
+  var HINT_STYLES = ["A", "B", "C"], HINT_TEST_NEED = 20;
+  function hintPick(log, r) {
+    var n = { A: 0, B: 0, C: 0 };
+    log.forEach(function (e) { if (n[e.hs] !== undefined) n[e.hs]++; });
+    var min = Math.min(n.A, n.B, n.C), c = HINT_STYLES.filter(function (s) { return n[s] === min; });
+    return c[Math.min(c.length - 1, Math.floor(r * c.length))];
+  }
+  function hintStats(log) {
+    var s = {}, win = "", best = -1;
+    HINT_STYLES.forEach(function (k) { s[k] = { n: 0, ok: 0, nx: 0, nok: 0 }; });
+    log.forEach(function (e, i) {
+      var x = s[e.hs], j, f;
+      if (!x) return;
+      x.n++; if (e.ok) x.ok++;
+      for (j = i + 1; j < log.length && j <= i + 8; j++) {
+        f = log[j];
+        if (f.col && !f.hint && (f.reg || 0) === (e.reg || 0)) { x.nx++; if (f.ok) x.nok++; break; }
+      }
+    });
+    if (HINT_STYLES.every(function (k) { return s[k].nx >= HINT_TEST_NEED; }))
+      HINT_STYLES.forEach(function (k) { var p = s[k].nok / s[k].nx; if (p > best) { best = p; win = k; } });
+    return { s: s, win: win, need: HINT_TEST_NEED };
   }
   // </pure>
 
@@ -1299,6 +1398,254 @@
     return { draw: draw, clear: clear, answer: answer };
   })();
 
+  // ---- Column hints (levels 4-7): the sum is redrawn in lanes (tens / ones) and its digits move. Three styles under test:
+  // A magic numbers (digits fly into the answer box, the sign flashes, they crash into the result), B blocks (tens are sticks,
+  // ones are cubes; a stick breaks into 10 cubes for a trade, 10 cubes snap into a stick for a carry), C do it with me (he types
+  // each column on a small keypad; two misses and it shows him). A trade crosses the top tens digit out and writes the new one
+  // small above it, like on paper, so the old digit never disappears. Steps wait at least PAUSE_MS (or a tap) to give him time.
+  var colHint = (function () {
+    var X = [250, 180, 110], Y = { carry: 38, top: 100, bot: 178, ans: 274 }, W = 22, BY = 322, PAUSE_MS = 2600;
+    var box, stage, sayEl, padEl, run = 0, playing = -1, T, B, Q, cubes, sticks, o = {}, padKey = null, tapGo = null;
+    function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+    function tf(x, y, s) { return "translate(" + x + "px," + y + "px) translate(-50%,-50%) scale(" + (s == null ? 1 : s) + ")"; }
+    function place(e, x, y, s) { e._x = x; e._y = y; e._s = s || 1; e.style.transform = tf(x, y, e._s); }
+    function el(cls, x, y, html) {                     // a step still running after stop() draws into a detached node, never into the next hint
+      var e = document.createElement("div"); e.className = cls; if (html != null) e.innerHTML = html; place(e, x, y);
+      if (playing === run) stage.appendChild(e);
+      return e;
+    }
+    function tok(html, cls, x, y) { return el("ch-tok " + cls, x, y, html); }
+    function anim(e, frames, opt) { return e.animate(frames, opt).finished.catch(function () {}); }
+    function move(e, x, y, ms, lift, s) {               // an arc; the token swells mid-flight like a jump
+      var a = tf(e._x, e._y, e._s), m = tf((e._x + x) / 2, (e._y + y) / 2 - (lift || 0), (e._s + (s || 1)) / 2 * 1.15), b = tf(x, y, s);
+      place(e, x, y, s);
+      return anim(e, [{ transform: a }, { transform: m }, { transform: b }], { duration: ms || 750, easing: "cubic-bezier(.45,0,.25,1)" });
+    }
+    function pop(e, html, cls) {
+      return anim(e, [{ transform: tf(e._x, e._y) }, { transform: tf(e._x, e._y, .1) }], { duration: 220, easing: "ease-in" }).then(function () {
+        e.innerHTML = html; if (cls) e.className = "ch-tok " + cls;
+        return anim(e, [{ transform: tf(e._x, e._y, .1) }, { transform: tf(e._x, e._y, 1.35) }, { transform: tf(e._x, e._y) }], { duration: 420, easing: "ease-out" });
+      });
+    }
+    function popIn(e, delay) { return sleep(delay || 0).then(function () { return anim(e, [{ transform: tf(e._x, e._y, .1), opacity: 0 }, { transform: tf(e._x, e._y, 1.4), opacity: 1 }, { transform: tf(e._x, e._y) }], { duration: 320, easing: "ease-out", fill: "backwards" }); }); }
+    function vanish(e, delay) { return sleep(delay || 0).then(function () { return anim(e, [{ transform: tf(e._x, e._y), opacity: 1 }, { transform: tf(e._x + 18, e._y - 50, .3), opacity: 0 }], { duration: 420, fill: "forwards" }); }).then(function () { e.remove(); }); }
+    function shake(e) { return anim(e, [0, -12, 12, -9, 9, 0].map(function (d) { return { transform: tf(e._x + d, e._y, e._s) }; }), { duration: 500 }); }
+    function hop(e) { return anim(e, [{ transform: tf(e._x, e._y) }, { transform: tf(e._x, e._y - 22, 1.1) }, { transform: tf(e._x, e._y) }], { duration: 420, iterations: 2 }); }
+    function sparkle(x, y, colour, n) {
+      for (var i = 0; i < (n || 14); i++) {
+        var s = el("ch-spark", x, y), a = Math.random() * 6.28, r = 40 + Math.random() * 60; s.style.background = colour || "#ffd23f";
+        anim(s, [{ transform: tf(x, y, 1), opacity: 1 }, { transform: tf(x + Math.cos(a) * r, y + Math.sin(a) * r, .2), opacity: 0 }], { duration: 650 + Math.random() * 300, easing: "ease-out", fill: "forwards" }).then(s.remove.bind(s));
+      }
+    }
+    function flash(sym, x, y) {
+      var f = el("ch-flash", x, y, sym);
+      anim(f, [{ transform: tf(x, y, .2), opacity: 0 }, { transform: tf(x, y, 1.25), opacity: 1, offset: .2 }, { transform: tf(x, y, 1), opacity: 1, offset: .75 }, { transform: tf(x, y, 1.8), opacity: 0 }], { duration: 1100, fill: "forwards" }).then(f.remove.bind(f));
+    }
+    function clone(e) { var c = tok(e.innerHTML, e.className.replace(" used", "").replace("ch-tok ", ""), e._x, e._y); e.classList.add("used"); return c; }
+    function lane(c, on) { var l = stage.querySelector('.ch-lane[data-c="' + c + '"]'); if (l) l.classList.toggle("live", on); }
+    function lanesOff() { lane(0, false); lane(1, false); }
+    async function landAnswer(c, v) {                    // the answer digit(s) burst into the answer box of column c
+      if (Q[c]) { Q[c].remove(); Q[c] = null; }
+      var s = String(v), x = s.length > 1 ? X[c] - W : X[c]; sparkle(x, Y.ans, "#5ee6a0", 18);
+      var r = tok(s, "res", x, Y.ans);
+      await anim(r, [{ transform: tf(x, Y.ans, .1) }, { transform: tf(x, Y.ans, 1.4) }, { transform: tf(x, Y.ans) }], { duration: 480, easing: "ease-out" });
+      return r;
+    }
+    async function crash(list, c, sym, v) {             // they fly in, shrink so the sign between them shows, and crash into the result
+      var x = X[c], y = Y.ans; if (Q[c]) { Q[c].remove(); Q[c] = null; }
+      await Promise.all(list.map(function (e, i) { return move(e, x + (i - (list.length - 1) / 2) * 92, y, 700, 50, .42); }));
+      flash(sym, x, y - 2); await sleep(650);
+      await Promise.all(list.map(function (e) { return move(e, x, y, 260, 0, .2); }));
+      list.forEach(function (e) { e.remove(); });
+      return landAnswer(c, v);
+    }
+    async function stays(c, v) { lane(c, true); var e = tensClone(); place(e, e._x, e._y, 1); await move(e, X[c], Y.ans, 800, 30); e.remove(); return landAnswer(c, v); }
+    function crossTens(t) { T[1].classList.add("struck"); T[1].newTen = tok(String(t - 1), "g small", X[1], Y.carry); popIn(T[1].newTen); }
+    function tensClone() { var c = clone(T[1].newTen || T[1]); c.classList.remove("small"); place(c, c._x, c._y, .55); return c; }
+    function onesClone(ao, traded) { var c = clone(T[0]); if (traded) { c.innerHTML = String(ao + 10); place(c, X[0] - W, Y.top); } return c; }
+    async function tradeDigits(t, ao) {                 // a gold 1 leaves the crossed-out tens digit and lands on the ones
+      lane(1, true); var one = tok("1", "g small", X[1], Y.top);
+      crossTens(t); sparkle(X[1], Y.top, "#4cc9ff");
+      await move(one, X[0] - W - 6, Y.top - 34, 900, 90);
+      await sleep(150); await move(one, X[0] - W, Y.top, 300);
+      one.remove(); place(T[0], X[0] - 12, Y.top); sparkle(X[0], Y.top);
+      await pop(T[0], "<small>1</small>" + ao, "o"); lane(1, false);
+    }
+    function cubeXY(i) { return [X[0] - 24 + (i % 5) * 12, BY + Math.floor(i / 5) * 12]; }
+    function stickXY(i, n) { return [X[1] - (n - 1) * 3.5 + i * 7, BY + 22]; }
+    function addCubes(n, cls, delay) { var made = []; for (var i = 0; i < n; i++) { var p = cubeXY(cubes.length), c = el("ch-cube " + (cls || ""), p[0], p[1]); cubes.push(c); made.push(popIn(c, (delay || 0) + i * 60)); } return Promise.all(made); }
+    function addSticks(n, cls, delay) {
+      var made = [], tot = sticks.length + n, i;
+      for (i = 0; i < n; i++) sticks.push(el("ch-stick " + (cls || ""), 0, 0));
+      sticks.forEach(function (s, k) { var p = stickXY(k, tot); place(s, p[0], p[1]); });
+      for (i = tot - n; i < tot; i++) made.push(popIn(sticks[i], (delay || 0) + (i - tot + n) * 90));
+      return Promise.all(made);
+    }
+    function regrid() { return Promise.all(cubes.map(function (c, i) { var p = cubeXY(i); return move(c, p[0], p[1], 350); })); }
+    function restick() { return Promise.all(sticks.map(function (s, i) { var p = stickXY(i, sticks.length); return move(s, p[0], p[1], 350); })); }
+    function takeCubes(n) { return Promise.all(cubes.splice(cubes.length - n, n).map(function (c, i) { return vanish(c, i * 90); })); }
+    function takeSticks(n) { return Promise.all(sticks.splice(sticks.length - n, n).map(function (s, i) { return vanish(s, i * 120); })); }
+    function strip(h) {                                  // what the voice says: no markup, the signs as words
+      var es = o.lang === "es";
+      return h.replace(/<[^>]+>/g, "").replace(/−/g, es ? " menos " : " minus ").replace(/\+/g, es ? " más " : " plus ").replace(/=/g, es ? " es " : " is ")
+        .replace(/→/g, es ? " se vuelve " : " becomes ")
+        .replace(/[←-⇿⬆⬇✓✨\ud83c-􏰀-\udfff]/g, " ").replace(/\s+/g, " ").trim();
+    }
+    function speak(h) {                                  // resolves when the voice is done (or at once when it won't speak)
+      return new Promise(function (res) { var t = setTimeout(res, 15000); if (!o.tell || !o.tell(strip(h), function () { clearTimeout(t); res(); })) { clearTimeout(t); res(); } });
+    }
+    function wait(ms) { return new Promise(function (res) { var t = setTimeout(go, ms); function go() { clearTimeout(t); tapGo = null; res(); } tapGo = go; }); }
+    function ask(expect) {                               // style C: the keypad; true = he got it, false = two misses
+      return new Promise(function (res) {
+        var entry = "", wrong = 0, es = o.lang === "es", show = padEl.querySelector(".ch-entry");
+        padEl.hidden = false; show.textContent = "";
+        padKey = function (k) {
+          if (k === "⌫") entry = entry.slice(0, -1);
+          else if (k === "OK") {
+            if (entry === "") return;
+            if (+entry === expect) { padEl.hidden = true; padKey = null; res(true); return; }
+            wrong++; entry = ""; anim(padEl, [{ transform: "translateX(-10px)" }, { transform: "translateX(10px)" }, { transform: "none" }], { duration: 300 });
+            sayEl.innerHTML = wrong < 2 ? (es ? "Todavía no: mira la columna otra vez 💪" : "Not yet — look at the column again 💪") : (es ? "Veámoslo juntos 👀" : "Let's look together 👀");
+            if (wrong >= 2) { padEl.hidden = true; padKey = null; res(false); return; }
+          } else if (entry.length < 2) entry += k;
+          show.textContent = entry;
+        };
+      });
+    }
+    function T_(e, s) { return o.lang === "es" ? s : e; }
+    function build(a, b, plus) {
+      stage.innerHTML = ""; cubes = []; sticks = [];
+      [["t", 1, T_("tens", "decenas")], ["o", 0, T_("ones", "unidades")]].forEach(function (d) {
+        var l = document.createElement("div"); l.className = "ch-lane " + d[0]; l.dataset.c = d[1]; l.style.left = (X[d[1]] - 30) + "px";
+        l.innerHTML = "<span>" + d[2] + "</span>"; stage.appendChild(l);
+      });
+      var bar = document.createElement("div"); bar.className = "ch-bar"; bar.style.left = (X[2] - 30) + "px"; bar.style.width = (X[0] - X[2] + 60) + "px"; stage.appendChild(bar);
+      T = [tok(a % 10, "o", X[0], Y.top), tok(Math.floor(a / 10), "t", X[1], Y.top)];
+      B = [tok(b % 10, "o", X[0], Y.bot), tok(Math.floor(b / 10), "t", X[1], Y.bot)];
+      if (b < 10) B[1].style.visibility = "hidden";
+      tok(plus ? "+" : "−", "m", X[2], Y.bot);
+      Q = [tok("?", "q", X[0], Y.ans), tok("?", "q", X[1], Y.ans)];
+    }
+    function steps(a, b, plus, style) {
+      var ao = a % 10, at = Math.floor(a / 10), bo = b % 10, bt = Math.floor(b / 10), S = [], sym = plus ? "+" : "−",
+          os = ao + bo, cy = plus && os >= 10, tr = !plus && ao < bo, o1 = plus ? os % 10 : (tr ? ao + 10 : ao) - bo,
+          ts = plus ? at + bt + (cy ? 1 : 0) : (tr ? at - 1 : at) - bt, carry = null, ones = null, solo = true;
+      var tensSay = bt ? "<b class='t'>" + T_("Tens: ", "Decenas: ") + "</b>" + (cy ? "<b class='g'>1</b> + " : "") + (tr ? "<b class='g'>" + (at - 1) + "</b>" : at) + " " + sym + " " + bt
+                       : (cy ? "<b class='t'>" + T_("Tens: ", "Decenas: ") + "</b><b class='g'>1</b> + " + at : T_("The tens stay: <b class='t'>" + ts + "</b>", "Las decenas se quedan: <b class='t'>" + ts + "</b>"));
+      function tensList() { var l = (carry ? [clone(carry)] : []).concat([tensClone()]).concat(bt ? [clone(B[1])] : []); l.forEach(function (e) { e.classList.remove("small"); place(e, e._x, e._y, 1); }); return l; }
+      async function tensStep() { lanesOff(); lane(1, true); var r = (bt || carry) ? await crash(tensList(), 1, plus ? "+" : "−", ts) : await stays(1, ts); if (ts === 0) anim(r, [{ opacity: 1 }, { opacity: 0 }], { duration: 500, delay: 400, fill: "forwards" }); }
+      async function carryUp(r) {                       // "16" in the answer box: keep the 6, the gold 1 jumps up over the tens
+        r.remove(); var one = tok("1", "g", X[0] - 2 * W, Y.ans); tok(String(os % 10), "res", X[0], Y.ans);
+        lane(0, false); lane(1, true); await move(one, X[1], Y.carry, 900, 120, .55); sparkle(X[1], Y.carry); carry = one;
+      }
+      var tradeSay = T_("Trade <b class='g'>1 ten</b> for <b class='g'>10 ones</b>: ", "Cambia <b class='g'>1 decena</b> por <b class='g'>10 unidades</b>: ") +
+        at + " → <b class='g'>" + (at - 1) + "</b>, " + ao + " → <b class='g'>" + (ao + 10) + "</b>";
+      var needSay = "<b class='o'>" + ao + "</b> " + sym + " <b class='o'>" + bo + "</b>? " + T_("We need more ones! 🤔", "¡Faltan unidades! 🤔");
+      if (style === "B") {
+        if (plus) {
+          S.push({ say: T_("Build both numbers with blocks", "Construye los dos números con bloques"), go: async function () {
+            lane(0, true); lane(1, true);
+            await Promise.all([addSticks(at, "", 0).then(function () { return addSticks(bt, "b", 100); }), addCubes(ao, "", 0).then(function () { return addCubes(bo, "b", 100); })]);
+          } });
+          if (cy) S.push({ say: os + T_(" ones! <b class='g'>10 ones snap into 1 ten</b> ⬆", " unidades! <b class='g'>10 unidades forman 1 decena</b> ⬆"), go: async function () {
+            lane(1, false); var ten = cubes.splice(0, 10), cx = X[0], cy_ = BY - 4;
+            await Promise.all(ten.map(function (c, i) { return sleep(i * 40).then(function () { return move(c, cx, cy_, 450, 30); }); }));
+            ten.forEach(function (c) { c.remove(); }); sparkle(cx, cy_);
+            var s = el("ch-stick g", cx, cy_); await popIn(s); await regrid();
+            var one = tok("1", "g small", X[0], Y.carry);
+            await Promise.all([move(s, stickXY(sticks.length, sticks.length + 1)[0], BY + 22, 800, 80), move(one, X[1], Y.carry, 800, 60)]);
+            sticks.push(s); await restick(); sparkle(X[1], Y.carry);
+          } });
+          S.push({ say: "<b class='o'>" + o1 + "</b> " + T_("ones", "unidades"), go: async function () { lanesOff(); lane(0, true); await landAnswer(0, o1); } });
+          S.push({ say: T_("Count the tens: ", "Cuenta las decenas: ") + "<b class='t'>" + ts + "</b>", go: async function () {
+            lanesOff(); lane(1, true); for (var i = 0; i < sticks.length; i++) { hop(sticks[i]); await sleep(90); } await landAnswer(1, ts);
+          } });
+        } else {
+          S.push({ say: a + " = <b class='t'>" + at + T_(" tens", " decenas") + "</b> + <b class='o'>" + ao + T_(" ones", " unidades") + "</b>", go: async function () { lane(0, true); lane(1, true); await Promise.all([addSticks(at), addCubes(ao)]); } });
+          if (tr) {
+            S.push({ say: needSay, go: async function () { lanesOff(); lane(0, true); await Promise.all(cubes.map(shake).concat([shake(B[0])])); } });
+            S.push({ say: tradeSay, go: async function () {
+              lane(1, true); var s = sticks.pop(), i, made = []; s.className = "ch-stick g";
+              crossTens(at);
+              await move(s, X[0] + 34, BY + 22, 900, 90); restick();
+              s.remove(); sparkle(X[0] + 34, BY + 22);
+              for (i = 0; i < 10; i++) { var c = el("ch-cube g", X[0] + 34, BY + i * 5); cubes.push(c); var p = cubeXY(cubes.length - 1); made.push(sleep(i * 50).then(move.bind(null, c, p[0], p[1], 450, 20))); }
+              place(T[0], X[0] - 12, Y.top); pop(T[0], "<small>1</small>" + ao, "o");
+              await Promise.all(made); lane(1, false);
+            } });
+          }
+          S.push({ say: T_("Take away ", "Quita ") + "<b class='o'>" + bo + "</b> → <b class='o'>" + o1 + "</b>", go: async function () { lanesOff(); lane(0, true); B[0].classList.add("used"); await takeCubes(bo); await regrid(); await landAnswer(0, o1); } });
+          S.push({ say: bt ? T_("Take away ", "Quita ") + "<b class='t'>" + bt + T_(" tens", " decenas") + "</b> → <b class='t'>" + ts + "</b>" : tensSay, go: async function () {
+            lanesOff(); lane(1, true); B[1].classList.add("used"); if (bt) { await takeSticks(bt); await restick(); } var r = await landAnswer(1, ts);
+            if (ts === 0) anim(r, [{ opacity: 1 }, { opacity: 0 }], { duration: 500, delay: 400, fill: "forwards" });
+          } });
+        }
+      } else {
+        async function column(c, list, v, q) {          // A shows it; C asks him first
+          if (style !== "C") return crash(list(), c, sym, v);
+          sayEl.innerHTML = q + " = <b class='g'>?</b>"; await speak(q + T_(" is what?", " es cuánto?"));
+          var ok = await ask(v);
+          if (!ok) { solo = false; return crash(list(), c, sym, v); }
+          sayEl.innerHTML = T_("Yes! ", "¡Sí! ") + "<b class='r'>" + v + "</b> ✓"; return landAnswer(c, v);
+        }
+        S.push({ say: T_("Start with the <b class='o'>ones</b> ⬇", "Empieza por las <b class='o'>unidades</b> ⬇"), go: async function () { lane(0, true); await Promise.all([hop(T[0]), hop(B[0])]); } });
+        if (tr) {
+          S.push({ say: needSay, go: async function () { await Promise.all([shake(T[0]), shake(B[0])]); } });
+          S.push({ say: tradeSay, go: function () { return tradeDigits(at, ao); } });
+        }
+        S.push({ say: style === "C" ? "" : "<b class='o'>" + T_("Ones: ", "Unidades: ") + "</b>" + (tr ? ao + 10 : ao) + " " + sym + " " + bo, go: async function () {
+          lanesOff(); lane(0, true);
+          var r = await column(0, function () { return [onesClone(ao, tr), clone(B[0])]; }, plus ? os : o1, "<b class='o'>" + (tr ? ao + 10 : ao) + " " + sym + " " + bo + "</b>");
+          if (cy) { await sleep(500); sayEl.innerHTML = os + T_(" ones = <b class='g'>1 ten</b> + ", " unidades = <b class='g'>1 decena</b> + ") + "<b class='o'>" + o1 + "</b> ⬆"; await speak(sayEl.innerHTML); await carryUp(r); }
+        } });
+        S.push({ say: style === "C" && (bt || cy) ? "" : tensSay, go: async function () {
+          if (style !== "C" || !(bt || cy)) return tensStep();
+          lanesOff(); lane(1, true);
+          var r = await column(1, tensList, ts, "<b class='t'>" + (cy ? "1 + " : "") + (tr ? at - 1 : at) + (bt ? " " + sym + " " + bt : "") + "</b>");
+          if (ts === 0) anim(r, [{ opacity: 1 }, { opacity: 0 }], { duration: 500, delay: 400, fill: "forwards" });
+        } });
+      }
+      S.push({ say: "", go: async function () {
+        lanesOff(); var r = plus ? a + b : a - b;
+        sayEl.innerHTML = (style === "C" && solo ? T_("🙌 You did it! ", "🙌 ¡Lo hiciste! ") : "✨ ") + a + " " + sym + " " + b + " = <b class='r'>" + r + "</b>. " + (o.voiceMode ? T_("Now say the answer!", "¡Ahora di la respuesta!") : T_("Now tap the answer!", "¡Ahora toca la respuesta!"));
+        await speak(sayEl.innerHTML);
+        for (var i = 0; i < 3; i++) { sparkle(60 + Math.random() * 240, 60 + Math.random() * 200, ["#ffd23f", "#ff5a7a", "#4cc9ff"][i], 16); await sleep(160); }
+      } });
+      return S;
+    }
+    function init(host) {
+      if (box === host) return;
+      box = host; stage = host.querySelector(".ch-stage"); sayEl = host.querySelector(".ch-say"); padEl = host.querySelector(".ch-pad");
+      padEl.innerHTML = '<div class="ch-entry"></div>' + [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(function (k) { return "<button>" + k + "</button>"; }).join("") + '<button>⌫</button><button class="ok">OK</button>';
+      padEl.onclick = function (ev) { if (ev.target.tagName === "BUTTON" && padKey) padKey(ev.target.textContent); };
+      stage.onclick = function () { if (tapGo) tapGo(); };
+    }
+    return {
+      // Plays the whole hint, step by step; opts { lang, tell(text, done) -> bool, done() }.
+      play: async function (host, a, b, plus, style, opts) {
+        init(host); var my = ++run; playing = my; o = opts || {};
+        padEl.hidden = true; padKey = null; host.hidden = false;
+        stage.classList.toggle("blocks", style === "B");
+        // The stage is drawn at 340 px; on a narrow phone or a short landscape screen it is zoomed down to fit (coordinates scale with it)
+        host.style.zoom = "";
+        var fitW = host.parentNode.clientWidth / 340, fitH = window.innerHeight * 0.62 / (style === "B" ? 410 : 330);
+        host.style.zoom = Math.min(1, fitW, fitH);
+        build(a, b, plus);
+        var S = steps(a, b, plus, style);
+        for (var i = 0; i < S.length; i++) {
+          if (my !== run) return;
+          if (S[i].say) sayEl.innerHTML = S[i].say;
+          var spoken = S[i].say ? speak(S[i].say) : Promise.resolve();
+          await S[i].go(); await spoken;
+          if (my !== run) return;
+          if (i < S.length - 1) await wait(PAUSE_MS);
+        }
+        if (my === run && o.done) o.done();
+      },
+      stop: function () { run++; padKey = null; if (tapGo) tapGo(); tapGo = null; if (box) { box.hidden = true; stage.innerHTML = ""; padEl.hidden = true; } }
+    };
+  })();
+
   // ---- Math quiz: after every N lessons, the next one plays only after small sums are solved ----
   // It hooks the lesson change itself, so Next, a thumbnail and YouTube's autoplay are all caught.
   // Strict on purpose: a wrong answer = red screen + a freeze + a NEW question (no guessing), and the
@@ -1306,7 +1653,7 @@
   var quiz = (function () {
     var $ = function (id) { return document.getElementById(id); };
     var THINGS = ["&#127822;", "&#127827;", "&#11088;", "&#128031;", "&#127880;", "&#128037;", "&#127850;", "&#128663;", "&#127800;", "&#128030;"];
-    var THINK_MS = 2000, FAST_MS = 1500, LEVEL_UP_AFTER = 5, LEVEL_DOWN_AFTER = 3, MAX_LEVEL = 6, LOG_MAX = 500;
+    var THINK_MS = 2000, FAST_MS = 1500, LEVEL_UP_AFTER = 5, LEVEL_DOWN_AFTER = 3, MAX_LEVEL = 7, LOG_MAX = 500;
     function get(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
     function put(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
     function clamp(n, lo, hi) { return Math.min(hi, Math.max(lo, n)); }
@@ -1314,7 +1661,8 @@
     // Level: the old "Numbers up to" setting migrates once (5/10 -> level 1, 20 -> level 2)
     var level = parseInt(get("quizLevel", ""), 10);
     if (!(level >= 1 && level <= MAX_LEVEL)) { level = +get("quizUpTo", "10") >= 20 ? 2 : 1; put("quizLevel", level); }
-    var cfg = { on: get("quizOn", "1") === "1", review: get("quizRepeat", "1") === "1", hint: [0, 5, 10].indexOf(parseInt(get("hintAfter", "5"), 10)) >= 0 ? parseInt(get("hintAfter", "5"), 10) : 5, every: clamp(+get("quizEvery", "2") || 2, 1, 4), need: clamp(+get("quizNeed", "1") || 1, 1, 3) };
+    var cfg = { on: get("quizOn", "1") === "1", review: get("quizRepeat", "1") === "1", hint: [0, 20, 30, 45].indexOf(parseInt(get("hintAfter", "20"), 10)) >= 0 ? parseInt(get("hintAfter", "20"), 10) : 20,
+               style: /^(test|A|B|C)$/.test(get("hintStyle", "test")) ? get("hintStyle", "test") : "test", every: clamp(+get("quizEvery", "2") || 2, 1, 4), need: clamp(+get("quizNeed", "1") || 1, 1, 3) };
     Object.defineProperty(cfg, "level", {
       enumerable: true,
       get: function () { return level; },
@@ -1324,6 +1672,7 @@
     var curPlus = true, curLv = 1, curRv = false, manual = false, earnOnly = false, cont = null, lastPraise = -1, sinceRv = REVIEW_GAP;
     var CHEER = '<div class="qcheer">&#127881;&#11088;&#127881;</div>';
     var hintT = null, hintN = 0, trickUsed = false, paused = false, trickTok = 0, redT = [];   // hints: the timer, the step shown; the mini-lesson token
+    var hintFull = false, curHs = "A";          // column sums: the animated hint was played; the style this question uses
     var review = [], mastered = { d: "", n: 0 };     // missed questions waiting to come back; how many were mastered today
     try { review = JSON.parse(get("quizReview", "[]")); if (!Array.isArray(review)) review = []; } catch (e) { review = []; }
     try { mastered = JSON.parse(get("quizMastered", "{}")) || mastered; } catch (e) {}
@@ -1462,7 +1811,10 @@
         showHint(my);
       }, cfg.hint * 1000);
     }
+    // Column sums (levels 4-7) get time to think: after HINT s only the ones column wiggles ("start with the ones"); after
+    // another HINT s (or on "Show me") the animated column hint plays in the style under test.
     function showHint(my) {
+      if (curLv >= 4) { if (hintN === 0) nudge(my); else fullHint(my); return; }
       var ex = explain(curA, curB, curPlus, curLv, voice.cfg.lang);
       if (hintN >= ex.hints.length) return;
       hintN++;
@@ -1474,8 +1826,31 @@
       if (!voice.tell((hintN === 1 ? easyIntro(voice.cfg.lang) : "") + ex.hints[hintN - 1].say, after)) after();
       if (hintN < ex.hints.length) armHint(my);
     }
+    function nudge(my) {
+      hintN = 1;
+      [].forEach.call($("qeq").querySelectorAll('[data-r="a0"], [data-r="b0"]'), function (d) { d.classList.add("nudge"); });
+      var text = voice.cfg.lang === "es" ? "Empieza por las unidades" : "Start with the ones";
+      $("qmsg").textContent = "👉 " + text;
+      var back = !!vHandler && !locked && !$("qvoice").hidden;
+      if (back) voice.stop();
+      function after() { if (back && my === qid && !locked) voice.listen(vHandler); }
+      if (!voice.tell(text, after)) after();
+      armHint(my);
+    }
+    function fullHint(my) {
+      if (hintFull || my !== qid) return;
+      hintFull = true; hintN = 2; clearTimeout(hintT);
+      var back = !!vHandler && !locked && !$("qvoice").hidden;
+      if (back) voice.stop();
+      $("qrow").style.display = "none"; $("qtbtn").hidden = true; $("qmsg").textContent = ""; $("quiz").classList.add("hinting");
+      colHint.play($("chint"), curA, curB, curPlus, curHs, {
+        lang: voice.cfg.lang, voiceMode: $("qans").style.display === "none",
+        tell: function (t, done) { return voice.tell(t, done); },
+        done: function () { if (back && my === qid && !locked) voice.listen(vHandler); }
+      });
+    }
     // The mini-lesson: a worked example of the level's trick, ~15-20 s: the sum, the split, the arcs one by one, the answer. Skippable.
-    var TRICK_EX = { 1: [5, 3, true], 2: [8, 5, true], 3: [14, 3, true], 4: [39, 4, false], 5: [43, 7, false], 6: [65, 54, false] };
+    var TRICK_EX = { 1: [5, 3, true], 2: [8, 5, true], 3: [14, 3, true], 4: [39, 4, false], 5: [43, 7, false], 6: [65, 54, false], 7: [84, 39, false] };
     function trickSeen(lv) { return ("," + get("trickSeen", "") + ",").indexOf("," + lv + ",") >= 0; }
     function playTrick(lv, done) {
       var w = TRICK_EX[lv], a = w[0], b = w[1], plus = w[2], lang = voice.cfg.lang, es = lang === "es", ex = explain(a, b, plus, lv, lang),
@@ -1503,9 +1878,11 @@
       }
       run(0);
     }
-    function stopAnim() { trickTok++; $("qtrick").classList.remove("on"); clearTimeout(hintT); redT.forEach(clearTimeout); redT = []; paused = false; }
+    function stopAnim() { trickTok++; $("qtrick").classList.remove("on"); clearTimeout(hintT); redT.forEach(clearTimeout); redT = []; paused = false; endHint(); }
+    function endHint() { colHint.stop(); $("qrow").style.display = ""; $("quiz").classList.remove("hinting"); }
     $("qtbtn").onclick = function () {               // "Show me the trick": a hint for fairness (no streak step), and it hides the mic
       if (!open || paused) return;
+      if (curLv >= 4) { if (!locked) fullHint(qid); return; }   // column sums: the animated column hint
       var my = qid, back = !!vHandler && !$("qvoice").hidden;
       trickUsed = true; paused = true; clearTimeout(hintT); clearTimeout(vTimer);
       if (back) voice.stop();
@@ -1533,11 +1910,15 @@
       } else if (lv === 5) {                                    // crossing the ten: 43-7, 38+5
         if (plus) { t = rnd(2, 8); u = rnd(1, 9); b = rnd(10 - u, 9); } else { t = rnd(2, 9); u = rnd(0, 8); b = rnd(u + 1, 9); }
         a = t * 10 + u;
-      } else {                                                  // two-digit +/- two-digit, no carry / borrow
+      } else if (lv === 6) {                                    // two-digit +/- two-digit, no carry / trade
         if (plus) { ta = rnd(2, 8); tb = rnd(1, 9 - ta); ua = rnd(0, 9); ub = rnd(0, 9 - ua); }
         else { ta = rnd(2, 9); tb = rnd(1, ta); ua = rnd(0, 9); ub = rnd(0, ua); }
         a = ta * 10 + ua; b = tb * 10 + ub;
         if (!plus && a <= b) return make(lv);
+      } else {                                                  // two-digit +/- two-digit WITH a carry (59 + 27) or a trade (84 - 39); answers stay under 100
+        if (plus) { ta = rnd(1, 7); tb = rnd(1, 8 - ta); ua = rnd(1, 9); ub = rnd(10 - ua, 9); }
+        else { ta = rnd(2, 9); tb = rnd(1, ta - 1); ua = rnd(0, 8); ub = rnd(ua + 1, 9); }
+        a = ta * 10 + ua; b = tb * 10 + ub;
       }
       return { a: a, b: b, plus: plus, ans: plus ? a + b : a - b };
     }
@@ -1555,7 +1936,8 @@
       }
       lastQ = curQ; answer = q.ans; curA = q.a; curB = q.b; curPlus = q.plus; curRv = !!rv;
       var my = ++qid, math = mathy(), useVoice = voice.cfg.on && voice.state() !== "denied" && voice.state() !== "error", lv = curLv, es = voice.cfg.lang === "es";
-      stopVoice(); stopAnim(); vTries = 0; hintN = 0; trickUsed = false;
+      stopVoice(); stopAnim(); vTries = 0; hintN = 0; trickUsed = false; hintFull = false;
+      curHs = cfg.style === "test" ? hintPick(log, Math.random()) : cfg.style;
       anim.clear($("qhost"), $("qsvg"));
       if (useVoice && voice.state() === "off") voice.prepare();
       $("qtitle").innerHTML = earnOnly ? "&#10135; Earn more time with math!" : math ? "&#129504; Math time!" : "&#129504; Math time! Solve it to play the next lesson";
@@ -1571,6 +1953,7 @@
       if (lv >= 4) cands.push(10, -10);
       cands.sort(function () { return Math.random() - 0.5; });
       var cap = lv === 1 ? 10 : lv === 2 ? 20 : 999;
+      if (lv >= 4) slipAnswers(a, b, q.plus).forEach(function (w) { wrong.push(w); });   // the classic slip is one of the choices
       cands.concat([3, -3]).forEach(function (d) {
         var w = answer + d;
         if (wrong.length < 2 && w >= 0 && w <= cap && wrong.indexOf(w) < 0) wrong.push(w);
@@ -1589,6 +1972,7 @@
       $("qmsg").textContent = rv ? "\ud83d\udd01 " + cueSay : "\ud83e\udd14 Think\u2026";
       $("qrep").hidden = !(voice.cfg.read && voice.can());
       $("qtbtn").hidden = !cfg.hint;
+      $("qtbtn").innerHTML = lv >= 4 ? (es ? "&#128161; Muéstrame" : "&#128161; Show me") : "&#129504; Show me the trick";
       clearTimeout(thinkTimer);
       function go() {
         thinkTimer = setTimeout(function () {      // think time: no rapid tapping; it starts when the question has been read
@@ -1620,6 +2004,13 @@
       if (curRv) e.rv = 1;                                         // a missed question that came back
       if (hint) e.hint = hint;                                     // 1-2: the hint step shown; 3: "Show me the trick"
       if (!ok) e.ex = 1;                                           // the explanation was given
+      if (curLv >= 4) {                                            // a column sum: kind, the slip it shows, the hint style it got
+        e.col = 1;
+        if (needsRegroup(curA, curB, curPlus)) e.reg = 1;
+        var sk = !ok && slipKind(curA, curB, curPlus, n);
+        if (sk) e.sl = sk;
+        if (hintFull) e.hs = curHs;
+      }
       log.push(e);
       if (log.length > LOG_MAX) log = log.slice(-LOG_MAX);
       put("quizLog", JSON.stringify(log));
@@ -1646,7 +2037,7 @@
       var ok = n === answer, lang = voice.cfg.lang, math = mathy(), lv = curLv;
       var ms = Date.now() - t0 - ((window.eyeMs || 0) - eye0), fast = !ok && !!btn && ms < FAST_MS;
       var hinted = hintN > 0 || trickUsed;
-      clearTimeout(hintT);
+      clearTimeout(hintT); endHint();                               // an answer ends a running hint (it must not talk over the praise)
       record(n, ok, heard, ms, fast, trickUsed ? 3 : Math.min(hintN, 2));
       var earned = guard.earn(ok, !manual && !hinted && lv >= guard.base() - 1);   // streaks earn screen time (not in a parent's quiz, not after a hint, not by farming easy levels)
       if (reviewAfter(review, { a: curA, b: curB, plus: curPlus, lv: lv, ok: ok, rv: curRv, hint: hinted }, Math.random())) {
@@ -1691,10 +2082,11 @@
       var secs = Math.min(20, 5 * sessMiss), txt = curQ + " = " + answer;
       put("quizFreezeUntil", Date.now() + secs * 1000); put("quizFreezeTxt", txt); put("quizFreezeLv", lv);
       if (!guard.cfg.calm) buzzer();
-      freeze(Date.now() + secs * 1000, txt, lv, wrongSay(curA, curB, curPlus, lv, lang, n));
+      var slip = lv >= 4 ? slipSay(slipKind(curA, curB, curPlus, n), curA, curB, lang) : "";   // a classic slip is named kindly, then explained
+      freeze(Date.now() + secs * 1000, txt, lv, (slip ? slip + " " : "") + wrongSay(curA, curB, curPlus, lv, lang, n), slip);
     }
 
-    function freeze(until, txt, lv, text) {
+    function freeze(until, txt, lv, text, slip) {
       locked = true; qid++; stopVoice();
       var my = qid, m = txt.match(/^(\d+) ([+\u2212]) (\d+) = (\d+)$/), es = voice.cfg.lang === "es", calm = guard.cfg.calm, speaking = false;
       var ex = m && lv ? explain(+m[1], +m[3], m[2] === "+", lv, voice.cfg.lang) : null;
@@ -1706,8 +2098,8 @@
         redT.push(setTimeout(function () { if (my !== qid) return; $("qredHost").classList.add("hint"); anim.draw($("qredHost"), $("qredSvg"), ex.hints, k + 1, true); }, 900 + k * 2800));
       });
       $("qredDots").innerHTML = ex && lv <= 2 ? dotsHtml(+m[1], +m[3], m[2] === "+") : "";
-      $("qredSteps").innerHTML = !ex ? "" : (lv >= 4 ? '<div class="leg"><i class="t">' + (es ? "decenas" : "tens") + '</i> &nbsp; <i class="o">' + (es ? "unidades" : "ones") + "</i></div>" : "") +
-        ex.steps.map(function (st) { return "<div>" + st.v + "</div>"; }).join("");
+      $("qredSteps").innerHTML = (slip ? '<div class="slip">' + slip + "</div>" : "") + (!ex ? "" : (lv >= 4 ? '<div class="leg"><i class="t">' + (es ? "decenas" : "tens") + '</i> &nbsp; <i class="o">' + (es ? "unidades" : "ones") + "</i></div>" : "") +
+        ex.steps.map(function (st) { return "<div>" + st.v + "</div>"; }).join(""));
       $("qred").classList.toggle("ex", !!ex); $("qred").classList.toggle("calm", calm);
       $("qred").classList.add("on");
       if (text && voice.cfg.fb && voice.can()) {                     // the freeze waits for the voice: it lasts at least until the speech ends plus 1 s
@@ -1784,9 +2176,10 @@
       },
       cfg: cfg,
       results: results,
+      hintStats: function () { return hintStats(log); },
       clearRecords: clearRecords,
       save: function () {
-        put("quizOn", cfg.on ? 1 : 0); put("quizEvery", cfg.every); put("quizNeed", cfg.need); put("quizRepeat", cfg.review ? 1 : 0); put("hintAfter", cfg.hint);
+        put("quizOn", cfg.on ? 1 : 0); put("quizEvery", cfg.every); put("quizNeed", cfg.need); put("quizRepeat", cfg.review ? 1 : 0); put("hintAfter", cfg.hint); put("hintStyle", cfg.style);
         if (!cfg.on) { count = 1; put("quizCount", 1); put("quizPending", 0); }
       }
     };
@@ -2139,7 +2532,7 @@
     $("qOn").onclick = function () { quiz.cfg.on = !quiz.cfg.on; quiz.save(); label(); };
     $("qEvery").onclick = function () { quiz.cfg.every = cycle([1, 2, 3, 4], quiz.cfg.every); quiz.save(); label(); };
     $("qNeed").onclick = function () { quiz.cfg.need = cycle([1, 2, 3], quiz.cfg.need); quiz.save(); label(); };
-    $("qLevel").onclick = function () { quiz.cfg.level = cycle([1, 2, 3, 4, 5, 6], quiz.cfg.level); label(); };
+    $("qLevel").onclick = function () { quiz.cfg.level = cycle([1, 2, 3, 4, 5, 6, 7], quiz.cfg.level); label(); };
 
     // Results panel: today / all time, level, streak, and the last 20 mistakes
     function two(n) { return n < 10 ? "0" + n : "" + n; }
@@ -2163,7 +2556,7 @@
       var r = quiz.results(), box = $("resBody");
       function line(name, o) { return '<div class="row"><span>' + name + "</span><b>&#9989; " + o.right + " &nbsp; &#10060; " + o.wrong + " &nbsp; " + o.pct + "%</b></div>"; }
       var h = line("Today", r.today) + line("All time", r.all) +
-        '<div class="row"><span>Level</span><b>' + r.level + ' of 6</b></div>' +
+        '<div class="row"><span>Level</span><b>' + r.level + ' of 7</b></div>' +
         '<div class="row"><span>Right in a row</span><b>' + r.streak + "</b></div>" + practiseHtml() +
         '<div style="margin-top:10px;color:var(--muted)">Last mistakes</div><div class="list">';
       if (!r.mistakes.length) h += '<div class="miss">None yet &#127775;</div>';
@@ -2171,8 +2564,19 @@
         var d = new Date(m.t), when = d.toDateString() === new Date().toDateString() ? "" : (d.getDate() + "/" + (d.getMonth() + 1) + " ");
         h += '<div class="miss">' + when + two(d.getHours()) + ":" + two(d.getMinutes()) + " &middot; " + m.q + " &middot; said <b>" + m.a + "</b>, right " + m.c + "</div>";
       });
-      box.innerHTML = h + "</div>";
+      box.innerHTML = h + "</div>" + hintTestHtml();
       $("resClear").textContent = "Clear records";
+    }
+    // The column-hint test: per style, how often it was shown, right right after it, and right on the next one alone (the score)
+    function hintTestHtml() {
+      var st = quiz.hintStats(), N = { A: "&#10024; Magic numbers", B: "&#129521; Blocks", C: "&#128587; Do it with me" }, h = '<div style="margin-top:10px;color:var(--muted)">&#128161; Hint test (column sums)</div>';
+      HINT_STYLES.forEach(function (k) {
+        var s = st.s[k];
+        h += '<div class="row"><span>' + N[k] + (st.win === k ? " &#127942;" : "") + "</span><b>" + s.n + " hints &middot; next one alone " +
+          (s.nx ? s.nok + "/" + s.nx + " (" + Math.round(100 * s.nok / s.nx) + "%)" : "-") + "</b></div>";
+      });
+      return h + '<div class="miss">' + (st.win ? "Winner so far: " + N[st.win] + ". Pick it in the Menu (Hint style) to use only that one."
+        : "A winner is named when every style has " + st.need + " \"next one alone\" answers.") + "</div>";
     }
     function sensLabel() { $("qSens").textContent = "Key sensitivity: " + window.pianoSens(); }
     $("qSens").onclick = function () { window.pianoSens(true); sensLabel(); };
@@ -2221,7 +2625,7 @@
         var r = quiz.results();
         h = row("Today", r.today.right + " right, " + r.today.wrong + " wrong (" + r.today.pct + "%)") +
           row("All time", r.all.right + " right, " + r.all.wrong + " wrong (" + r.all.pct + "%)") +
-          row("Level / streak", r.level + " of 6 / " + r.streak) + practiseHtml() +
+          row("Level / streak", r.level + " of 7 / " + r.streak) + practiseHtml() +
           '<div class="sub">Level changes</div>' + (D.lv.slice(-5).reverse().map(function (x) { var q = new Date(x.t);
             return '<div class="miss">' + q.getDate() + "/" + (q.getMonth() + 1) + " &middot; level " + x.l + "</div>"; }).join("") || '<div class="miss">None logged yet</div>') +
           '<div class="sub">Last mistakes</div><div class="list">' + (r.mistakes.slice(0, 10).map(function (m) { var q = new Date(m.t);
@@ -2248,7 +2652,8 @@
       if (!$("gLock")) return;
       var c = guard.cfg, lk = guard.locked();
       $("rvOn").textContent = "\ud83d\udd01 Repeat missed questions: " + (quiz.cfg.review ? "ON" : "OFF");
-      $("hintOn").textContent = "\ud83d\udca1 Hints and tricks: " + (quiz.cfg.hint ? "after " + quiz.cfg.hint + " s" : "OFF");
+      $("hintOn").textContent = "\ud83d\udca1 Hints: " + (quiz.cfg.hint ? "after " + quiz.cfg.hint + " s (column sums: nudge, full hint at " + 2 * quiz.cfg.hint + " s)" : "OFF");
+      $("hintSty").textContent = "\ud83c\udfa8 Hint style: " + { test: "test all 3 (A, B, C take turns)", A: "\u2728 Magic numbers", B: "\ud83e\uddf1 Blocks", C: "\ud83d\ude4b Do it with me" }[quiz.cfg.style];
       $("gLim").textContent = "\u23f0 Daily screen time: " + (c.limit ? c.limit + " min" : "Off");
       $("gEarn").textContent = "\u2797 Earn minutes with math: " + (c.earn ? "ON" : "OFF");
       $("gNeed").textContent = "Streak needed: " + c.need; $("gMin").textContent = "Minutes per streak: " + c.min; $("gCap").textContent = "Max earned per day: " + c.cap;
@@ -2264,7 +2669,8 @@
     guard.onChange(glabel);
     function gset(k, list) { guard.cfg[k] = list ? cycle(list, guard.cfg[k]) : !guard.cfg[k]; guard.save(); glabel(); }
     $("rvOn").onclick = function () { quiz.cfg.review = !quiz.cfg.review; quiz.save(); glabel(); };
-    $("hintOn").onclick = function () { quiz.cfg.hint = cycle([5, 10, 0], quiz.cfg.hint); quiz.save(); glabel(); };
+    $("hintOn").onclick = function () { quiz.cfg.hint = cycle([20, 30, 45, 0], quiz.cfg.hint); quiz.save(); glabel(); };
+    $("hintSty").onclick = function () { quiz.cfg.style = cycle(["test", "A", "B", "C"], quiz.cfg.style); quiz.save(); glabel(); };
     $("gLim").onclick = function () { gset("limit", [0, 30, 45, 60, 90, 120]); };
     $("gEarn").onclick = function () { gset("earn"); };
     $("gNeed").onclick = function () { gset("need", [3, 5, 10]); };

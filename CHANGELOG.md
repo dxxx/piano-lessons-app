@@ -4,6 +4,14 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.9 — 2026-10-25
+- **Animated column hints, 3 styles under test** (column sums, levels 4-7). The sum is redrawn in two lanes (blue tens, pink ones) and the digits move: **A ✨ Magic numbers** (copies of the digits fly into the answer box, shrink, the − or + flashes between them and they crash into the result), **B 🧱 Blocks** (tens are sticks, ones are cubes; a stick breaks into 10 cubes for a trade, 10 cubes snap into a stick for a carry), **C 🙋 Do it with me** (he types each column on a keypad; after two misses it shows him). Steps pause at least 2.6 s (or until he taps)
+- **Trading, written like on paper**: "Trade 1 ten for 10 ones" (never "borrow"). The top tens digit is crossed out and the new one is written small above it, so 84 − 39 keeps its 8 on screen with a 7 above it, and the 4 becomes ¹4
+- **More time to think**: hints now start after 20 s (Menu: 20 / 30 / 45 s / OFF). Column sums first only wiggle the ones column ("Start with the ones"); the full animated hint comes after twice that, or at once from 💡 "Show me"
+- **New level 7**: two-digit sums with a carry (59 + 27) or a trade (84 − 39), answers under 100. Level 6 stays carry-free. The level-7 mini-lesson and explanations go ones first, then tens
+- **Mistake checker**: the classic slip of a carry/trade sum is one of the answer buttons; picking it is named kindly on the mistake screen and in speech ("Careful! It's 4 take away 9, not 9 take away 4…", "Good trade! But that ten came from the 8…", "So close! 16 ones have a ten hiding inside…"). The log records it (`sl`: flip / kept / carry)
+- **Hint test**: styles A, B, C take turns (least-shown first); Results shows, per style, the hints given and how often the NEXT column sum of the same kind was right without a hint. A 🏆 winner is named once every style has 20 such answers; Menu → 🎨 Hint style switches to one style or back to "test all 3". Log fields: `col`, `reg`, `hs`
+
 ## 1.8 — 2026-10-25
 - **Read aloud**: every question is spoken slowly ("What is 12 minus 3?" / "¿Cuánto es 12 menos 3?"), with a 🔊 button next to it to hear it again. With Voice quiz on, the microphone opens only after the question has been read; think time starts after the speech
 - **Spoken praise**: "Great job! 12 minus 3 is 9." (five variants per language, never the same twice in a row)
