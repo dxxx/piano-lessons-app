@@ -1,0 +1,12 @@
+# build output
+build/
+out/
+
+# signing key: never in git — back it up separately (updates need the same key)
+keystore/
+*.jks
+*.keystore
+
+.secrets/
+.secrets/*
+.cache/

@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Piano Lessons</title>
+<style>
+  :root {
+    --bg: #14121f; --panel: #1e1b2e; --ink: #f4f1ff; --muted: #a39fbd;
+    --accent: #f5b841; --accent-ink: #1e1b2e; --ring: #f5b841;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden;
+    -webkit-user-select: none; user-select: none; }
+  .app { display: grid; grid-template-columns: 1fr 300px; gap: 16px; height: 100%; padding: 16px; }
+  .stage { display: flex; flex-direction: column; min-width: 0; min-height: 0; gap: 12px; }
+  header { display: flex; align-items: center; gap: 10px; }
+  header h1 { margin: 0; font-size: 22px; letter-spacing: .3px; }
+  header .keys { width: 34px; height: 24px; border-radius: 5px;
+    background: repeating-linear-gradient(90deg, #fff 0 7px, var(--bg) 7px 8.5px); }
+  .player-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+  .player { position: relative; width: 100%; max-height: 100%; aspect-ratio: 16 / 9; border-radius: 14px;
+    overflow: hidden; background: #000; }
+  /* Our own screen over the player while paused/ended, so YouTube's "More videos" never shows */
+  .cover { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center;
+    justify-content: center; gap: 14px; background: rgba(20,18,31,.94); z-index: 2; }
+  .cover.on { display: flex; }
+  .cover .big { border: 0; border-radius: 18px; background: var(--accent); color: var(--accent-ink);
+    font-size: 30px; font-weight: 800; padding: 22px 44px; }
+  .cover .sub { color: var(--muted); font-size: 18px; text-align: center; padding: 0 20px; }
+  /* The iframe is 120px taller than the box and shifted up 60px: the video letterboxes inside it,
+     so only black bars plus YouTube's edge overlays (title, "More videos") fall outside and are clipped. */
+  .player iframe, #player { position: absolute; left: 0; top: -60px; width: 100%; height: calc(100% + 120px);
+    border: 0; display: block; }
+  .shield { position: absolute; inset: 0; z-index: 1; }   /* taps never reach YouTube's player */
+  .controls { display: flex; align-items: center; gap: 12px; }
+  .btn { flex: none; border: 0; border-radius: 14px; background: var(--accent); color: var(--accent-ink);
+    font-size: 20px; font-weight: 700; padding: 16px 26px; min-width: 150px; }
+  .btn:active { transform: scale(.97); }
+  .btn[disabled] { opacity: .35; }
+  .now { flex: 1; min-width: 0; text-align: center; }
+  .now .n { color: var(--accent); font-weight: 700; font-size: 15px; }
+  .now .t { font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  aside { background: var(--panel); border-radius: 14px; padding: 12px; overflow-y: auto; }
+  aside h2 { margin: 2px 4px 10px; font-size: 15px; color: var(--muted); font-weight: 600; }
+  .lesson { position: relative; display: block; width: 100%; border: 3px solid transparent; padding: 0;
+    border-radius: 12px; overflow: hidden; margin-bottom: 10px; background: #000; aspect-ratio: 16 / 9; }
+  .lesson img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .lesson .num { position: absolute; left: 8px; top: 8px; background: rgba(20,18,31,.85); color: var(--ink);
+    font-weight: 700; font-size: 15px; border-radius: 8px; padding: 3px 9px; }
+  .lesson.current { border-color: var(--ring); }
+  .lesson.current .num { background: var(--accent); color: var(--accent-ink); }
+  .msg { text-align: center; color: var(--muted); padding: 24px; font-size: 18px; }
+  .msg button { margin-top: 14px; }
+  /* grown-up exit */
+  .gate { position: fixed; inset: 0; background: rgba(10,9,16,.92); display: none;
+    align-items: center; justify-content: center; z-index: 10; }
+  .gate.open { display: flex; }
+  .gate .card { background: var(--panel); border-radius: 18px; padding: 24px; width: 340px; text-align: center; }
+  /* Big video mode: no Back/Next row, a narrow thumbnail strip, the video takes the room */
+  body.big .app { grid-template-columns: 1fr 150px; gap: 10px; padding: 8px 10px; }
+  body.big .stage { gap: 6px; }
+  body.big .controls, body.big header .keys, body.big aside h2 { display: none; }
+  body.big header h1 { font-size: 16px; color: var(--muted); }
+  body.big aside { padding: 6px; }
+  body.big .lesson { margin-bottom: 6px; border-width: 2px; border-radius: 8px; }
+  body.big .lesson .num { font-size: 12px; padding: 1px 6px; left: 4px; top: 4px; }
+  header .lock { border: 0; border-radius: 10px; background: #2b2742; color: var(--muted);
+    font-size: 15px; padding: 8px 14px; }
+  .gate .q { font-size: 22px; font-weight: 700; margin: 8px 0 14px; }
+  .gate .ans { font-size: 34px; height: 46px; letter-spacing: 10px; color: var(--accent); }
+  .gate .err { color: #ff8a80; height: 20px; font-size: 15px; }
+  .gate .choices { display: grid; gap: 10px; margin-top: 8px; }
+  .gate .choices button { font-size: 20px; padding: 14px; border: 0; border-radius: 12px; background: #2b2742; color: var(--ink); }
+  .gate .choices .primary { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+  .pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
+  .pad button { font-size: 24px; padding: 14px 0; border: 0; border-radius: 12px; background: #2b2742; color: var(--ink); }
+  .pad .wide { grid-column: span 2; }
+  @media (max-width: 800px) {
+    .app { grid-template-columns: 1fr; grid-template-rows: 1fr 140px; }
+    aside { display: flex; gap: 10px; overflow-x: auto; overflow-y: hidden; }
+    aside h2 { display: none; }
+    .lesson { width: 190px; flex: none; margin: 0; }
+    .btn { min-width: 0; padding: 14px 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <section class="stage">
+    <header id="title"><span class="keys" aria-hidden="true"></span><h1>Piano Lessons</h1>
+      <button class="lock" id="mode" style="margin-left:auto">&#x26F6; Big video</button>
+      <button class="lock" id="lock" aria-label="Close (grown-ups)">&#128274; Close</button></header>
+    <div class="player-wrap"><div class="player"><div id="player"></div><div class="shield" id="shield"></div>
+      <div class="cover" id="cover"><button class="big" id="coverBtn">&#9654; Play</button>
+        <div class="sub" id="coverSub"></div></div></div></div>
+    <div class="controls">
+      <button class="btn" id="prev" disabled>&#9664; Back</button>
+      <div class="now"><div class="n" id="num">&nbsp;</div><div class="t" id="vt">Loading lessons…</div></div>
+      <button class="btn" id="next" disabled>Next &#9654;</button>
+    </div>
+  </section>
+  <aside><h2>All lessons</h2><div id="list"></div></aside>
+</div>
+
+<div class="gate" id="gate">
+  <div class="card">
+    <div style="color:var(--muted)">For grown-ups</div>
+    <div class="q" id="gq"></div>
+    <div class="ans" id="ga"></div>
+    <div class="err" id="ge"></div>
+    <div class="pad" id="pad"></div>
+    <div class="choices" id="choices" hidden>
+      <button class="primary" id="doClose">Close the app</button>
+      <button id="doChange">Change PIN</button>
+      <button id="doCancel">Back to lessons</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  var PLAYLIST = "PLDVezc1Pgjccf0cePq-4SB1K6NExfYT6x";
+  var KEY = "lastLesson";
+  var player, ids = [], current = -1;
+
+  function saved() { try { return parseInt(localStorage.getItem(KEY) || "0", 10) || 0; } catch (e) { return 0; } }
+  function save(i) { try { localStorage.setItem(KEY, String(i)); } catch (e) {} }
+
+  function onYouTubeIframeAPIReady() {
+    player = new YT.Player("player", {
+      playerVars: {
+        listType: "playlist", list: PLAYLIST, index: saved(),
+        rel: 0, iv_load_policy: 3, playsinline: 1, fs: 0, modestbranding: 1, disablekb: 1, controls: 0,
+        origin: location.origin
+      },
+      events: { onReady: waitForPlaylist, onStateChange: refresh, onError: onErr }
+    });
+  }
+
+  function waitForPlaylist(tries) {
+    tries = typeof tries === "number" ? tries : 0;
+    var list = player.getPlaylist && player.getPlaylist();
+    if (list && list.length) { ids = list; buildList(); refresh(); return; }
+    if (tries < 40) setTimeout(function () { waitForPlaylist(tries + 1); }, 250);
+    else showMsg("The lessons didn't load. Check the Wi-Fi and try again.");
+  }
+
+  function buildList() {
+    var box = document.getElementById("list");
+    box.innerHTML = "";
+    ids.forEach(function (id, i) {
+      var b = document.createElement("button");
+      b.className = "lesson"; b.dataset.i = i;
+      b.innerHTML = '<img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + id + '/mqdefault.jpg"><span class="num">' + (i + 1) + "</span>";
+      b.onclick = function () { player.playVideoAt(i); };
+      box.appendChild(b);
+    });
+  }
+
+  // Paused or finished → cover the player with our own button (hides YouTube's suggestions).
+  var cover = document.getElementById("cover"), coverBtn = document.getElementById("coverBtn");
+  var coverSub = document.getElementById("coverSub"), coverAction = null;
+  document.getElementById("shield").onclick = function () {
+    var st = player.getPlayerState ? player.getPlayerState() : -1;
+    if (st === 1 || st === 3) player.pauseVideo(); else player.playVideo();
+  };
+  function setCover(state) {
+    var i = player.getPlaylistIndex(), last = i >= ids.length - 1;
+    if (state === 2 || state === 5 || state === -1) {   // paused, or loaded but not started yet
+      coverBtn.innerHTML = "&#9654; Play"; coverSub.textContent = "";
+      coverAction = function () { player.playVideo(); };
+    } else if (state === 0) {                // ended
+      coverBtn.innerHTML = last ? "&#8635; Start again" : "Next lesson &#9654;";
+      coverSub.textContent = last ? "You finished all the lessons!" : "Lesson " + (i + 2) + " is next";
+      coverAction = function () { last ? player.playVideoAt(0) : player.nextVideo(); };
+    } else { cover.classList.remove("on"); return; }
+    cover.classList.add("on");
+  }
+  coverBtn.onclick = function () { cover.classList.remove("on"); if (coverAction) coverAction(); };
+
+  function refresh(e) {
+    if (e && e.data === 1) failures = 0; // playing again
+    if (e && typeof e.data === "number" && player.getPlaylistIndex) setCover(e.data);
+    if (!player || !player.getPlaylistIndex) return;
+    var i = player.getPlaylistIndex();
+    if (i < 0) return;
+    if (i !== current) {
+      current = i; save(i);
+      document.querySelectorAll(".lesson").forEach(function (el) {
+        var on = +el.dataset.i === i;
+        el.classList.toggle("current", on);
+        if (on) el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+      });
+    }
+    var d = player.getVideoData ? player.getVideoData() : null;
+    document.getElementById("num").textContent = "Lesson " + (i + 1) + " of " + ids.length;
+    document.getElementById("vt").textContent = (d && d.title) || "";
+    document.getElementById("prev").disabled = i <= 0;
+    document.getElementById("next").disabled = i >= ids.length - 1;
+  }
+
+  // Skip a video that can't play here, but stop after 3 failures in a row (offline / all blocked).
+  var failures = 0;
+  function onErr() {
+    if (++failures >= 3) { showMsg("The lessons can't play right now. Check the Wi-Fi and try again."); return; }
+    setTimeout(function () { player.nextVideo(); }, 1500);
+  }
+
+  function showMsg(text) {
+    document.querySelector(".player").innerHTML =
+      '<div class="msg">' + text + '<br><button class="btn" onclick="location.reload()">Try again</button></div>';
+  }
+
+  // Big video mode toggle, remembered between launches.
+  (function () {
+    var btn = document.getElementById("mode");
+    function apply(big) {
+      document.body.classList.toggle("big", big);
+      btn.innerHTML = big ? "&#9634; Normal view" : "&#x26F6; Big video";
+      try { localStorage.setItem("bigMode", big ? "1" : "0"); } catch (e) {}
+    }
+    var start = false;
+    try { start = localStorage.getItem("bigMode") === "1"; } catch (e) {}
+    apply(start);
+    btn.onclick = function () { apply(!document.body.classList.contains("big")); };
+  })();
+
+  document.getElementById("prev").onclick = function () { player.previousVideo(); };
+  document.getElementById("next").onclick = function () { player.nextVideo(); };
+  setInterval(refresh, 1500); // titles arrive a moment after the video switches
+
+  // Grown-up PIN: the Close button asks for it. The first time, it asks to create one
+  // (4 digits, typed twice). After the right PIN: close the app, change the PIN, or go back.
+  (function () {
+    var gate = document.getElementById("gate"), pad = document.getElementById("pad");
+    var choices = document.getElementById("choices");
+    var mode = "check", ans = "", first = "", fails = 0, lockedUntil = 0;
+    var $ = function (id) { return document.getElementById(id); };
+    var bridge = window.Parent;
+
+    function show(prompt) {
+      ans = ""; $("ga").textContent = ""; $("gq").textContent = prompt;
+      pad.hidden = false; choices.hidden = true;
+    }
+    function open() {
+      $("ge").textContent = "";
+      if (bridge && !bridge.hasPin()) { mode = "new"; show("Create a 4-digit PIN"); }
+      else { mode = "check"; show("Enter the PIN to close"); }
+      gate.classList.add("open");
+    }
+    function closeGate() { gate.classList.remove("open"); }
+
+    function submit() {
+      if (ans.length !== 4) return;
+      if (mode === "check") {
+        if (Date.now() < lockedUntil) { $("ge").textContent = "Too many tries, wait a minute"; show("Enter the PIN to close"); return; }
+        if (bridge && bridge.checkPin(ans)) {
+          fails = 0; $("ge").textContent = ""; pad.hidden = true; choices.hidden = false;
+          $("gq").textContent = "Unlocked"; $("ga").textContent = "";
+        } else {
+          if (++fails >= 3) { lockedUntil = Date.now() + 60000; fails = 0; }
+          $("ge").textContent = "Wrong PIN"; show("Enter the PIN to close");
+        }
+      } else if (mode === "new") {
+        first = ans; mode = "confirm"; $("ge").textContent = ""; show("Type the same PIN again");
+      } else if (mode === "confirm") {
+        if (ans === first) { bridge.setPin(ans); $("ge").textContent = ""; closeGate(); }
+        else { mode = "new"; $("ge").textContent = "The PINs didn't match"; show("Create a 4-digit PIN"); }
+      }
+    }
+
+    $("lock").onclick = open;
+    $("doClose").onclick = function () { if (bridge) bridge.unlock(); };
+    $("doChange").onclick = function () { mode = "new"; $("ge").textContent = ""; show("Create a new 4-digit PIN"); };
+    $("doCancel").onclick = closeGate;
+
+    ["1","2","3","4","5","6","7","8","9","Cancel","0","⌫"].forEach(function (k) {
+      var b = document.createElement("button");
+      b.textContent = k;
+      b.onclick = function () {
+        if (k === "Cancel") { closeGate(); return; }
+        if (k === "⌫") { ans = ans.slice(0, -1); }
+        else if (ans.length < 4) { ans += k; }
+        $("ga").textContent = "•".repeat(ans.length);
+        if (ans.length === 4) setTimeout(submit, 150);
+      };
+      pad.appendChild(b);
+    });
+  })();
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
