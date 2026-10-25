@@ -44,6 +44,17 @@ cmd //c "$(cygpath -w "$BT/apksigner.bat")" sign --ks "$(cygpath -w "$KEY")" --k
 
 echo "built: out/PianoLessons.apk ($(du -h out/PianoLessons.apk | cut -f1))"
 
+if [ "${1:-}" = "release" ]; then
+  # Every version is downloadable from GitHub: tag v<version>, attach the signed APK.
+  VER="${2:?usage: bash build.sh release <version>}"
+  export PATH="/c/Program Files/GitHub CLI:$PATH"
+  cp out/PianoLessons.apk "out/PianoLessons-$VER.apk"
+  git tag -a "v$VER" -m "Piano Lessons $VER" 2>/dev/null || true
+  git push origin "v$VER"
+  gh release create "v$VER" "out/PianoLessons-$VER.apk" --title "Piano Lessons $VER" \
+    --notes "${NOTES:-Download PianoLessons-$VER.apk and install it on Android 7+.}"
+fi
+
 if [ "${1:-}" = "install" ]; then
   for d in $(adb devices | awk 'NR>1 && $2=="device"{print $1}'); do
     echo "== $d"; adb -s "$d" install -r out/PianoLessons.apk

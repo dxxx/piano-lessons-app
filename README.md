@@ -1,16 +1,57 @@
-# Piano Lessons — locked kid player for one YouTube playlist
+# Piano Lessons — a locked-down YouTube playlist player for kids
 
-- Playlist: PIANO LESSONS (operator's channel) `PLDVezc1Pgjccf0cePq-4SB1K6NExfYT6x` — loaded live, so added/removed lessons appear on next app start
-- Package `md.home.pianolessons`, ~24 KB, version 1.3, minSdk 24 / target 34. Installed on MatePad 11 (2026-10-25)
-- Build: `bash build.sh` → `out/PianoLessons.apk`; `bash build.sh install` installs on every adb device
-  - Needs: Android cmdline SDK at C:\Android (platform 34, build-tools 37 — 34's d8 crashes on JDK 21), Microsoft OpenJDK 21
-  - **Keep `keystore/piano.jks`** — updates must be signed with the same key (password: the debug-style default in build.sh)
-- Change the playlist: edit `PLAYLIST` in `assets/index.html`, rebuild
-- How it locks: WebView + official YouTube embed; all navigation/popups refused; long-press off; Back only leaves fullscreen; immersive; asks to pin (screen pinning) on every resume while unpinned
-- Grown-up exit: **🔒 Close** button → PIN (created on first tap, typed twice; stored as SHA-256 in app prefs; 3 wrong = 1 min lockout) → Close / Change PIN / Back
-- Paused / not started / ended → own cover screen (▶ Play / Next lesson / Start again) so YouTube's "More videos" never shows
-- YouTube controls off (`controls=0`), iframe cropped 60 px top+bottom (edge overlays clipped), tap-shield over the video (tap = pause/play), YouTube fullscreen off
-- **Big video** mode button: hides Back/Next row, narrow thumbnail strip, remembered between launches
-- Device setup: Settings → Security → More settings → Screen pinning ON + "Ask for PIN before unpinning"
-- Verified on device: playlist loads (20 lessons), video plays, "Watch on YouTube" tap stays in app
-- Known limits: needs Wi-Fi; YouTube may show ads in embeds; pinning only holds once screen pinning is enabled and accepted
+A tiny Android app (≈24 KB) that turns a tablet into a **single-purpose piano-lesson screen**: it plays the
+videos of **one** YouTube playlist and nothing else — no search, no recommendations, no comments, no way out
+to the rest of YouTube or to other apps.
+
+Built for a child learning piano on a Huawei MatePad 11, but it runs on any Android 7+ phone or tablet.
+
+**⬇ Download:** grab `PianoLessons-<version>.apk` from the [Releases](../../releases) page and install it
+(allow "install unknown apps" for your browser or file manager once).
+
+## Why
+The YouTube app is a rabbit hole: a 5-minute lesson ends in "more videos like this" and an hour of cartoons.
+This app keeps the lesson playlist and removes everything around it, so the tablet stays a practice tool.
+
+## What it does
+- Plays only the lessons in one playlist, loaded live — add a video to the playlist and it shows up the next
+  time the app opens.
+- Big thumbnail list with lesson numbers, **Back / Next** buttons, remembers the last lesson.
+- **Big video** mode: hides the buttons and shrinks the list so the video fills the screen.
+- YouTube's own controls, title bar, "More videos", share and logo are hidden; a tap on the video simply
+  pauses it and shows a big ▶ Play button. When a lesson ends: **Next lesson ▶** (or **Start again**).
+- Every link, popup and "Watch on YouTube" is refused; Back does nothing; the app pins itself to the screen.
+- **🔒 Close** button protected by a grown-up PIN (set on first use, stored only as a hash on the device,
+  3 wrong tries = 1 minute lockout).
+
+## Use your own playlist
+1. Make a playlist on YouTube (public or unlisted) and copy its ID — the part after `list=` in the URL.
+2. Put it in `PLAYLIST` at the top of the script in [`assets/index.html`](assets/index.html).
+3. Rebuild (below).
+
+## Set up the lock on the tablet
+- Settings → Security → **Screen pinning** → on, and **Ask for PIN before unpinning** → on.
+- Open the app, accept "pin this app?", then tap **🔒 Close** once to create your PIN.
+- To leave: 🔒 Close → PIN → Close the app.
+
+## Build (no Android Studio, no Gradle)
+Needs the Android command-line SDK (platform 34, build-tools 37) and JDK 21; paths are at the top of `build.sh`.
+```
+bash build.sh                # → out/PianoLessons.apk
+bash build.sh install        # also installs on every adb-connected device
+bash build.sh release 1.3    # builds, tags v1.3 and publishes the APK as a GitHub release (needs gh)
+```
+`build.sh` creates a signing key in `keystore/` on first run. Keep that file safe and out of git — app updates
+must be signed with the same key.
+
+## How it works
+One Activity with a WebView. The page hosts YouTube's official IFrame player (`listType=playlist`,
+`controls=0`); the iframe is drawn 120 px taller than its box so YouTube's edge overlays fall outside the
+visible area, and a transparent layer catches every tap. The WebView refuses all navigation and new windows.
+The PIN check goes through a small JavaScript bridge to the app (SHA-256 in private app storage).
+
+## Limits
+- Needs an internet connection; it streams from YouTube.
+- YouTube may still show an ad before a video — the official embed player doesn't let apps remove them.
+- Without Android "device owner" mode, pinning relies on the system screen-pinning prompt; turn on
+  "Ask for PIN before unpinning" so the system unpin gesture also needs the device PIN.
