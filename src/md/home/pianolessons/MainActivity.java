@@ -11,6 +11,7 @@ import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -18,6 +19,8 @@ import android.widget.FrameLayout;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.security.MessageDigest;
 
 /**
@@ -66,6 +69,23 @@ public class MainActivity extends Activity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 return true; // never navigate away from the lesson page
+            }
+
+            /** Serve the bundled piano samples (assets/sounds/...) to the page; everything else is untouched. */
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                if (!url.startsWith(PAGE_ORIGIN + "sounds/")) return null;
+                String path = request.getUrl().getPath();               // /sounds/grand/C4.mp3
+                if (path == null || path.length() < 2 || path.contains("..")) return null;
+                try {
+                    InputStream in = getAssets().open(path.substring(1));
+                    Map<String, String> headers = new HashMap<String, String>();
+                    headers.put("Access-Control-Allow-Origin", "*");
+                    return new WebResourceResponse("audio/mpeg", null, 200, "OK", headers, in);
+                } catch (Exception e) {
+                    return null;
+                }
             }
         });
         web.setWebChromeClient(new WebChromeClient() {

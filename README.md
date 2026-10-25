@@ -55,3 +55,10 @@ The PIN check goes through a small JavaScript bridge to the app (SHA-256 in priv
 - YouTube may still show an ad before a video — the official embed player doesn't let apps remove them.
 - Without Android "device owner" mode, pinning relies on the system screen-pinning prompt; turn on
   "Ask for PIN before unpinning" so the system unpin gesture also needs the device PIN.
+
+## Sounds
+The play-along piano can sound like a grand piano (default), a soft synth piano, a music box, an electric piano
+or an organ; the choice is remembered. The grand piano uses recorded samples bundled in `assets/sounds/grand/`
+and served to the page by the WebView (no network needed).
+
+Grand piano samples: Salamander Grand Piano by Alexander Holm, CC-BY 3.0.
