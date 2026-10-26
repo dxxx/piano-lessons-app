@@ -4,6 +4,15 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.11 — 2026-10-26
+- **Start screen**: the app opens on "Hi! What do you want to do?" with two big drawn cards, 🎹 **Piano lessons** and 🧮 **Math**; a 🏠 button goes back to it (never from the quiz between lessons). Menu → **Start screen** sets he chooses / always piano / always math
+- **New look**: a rounded kids' font (Fredoka, bundled, works offline), a night-sky background, chunky press-down buttons, coloured answer buttons, softer red screen
+- **Everything fits on the screen**: the quiz, the "Stop and think" screen and the mini-lessons shrink to the screen instead of scrolling (tablet and phone), text a bit smaller, and a phone held sideways keeps the lesson strip at the side
+- **Step-by-step explanations**: after a mistake the explanation is told one step at a time with a short pause between steps; each step lights up while it is spoken and its arc is drawn on the sum at that moment. Speech is a little slower
+- **Right answer**: the **?** turns into the answer in green and stays on screen (at least 1.5 s after the voice), with confetti and "🎉 Yahoo! Correct!"
+- **One language at a time**: everything he sees (buttons, lessons, quiz, PIN screen, sound names) follows Menu → Language; the grown-up menu stays English
+- The grown-up's computer can read the quiz and activity log over USB (USB debugging must be on; nothing goes over the network)
+
 ## 1.10 — 2026-10-25
 - **Hearts** ❤️: the mistake lock is now a row of hearts on the math screen and on the "Stop and think" screen. A wrong answer breaks one (it shakes and goes grey; a too-fast guess breaks two); **5 right in a row win one back** (it pops in, and the voice says "And you won a heart back!"). Answers after a hint don't count toward the 5, and nothing is banked while all hearts are full. No hearts left = the break screen. Menu → ❤️ Hearts sets how many (3 / 5 / 7 / 10)
 - **Voice fix, no more freezes**: when speech was cut off (lock screen, a voice setting switched off, a language change), the screen waiting for it could stay on 🔊 forever; now it always moves on. The safety timer also allows for voices that prepare the whole sentence before speaking (SherpaTTS), and mini-lesson steps are no longer cut off after 15 s

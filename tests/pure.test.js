@@ -2,7 +2,7 @@
 const fs = require("fs"), assert = require("assert"), path = require("path");
 const html = fs.readFileSync(path.join(__dirname, "..", "assets", "index.html"), "utf8");
 const src = html.slice(html.indexOf("// <pure>"), html.indexOf("// </pure>"));
-const P = new Function(src + "; return { explain, eqSay, qSay, rightSay, wrongSay, pickIdx, mistakeCount, heartState, heartsHtml, dayStep, clockBehind, limitLeft, earnStep, qKey, reviewAfter, reviewDue, trickName, splitText, easyIntro, PRAISE, slipAnswers, slipKind, slipSay, hintPick, hintStats, needsRegroup };")();
+const P = new Function(src + "; return { explain, eqSay, qSay, rightSay, wrongSay, pickIdx, mistakeCount, heartState, heartsHtml, dayStep, clockBehind, limitLeft, earnStep, qKey, reviewAfter, reviewDue, trickName, splitText, easyIntro, PRAISE, slipAnswers, slipKind, slipSay, hintPick, hintStats, needsRegroup, wrongParts };")();
 const say = (a, b, plus, lv, l) => P.explain(a, b, plus, lv, l).say;
 const eq = (got, want) => assert.strictEqual(got, want);
 
@@ -170,4 +170,13 @@ Q.length = 0;
 for (let i = 0; i < 40; i++) P.reviewAfter(Q, { ...A(20 + i, 1, true, 4), ok: false }, 0);
 eq(Q.length, 30); eq(Q[0].a, 30); eq(Q[29].a, 59);        // cap 30, oldest dropped
 eq(Q[0].lv, 4);                                           // an item keeps its own level
+// The mistake explanation, told in parts: intro, one part per step (a trailing comma becomes a full stop), then the result
+{
+  const w = P.wrongParts(5, 3, true, 1, "en", 7, "");
+  eq(w.map((x) => x.say).join(" | "), "You said 7. Let's see… | Start at 5. | Count 3 more: 6, 7, 8. | So 5 plus 3 is 8.");
+  eq(w.map((x) => x.step).join(","), "-1,0,1,-1"); assert(w[3].fin);
+  const s = P.wrongParts(84, 39, false, 7, "es", 55, "SLIP");
+  eq(s[0].say, "SLIP"); eq(s[1].say, "Dijiste 55. Veamos…"); eq(s[s.length - 1].say, "Así que 84 menos 39 son 45.");
+  eq(s.filter((x) => x.step >= 0).length, P.explain(84, 39, false, 7, "es").steps.length);
+}
 console.log("OK", nh, "sums checked for hints");

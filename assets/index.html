@@ -121,30 +121,34 @@
   .quiz { position: fixed; inset: 0; background: rgba(10,9,16,.96); display: none;
     align-items: center; justify-content: center; z-index: 9; }
   .quiz.open { display: flex; }
-  .qcard { background: var(--panel); border-radius: 24px; padding: 24px 32px; width: min(900px, 94vw);
-    text-align: center; max-height: 100vh; overflow-y: auto; }
+  .qcard { background: var(--panel); border-radius: 24px; padding: 16px 28px; width: min(900px, 94vw);
+    text-align: center; flex: none; transform-origin: center; }   /* fitInto() scales it down to the screen, so nothing scrolls */
   .quiz.hinting .qpic, .quiz.hinting .qtitle, .quiz.hinting .qprog, .quiz.hinting .qstreak { display: none; }   /* room for the column hint */
   @media (max-width: 500px) { .qcard { padding: 14px 10px; } }
   .qtitle { color: var(--muted); font-size: 20px; }
   .qpic { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 18px;
-    min-height: 120px; margin: 14px 0 4px; }
+    min-height: 90px; margin: 10px 0 4px; }
   .qpic .grp { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; max-width: 46%; }
   .qpic .it { position: relative; line-height: 1.15; }
   .qpic .it.gone { opacity: .3; }
   .qpic .it.gone::after { content: "\2715"; position: absolute; inset: 0; color: #ff6b6b; font-weight: 900;
     display: flex; align-items: center; justify-content: center; }
   .qpic .op { font-size: 56px; font-weight: 900; color: var(--accent); }
-  .qeq { font-size: 64px; font-weight: 900; letter-spacing: 4px; margin: 4px 0 14px; }
+  .qeq { font-size: 54px; font-weight: 900; letter-spacing: 4px; margin: 2px 0 10px; }
+  .qeq [data-r="q"].got { display: inline-block; color: #5ee6a0; border-color: #5ee6a0; animation: pop .5s ease-out; }
+  .qyay { font-size: 46px; font-weight: 900; color: #5ee6a0; animation: pop .5s ease-out; }
+  .confetti { position: fixed; inset: 0; pointer-events: none; z-index: 11; overflow: hidden; }
+  .confetti i { position: absolute; top: -24px; width: 12px; height: 18px; border-radius: 3px; }
   .qans { display: flex; justify-content: center; gap: 22px; }
-  .qans button { width: 130px; height: 110px; border: 0; border-radius: 22px; font-size: 58px; font-weight: 900;
+  .qans button { width: 120px; height: 96px; border: 0; border-radius: 22px; font-size: 50px; font-weight: 900;
     color: var(--accent-ink); background: #8fd3ff; box-shadow: 0 6px 0 rgba(0,0,0,.35); }
   .qans button:nth-child(2) { background: #b6f09c; }
   .qans button:nth-child(3) { background: #ffc4e1; }
   .qans button:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0,0,0,.35); }
   .qans button[disabled] { opacity: .45; }
   .qans button.yes { background: var(--accent); transform: scale(1.12); }
-  .qmsg { min-height: 34px; margin-top: 16px; font-size: 26px; font-weight: 700; }
-  .qcheer { font-size: 96px; animation: pop .6s ease-out; }
+  .qmsg { min-height: 30px; margin-top: 12px; font-size: 24px; font-weight: 700; }
+  .qcheer { font-size: 72px; animation: pop .6s ease-out; }
   .qpic:empty { display: none; }
   .qprog { font-size: 26px; font-weight: 800; color: var(--accent); margin-top: 6px; }
   .qprog:empty { display: none; }
@@ -166,25 +170,44 @@
   .gate .note:empty { display: none; }
   /* Math-only mode: no video, no piano; the quiz fills the screen and only the Menu button remains */
   body.math .stage > :not(header), body.math aside { display: none !important; }
-  body.math header > :not(#lock) { display: none !important; }
-  body.math #lock { position: fixed; top: 12px; right: 14px; z-index: 10; }
+  body.math header > :not(#lock):not(#homeBtn) { display: none !important; }
+  body.math #lock, body.athome #lock { position: fixed; top: 12px; right: 14px; z-index: 10; }
+  body.math #homeBtn { position: fixed; top: 12px; left: 14px; z-index: 10; }
+  body.fixedStart #homeBtn, body.athome #homeBtn { display: none !important; }
+  /* Start screen: he picks what to do */
+  .home { position: fixed; inset: 0; z-index: 8; display: none; flex-direction: column; align-items: center; justify-content: center;
+    gap: 5vh; background: var(--bg); padding: 16px; text-align: center; }
+  .home.on { display: flex; }
+  .home h1 { margin: 0; font-size: clamp(24px, 7vh, 50px); }
+  .home .opts { display: flex; gap: 5vw; justify-content: center; }
+  .home .opts button { width: min(38vw, 340px, 68vh); aspect-ratio: 1.1; border: 0; border-radius: 28px; font: inherit; font-weight: 800;
+    font-size: clamp(18px, 5vh, 36px); color: var(--accent-ink); box-shadow: 0 8px 0 rgba(0,0,0,.35);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2vh; }
+  .home .opts button b { font-size: clamp(48px, 18vh, 130px); line-height: 1; font-weight: 400; }
+  .home .opts button:active { transform: translateY(5px); box-shadow: 0 3px 0 rgba(0,0,0,.35); }
+  #homePiano { background: #8fd3ff; } #homeMath { background: #b6f09c; }
   /* Mistake: the whole screen goes red and freezes for a few seconds */
   .qred { position: fixed; inset: 0; z-index: 12; display: none; flex-direction: column; align-items: center;
-    justify-content: center; gap: 22px; background: #c4001a; color: #fff; text-align: center;
+    justify-content: center; gap: 14px; background: #c4001a; color: #fff; text-align: center; overflow: hidden;
     animation: flash 1s ease-in-out infinite alternate; }
+  .qin { display: flex; flex-direction: column; align-items: center; gap: inherit; flex: none; transform-origin: center; }
+  .qred .steps > div.st { transition: opacity .35s, transform .35s, color .35s; }
+  .qred .steps > div.st.dim { opacity: .22; }
+  .qred .steps > div.st.now { color: #ffe27a; transform: scale(1.06); }
+  .qred.calm .steps > div.st.now { color: #fff; }
   .qred.on { display: flex; }
-  .qred .stop { font-size: 84px; font-weight: 900; }
-  .qred .eq { font-size: 72px; font-weight: 900; background: rgba(0,0,0,.3); border-radius: 22px; padding: 10px 40px; }
-  .qred .cnt { font-size: 60px; font-weight: 800; }
+  .qred .stop { font-size: 60px; font-weight: 900; }
+  .qred .eq { font-size: 58px; font-weight: 900; background: rgba(0,0,0,.3); border-radius: 22px; padding: 8px 34px; }
+  .qred .cnt { font-size: 44px; font-weight: 800; }
   @keyframes flash { from { background: #a80016; } to { background: #e0102a; } }
-  .qred .steps { font-size: 34px; font-weight: 800; line-height: 1.35; background: rgba(0,0,0,.2); border-radius: 18px; padding: 8px 28px; max-width: 92vw; }
+  .qred .steps { font-size: 28px; font-weight: 800; line-height: 1.35; background: rgba(0,0,0,.2); border-radius: 18px; padding: 8px 28px; max-width: 92vw; }
   .qred .steps:empty, .qred .dots:empty { display: none; }
   .qred .dots i { font-style: normal; font-size: 30px; margin: 0 3px; }
   .qred .dots i.n { color: #ffe27a; } .qred .dots i.x { opacity: .35; } .qred .dots i.g { margin-right: 22px; }
   .qred .leg { font-size: 26px; } .qred .leg i { font-style: normal; font-weight: 900; }
   .qred .leg i.t { color: #ffe27a; } .qred .leg i.o { color: #8ff0ff; }
-  .qred.ex { gap: 10px; overflow-y: auto; }
-  .qred.ex .stop { font-size: 44px; } .qred.ex .eq { font-size: 56px; } .qred.ex .cnt { font-size: 40px; }
+  .qred.ex { gap: 8px; }
+  .qred.ex .stop { font-size: 38px; } .qred.ex .eq { font-size: 48px; } .qred.ex .cnt { font-size: 34px; }
   .qred.calm { background: #5c6475; animation: none; }
   .vcol i { font-style: normal; } .vcol i.t { color: #ffe27a; } .vcol i.o { color: #8ff0ff; }
   /* Arcs between digits: hints, mini-lessons and explanations share one drawing engine */
@@ -238,9 +261,10 @@
   .qtrick { position: absolute; inset: 0; z-index: 2; display: none; flex-direction: column; align-items: center; justify-content: center;
     gap: 14px; background: var(--bg); text-align: center; padding: 20px; }
   .qtrick.on { display: flex; }
-  .qtrick .tname { font-size: 46px; font-weight: 900; color: var(--accent); }
-  .qtrick .eq { font-size: 96px; font-weight: 900; }
-  .qtrick .tcap { font-size: 40px; font-weight: 800; min-height: 100px; max-width: 90vw; }
+  .qtrick { overflow: hidden; }
+  .qtrick .tname { font-size: 38px; font-weight: 900; color: var(--accent); }
+  .qtrick .eq { font-size: 76px; font-weight: 900; }
+  .qtrick .tcap { font-size: 32px; font-weight: 800; min-height: 80px; max-width: 90vw; }
   .qtrick .tskip { position: absolute; right: 22px; bottom: 18px; font-size: 22px; padding: 12px 22px; border: 0; border-radius: 14px; background: #2b2742; color: var(--ink); }
   .qrow { display: flex; align-items: center; justify-content: center; gap: 24px; }
   .qrep { flex: none; width: 84px; height: 84px; border: 0; border-radius: 50%; font-size: 44px; background: #2b2742; color: var(--ink); }
@@ -307,18 +331,117 @@
     .lesson { width: 190px; flex: none; margin: 0; }
     .btn { min-width: 0; padding: 14px 18px; }
   }
+  /* ===== Look (v1.11): a rounded kids' font (bundled, works offline), a soft night-sky background, chunky "candy" buttons ===== */
+  @font-face { font-family: "Fredoka"; src: url("fonts/fredoka-latin.woff2") format("woff2"); font-weight: 300 700; font-display: swap; }
+  :root { --bg: #17123a; --panel: #251d52; --panel2: #2e2563; --ink: #fbf8ff; --muted: #b3acd9; --accent: #ffc83d; --accent-ink: #2a1c00; --ring: #ffc83d; }
+  html, body { font-family: "Fredoka", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  body { background: radial-gradient(ellipse at 12% 8%, #3d2c8d 0, transparent 46%), radial-gradient(ellipse at 90% 95%, #134a7c 0, transparent 50%), var(--bg); }
+  button { font-family: inherit; }
+  header h1 { font-weight: 700; font-size: 24px; background: linear-gradient(90deg, #ffd86b, #ff8fb1 55%, #8fd3ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .btn { border-radius: 999px; font-weight: 700; background: linear-gradient(#ffdb6e, #ffb21e); box-shadow: 0 5px 0 #c77d00, inset 0 2px 0 rgba(255,255,255,.55); }
+  .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #c77d00, inset 0 2px 0 rgba(255,255,255,.55); }
+  header .lock { border-radius: 999px; background: linear-gradient(#41357c, #332a66); color: var(--ink); font-weight: 600; box-shadow: 0 4px 0 #1b1540; }
+  header .lock:active { transform: translateY(3px); box-shadow: 0 1px 0 #1b1540; }
+  #homeBtn { font-size: 20px; padding: 6px 14px; }
+  header .lock { white-space: nowrap; font-size: 14px; padding: 6px 12px; box-shadow: 0 3px 0 #1b1540; }
+  header .lock:active { box-shadow: 0 1px 0 #1b1540; }
+  header { gap: 8px; } header h1 { font-size: 20px; }
+  #homeBtn { font-size: 16px; padding: 5px 11px; }
+  .vol { font-size: 13px; } .vol input { width: 100px; }
+  /* Octave arrows: slim and quiet, so the keys get the room */
+  .oct { width: 30px; border-radius: 12px; font-size: 14px; color: var(--muted); background: #2c2460; box-shadow: none; border: 1px solid #ffffff14; }
+  .oct:active { background: #3d3380; color: var(--ink); }
+  .piano { gap: 6px; }
+  body.play header h1, body.big header h1 { display: none; }   /* room for the buttons on one line */
+  aside { background: linear-gradient(#271f57, #211a4a); border: 2px solid #ffffff0d; border-radius: 22px; }
+  .lesson { border-radius: 16px; box-shadow: 0 4px 0 #0f0b28; }
+  .lesson .num { border-radius: 999px; }
+  .player { border-radius: 22px; box-shadow: 0 10px 30px #0008; }
+  .cover { background: radial-gradient(circle at 50% 40%, #3a2d86ee, #17123af2); }
+  .cover .big { border-radius: 999px; background: linear-gradient(#ffdb6e, #ffb21e); box-shadow: 0 6px 0 #c77d00, inset 0 2px 0 #fff8; }
+  .oct { border-radius: 16px; background: linear-gradient(#41357c, #332a66); box-shadow: 0 4px 0 #1b1540; }
+  .wk.on { background: linear-gradient(#ffc83d, #ffe08a); }
+
+  /* Start screen */
+  .home { background: radial-gradient(ellipse at 15% 10%, #4a35a8 0, transparent 50%), radial-gradient(ellipse at 85% 100%, #155f93 0, transparent 55%), var(--bg); overflow: hidden; }
+  .home::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .55;
+    background-image: radial-gradient(#fff 1.2px, transparent 1.6px), radial-gradient(#ffd86b 1.4px, transparent 1.8px);
+    background-size: 90px 90px, 140px 140px; background-position: 10px 20px, 60px 80px; animation: twinkle 6s ease-in-out infinite alternate; }
+  @keyframes twinkle { to { opacity: .25; } }
+  .home h1 { position: relative; font-weight: 700; background: linear-gradient(90deg, #ffd86b, #ff8fb1 50%, #8fd3ff); -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 3px 0 #0006); }
+  .home .opts { position: relative; }
+  .home .opts button { border-radius: 36px; color: #fff; text-shadow: 0 2px 0 #0004; font-weight: 700; padding: 3vh 2vw 2vh;
+    box-shadow: 0 10px 0 var(--edge), 0 18px 30px #0007, inset 0 3px 0 #fff6; animation: float 3.2s ease-in-out infinite; }
+  .home .opts button:nth-child(2) { animation-delay: -1.6s; }
+  .home .opts button:active { animation: none; transform: translateY(8px); box-shadow: 0 2px 0 var(--edge), inset 0 3px 0 #fff6; }
+  @keyframes float { 50% { transform: translateY(-10px) rotate(-.6deg); } }
+  #homePiano { --edge: #2a5cc7; background: linear-gradient(160deg, #6fd0ff, #5b7cff 70%); }
+  #homeMath { --edge: #1f9a6a; background: linear-gradient(160deg, #a6f27a, #25c08a 70%); }
+  .home .art { width: 78%; max-height: 60%; display: block; filter: drop-shadow(0 6px 0 #0003); }
+  .home .art text { font-family: "Fredoka", sans-serif; font-weight: 700; }
+  .home .art .note { animation: bob 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  .home .art .note.n2 { animation-delay: -1.2s; }
+  .home .art .star { animation: spin 7s linear infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes bob { 50% { transform: translateY(-7px) rotate(8deg); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Quiz */
+  .quiz { background: radial-gradient(ellipse at 20% 0%, #3d2c8d 0, transparent 50%), radial-gradient(ellipse at 80% 100%, #134a7c 0, transparent 55%), #140f33f5; }
+  .qcard { background: linear-gradient(#2e2566, #241d52); border: 3px solid #ffffff12; border-radius: 34px; box-shadow: 0 16px 40px #0008, inset 0 2px 0 #ffffff14; }
+  .qtitle { font-weight: 600; }
+  .qeq { font-weight: 700; }
+  .qans button { border-radius: 26px; font-weight: 700; color: #fff; text-shadow: 0 3px 0 #0003;
+    background: linear-gradient(#7fd4ff, #3e9bff); box-shadow: 0 7px 0 #2367c9, inset 0 3px 0 #fff7; }
+  .qans button:nth-child(2) { background: linear-gradient(#b9f47e, #4cc95d); box-shadow: 0 7px 0 #2c8a3a, inset 0 3px 0 #fff7; }
+  .qans button:nth-child(3) { background: linear-gradient(#ffb0d6, #ff6fa8); box-shadow: 0 7px 0 #c23f78, inset 0 3px 0 #fff7; }
+  .qans button:active { transform: translateY(5px); box-shadow: 0 2px 0 #0005, inset 0 3px 0 #fff7; }
+  .qans button.yes { background: linear-gradient(#ffe07a, #ffb21e); box-shadow: 0 7px 0 #c77d00, 0 0 0 6px #ffffff33, inset 0 3px 0 #fff8; transform: scale(1.12); }
+  .qtbtn, .qrep { background: linear-gradient(#41357c, #332a66); box-shadow: 0 4px 0 #1b1540; color: var(--ink); }
+  .qtbtn { border-radius: 999px; font-weight: 600; }
+  .qyay { font-weight: 700; background: linear-gradient(90deg, #ffe07a, #7dffb5, #8fd3ff); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 #0005); }
+  .qred { background: radial-gradient(ellipse at 50% 30%, #ff4d5e, #c3102a 70%); animation: none; }
+  .qred .eq { border-radius: 28px; background: #0003; box-shadow: inset 0 3px 0 #0002; }
+  .qred .steps { border-radius: 24px; background: #0002; }
+  .qred .stop { font-weight: 700; text-shadow: 0 4px 0 #0003; }
+  .qred.calm { background: radial-gradient(ellipse at 50% 30%, #6f7894, #4c5470 70%); }
+  .qtrick { background: radial-gradient(ellipse at 50% 20%, #3d2c8d, #17123a 70%); }
+  .qtrick .tskip { border-radius: 999px; background: linear-gradient(#41357c, #332a66); box-shadow: 0 4px 0 #1b1540; }
+  .lockscr { background: radial-gradient(ellipse at 50% 30%, #2f4a96, #18224a 75%); }
+  .lockscr button { border-radius: 999px; background: linear-gradient(#ffdb6e, #ffb21e); box-shadow: 0 6px 0 #c77d00, inset 0 2px 0 #fff8; }
+  .gate .card { border-radius: 26px; background: linear-gradient(#2e2566, #241d52); border: 2px solid #ffffff12; }
+  .pad button, .gate .choices button { border-radius: 16px; background: #3a2f72; }
+  #instPop .grid { border-radius: 28px; background: linear-gradient(#2e2566, #241d52); }
+  #instPop button { border-radius: 20px; background: #3a2f72; box-shadow: 0 4px 0 #1b1540; }
+  /* Phones held sideways (short screens): keep the lesson strip on the side, a compact header, no Back/Next row (the thumbnails do that) */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .app { grid-template-columns: 1fr 140px; grid-template-rows: none; gap: 8px; padding: 6px 8px; }
+    aside { display: block; overflow-y: auto; overflow-x: hidden; padding: 6px; }
+    aside h2 { display: none; }
+    .lesson { width: 100%; margin: 0 0 6px; border-width: 2px; border-radius: 10px; }
+    .lesson .num { font-size: 12px; padding: 1px 6px; left: 4px; top: 4px; }
+    .controls { display: none; }
+    .stage { gap: 6px; }
+    header { gap: 6px; }
+    header h1 { font-size: 16px; } header .keys { display: none; }
+    header .lock { padding: 6px 10px; font-size: 13px; }
+    .piano { height: 44vh; min-height: 120px; }
+    .oct { width: 26px; }
+    .wk { font-size: 14px; padding-bottom: 6px; }
+  }
 </style>
 </head>
 <body>
 <div id="instPop"><div class="grid" id="instGrid"></div></div>
 <div class="app">
   <section class="stage">
-    <header id="title"><span class="keys" aria-hidden="true"></span><h1>Piano Lessons</h1>
+    <header id="title"><span class="keys" aria-hidden="true"></span><h1 id="appTitle">Piano Lessons</h1>
       <label class="vol" id="volBox">&#127916; <input type="range" id="vol" min="0" max="100" value="50"></label>
       <button class="lock" id="instBtn" aria-label="Choose the piano sound"></button>
       <span class="hint" id="loadHint" style="display:none">Loading sound…</span>
       <button class="lock" id="playMode" style="margin-left:auto">&#127929; Play along</button>
       <button class="lock" id="mode">&#x26F6; Big video</button>
+      <button class="lock" id="homeBtn" aria-label="Start screen">&#127968;</button>
       <button class="lock" id="lock" aria-label="Menu (grown-ups)">&#128274; Menu</button></header>
     <div class="player-wrap"><div class="player"><div id="player"></div><div class="shield" id="shield"></div>
       <div class="cover" id="cover"><button class="big" id="coverBtn">&#9654; Play</button>
@@ -334,12 +457,12 @@
       <button class="oct" id="octUp" aria-label="Higher octave">&#9654;</button>
     </div>
   </section>
-  <aside><h2>All lessons</h2><div id="list"></div></aside>
+  <aside><h2 id="allLessons">All lessons</h2><div id="list"></div></aside>
 </div>
 
 <div class="gate" id="gate">
   <div class="card">
-    <div style="color:var(--muted)">For grown-ups</div>
+    <div style="color:var(--muted)" id="gFor">For grown-ups</div>
     <div class="q" id="gq"></div>
     <div class="ans" id="ga"></div>
     <div class="err" id="ge"></div>
@@ -394,6 +517,19 @@
 <div class="lockscr" id="lockscr"><div class="big" id="lkIcon"></div><div class="msg" id="lkMsg"></div><div class="sub" id="lkSub"></div><button id="lkEarn" hidden></button></div>
 <div class="tbanner" id="tbanner"></div>
 
+<div class="home" id="home"><h1 id="homeHi"></h1><div class="opts">
+  <button id="homePiano"><svg class="art" viewBox="0 0 200 140" aria-hidden="true">
+      <g class="note"><ellipse cx="52" cy="40" rx="11" ry="8" fill="#ffd86b" transform="rotate(-20 52 40)"/><rect x="60" y="6" width="5" height="34" rx="2" fill="#ffd86b"/><path d="M62 6 q18 4 16 20 q-4-10-16-10z" fill="#ffd86b"/></g>
+      <g class="note n2"><ellipse cx="138" cy="34" rx="10" ry="7" fill="#ff8fb1" transform="rotate(-20 138 34)"/><ellipse cx="170" cy="26" rx="10" ry="7" fill="#ff8fb1" transform="rotate(-20 170 26)"/><rect x="145" y="4" width="4.5" height="30" rx="2" fill="#ff8fb1"/><rect x="176" y="-4" width="4.5" height="30" rx="2" fill="#ff8fb1"/><rect x="145" y="-4" width="35" height="7" rx="3" fill="#ff8fb1" transform="rotate(-12 147 0)"/></g>
+      <rect x="10" y="56" width="180" height="80" rx="16" fill="#2b2160"/><rect x="10" y="56" width="180" height="14" rx="7" fill="#ff6fa8"/>
+      <g fill="#fff"><rect x="18" y="72" width="22" height="58" rx="6"/><rect x="42" y="72" width="22" height="58" rx="6"/><rect x="66" y="72" width="22" height="58" rx="6"/><rect x="90" y="72" width="22" height="58" rx="6"/><rect x="114" y="72" width="22" height="58" rx="6"/><rect x="138" y="72" width="22" height="58" rx="6"/><rect x="162" y="72" width="22" height="58" rx="6"/></g>
+      <g fill="#2b2160"><rect x="33" y="72" width="14" height="34" rx="4"/><rect x="57" y="72" width="14" height="34" rx="4"/><rect x="105" y="72" width="14" height="34" rx="4"/><rect x="129" y="72" width="14" height="34" rx="4"/><rect x="153" y="72" width="14" height="34" rx="4"/></g>
+      <rect x="90" y="108" width="22" height="22" rx="6" fill="#ffd86b"/></svg><span></span></button><button id="homeMath"><svg class="art" viewBox="0 0 200 140" aria-hidden="true">
+      <g class="star"><path d="M100 6 l9 19 21 3 -15 14 4 21 -19 -10 -19 10 4 -21 -15 -14 21 -3z" fill="#ffd86b" stroke="#e0a800" stroke-width="3" stroke-linejoin="round"/></g>
+      <g><rect x="14" y="76" width="54" height="54" rx="12" fill="#ff6fa8"/><rect x="14" y="76" width="54" height="10" rx="5" fill="#fff4"/><text x="41" y="118" font-size="38" fill="#fff" text-anchor="middle">2</text></g>
+      <g><circle cx="100" cy="103" r="20" fill="#ffd86b"/><text x="100" y="116" font-size="34" fill="#7a4a00" text-anchor="middle">+</text></g>
+      <g><rect x="132" y="76" width="54" height="54" rx="12" fill="#4cb8ff"/><rect x="132" y="76" width="54" height="10" rx="5" fill="#fff4"/><text x="159" y="118" font-size="38" fill="#fff" text-anchor="middle">3</text></g>
+      <circle cx="30" cy="30" r="5" fill="#fff8"/><circle cx="172" cy="44" r="4" fill="#fff8"/><circle cx="160" cy="16" r="3" fill="#fff6"/></svg><span></span></button></div></div>
 <div class="eyecov" id="eyecov"><div class="big">&#128064;</div><div class="msg" id="eyemsg"></div><div class="sub" id="eyesub"></div></div>
 
 <div class="gate" id="act">
@@ -437,21 +573,28 @@
     <button class="qtbtn" id="qtbtn" hidden>&#129504; Show me the trick</button>
     <div class="qmsg" id="qmsg"></div>
   </div>
-  <div class="qtrick" id="qtrick"><div class="tname" id="tName"></div><div class="qhost" id="tHost"><div class="eq" id="tEq"></div><svg class="arcs" id="tSvg"></svg></div><div class="tcap" id="tCap"></div><button class="tskip" id="tSkip">Skip &#9654;</button></div>
-  <div class="qred" id="qred">
+  <div class="qtrick" id="qtrick"><div class="qin" id="tIn"><div class="tname" id="tName"></div><div class="qhost" id="tHost"><div class="eq" id="tEq"></div><svg class="arcs" id="tSvg"></svg></div><div class="tcap" id="tCap"></div></div><button class="tskip" id="tSkip">Skip &#9654;</button></div>
+  <div class="qred" id="qred"><div class="qin" id="qredIn">
     <div class="stop" id="qredStop">&#9995; Stop and think!</div>
     <div class="hearts" id="qredHearts"></div>
     <div class="qhost" id="qredHost"><div class="eq" id="qredEq"></div><svg class="arcs" id="qredSvg"></svg></div>
     <div class="dots" id="qredDots"></div>
     <div class="steps" id="qredSteps"></div>
     <div class="cnt" id="qredCount"></div>
-  </div>
+  </div></div>
 </div>
 
 <script>
   var PLAYLIST = "PLDVezc1Pgjccf0cePq-4SB1K6NExfYT6x";
   var KEY = "lastLesson";
   var player, ids = [], current = -1;
+  // One language at a time: everything he sees follows the Language setting (the grown-up menu stays English).
+  // Read from storage, not from `voice`, because some screens are drawn before the voice module exists.
+  function uiLang() { try { return localStorage.getItem("voiceLang") === "es" ? "es" : "en"; } catch (e) { return "en"; } }
+  function L(en, es) { return uiLang() === "es" ? es : en; }
+  var relabels = [];                                   // redrawn when the language changes
+  function onLang(fn) { relabels.push(fn); fn(); }
+  function relabelAll() { document.documentElement.lang = uiLang(); relabels.forEach(function (fn) { try { fn(); } catch (e) {} }); }
 
   // <pure> No DOM, no state: unit-tested in node (tests/pure.test.js extracts this block).
   var PRAISE = { en: ["Great job!", "Well done!", "Awesome!", "Super!", "You got it!"],
@@ -475,6 +618,16 @@
     var es = lang === "es";
     return (es ? "Dijiste " : "You said ") + n + ". " + (es ? "Veamos… " : "Let's see… ") + explain(a, b, plus, lv, lang).say + " " +
       (es ? "Así que " : "So ") + eqSay(a, b, plus, lang) + ".";
+  }
+  // The mistake explanation as separate spoken parts, told one at a time with a pause between:
+  // [{ say, step }] where step = the explanation step it tells (-1 = none); the last one has fin ("So 12 minus 3 is 9.").
+  function wrongParts(a, b, plus, lv, lang, n, slip) {
+    var es = lang === "es", ex = explain(a, b, plus, lv, lang), out = [];
+    if (slip) out.push({ say: slip, step: -1 });
+    out.push({ say: (es ? "Dijiste " : "You said ") + n + ". " + (es ? "Veamos…" : "Let's see…"), step: -1 });
+    ex.steps.forEach(function (st, i) { out.push({ say: (st.s.charAt(0).toUpperCase() + st.s.slice(1)).replace(/,$/, "."), step: i }); });
+    out.push({ say: (es ? "Así que " : "So ") + eqSay(a, b, plus, lang) + ".", step: -1, fin: true });
+    return out;
   }
   // The four tricks, named the same everywhere (hints, mini-lessons, explanations).
   var TRICKS = { count: ["👆", "Count on", "Count back", "Contar hacia adelante", "Contar hacia atrás"],
@@ -779,7 +932,7 @@
   function save(i) { try { localStorage.setItem(KEY, String(i)); } catch (e) {} }
 
   function onYouTubeIframeAPIReady() {
-    if (player || document.body.classList.contains("math")) return;   // math-only mode never loads the videos
+    if (player || document.body.classList.contains("math") || document.body.classList.contains("athome")) return;   // math-only mode and the start screen never load the videos
     player = new YT.Player("player", {
       playerVars: {
         listType: "playlist", list: PLAYLIST, index: saved(),
@@ -796,7 +949,7 @@
     var list = player.getPlaylist && player.getPlaylist();
     if (list && list.length) { ids = list; buildList(); refresh(); return; }
     if (tries < 40) setTimeout(function () { waitForPlaylist(tries + 1); }, 250);
-    else showMsg("The lessons didn't load. Check the Wi-Fi and try again.");
+    else showMsg(L("The lessons didn't load. Check the Wi-Fi and try again.", "Las lecciones no cargaron. Revisa el Wi-Fi e inténtalo otra vez."));
   }
 
   function buildList() {
@@ -821,11 +974,11 @@
   function setCover(state) {
     var i = player.getPlaylistIndex(), last = i >= ids.length - 1;
     if (state === 2 || state === 5 || state === -1) {   // paused, or loaded but not started yet
-      coverBtn.innerHTML = "&#9654; Play"; coverSub.textContent = "";
+      coverBtn.innerHTML = "&#9654; " + L("Play", "Ver"); coverSub.textContent = "";
       coverAction = function () { player.playVideo(); };
     } else if (state === 0) {                // ended
-      coverBtn.innerHTML = last ? "&#8635; Start again" : "Next lesson &#9654;";
-      coverSub.textContent = last ? "You finished all the lessons!" : "Lesson " + (i + 2) + " is next";
+      coverBtn.innerHTML = last ? "&#8635; " + L("Start again", "Empezar otra vez") : L("Next lesson", "Siguiente lección") + " &#9654;";
+      coverSub.textContent = last ? L("You finished all the lessons!", "¡Terminaste todas las lecciones!") : L("Lesson " + (i + 2) + " is next", "Ahora viene la lección " + (i + 2));
       coverAction = function () { last ? player.playVideoAt(0) : player.nextVideo(); };
     } else { cover.classList.remove("on"); return; }
     cover.classList.add("on");
@@ -850,7 +1003,7 @@
       });
     }
     var d = player.getVideoData ? player.getVideoData() : null;
-    document.getElementById("num").textContent = "Lesson " + (i + 1) + " of " + ids.length;
+    document.getElementById("num").textContent = L("Lesson " + (i + 1) + " of " + ids.length, "Lección " + (i + 1) + " de " + ids.length);
     document.getElementById("vt").textContent = (d && d.title) || "";
     document.getElementById("prev").disabled = i <= 0;
     document.getElementById("next").disabled = i >= ids.length - 1;
@@ -859,13 +1012,13 @@
   // Skip a video that can't play here, but stop after 3 failures in a row (offline / all blocked).
   var failures = 0;
   function onErr() {
-    if (++failures >= 3) { showMsg("The lessons can't play right now. Check the Wi-Fi and try again."); return; }
+    if (++failures >= 3) { showMsg(L("The lessons can't play right now. Check the Wi-Fi and try again.", "Las lecciones no se pueden ver ahora. Revisa el Wi-Fi e inténtalo otra vez.")); return; }
     setTimeout(function () { player.nextVideo(); }, 1500);
   }
 
   function showMsg(text) {
     document.querySelector(".player").innerHTML =
-      '<div class="msg">' + text + '<br><button class="btn" onclick="location.reload()">Try again</button></div>';
+      '<div class="msg">' + text + '<br><button class="btn" onclick="location.reload()">' + L("Try again", "Intentar otra vez") + '</button></div>';
   }
 
   // Big video mode toggle, remembered between launches.
@@ -873,14 +1026,27 @@
     var btn = document.getElementById("mode");
     function apply(big) {
       document.body.classList.toggle("big", big);
-      btn.innerHTML = big ? "&#9634; Normal view" : "&#x26F6; Big video";
+      btn.innerHTML = big ? "&#9634; " + L("Normal view", "Vista normal") : "&#x26F6; " + L("Big video", "Video grande");
       try { localStorage.setItem("bigMode", big ? "1" : "0"); } catch (e) {}
     }
     var start = false;
     try { start = localStorage.getItem("bigMode") === "1"; } catch (e) {}
     apply(start);
     btn.onclick = function () { apply(!document.body.classList.contains("big")); };
+    relabels.push(function () { apply(document.body.classList.contains("big")); });
   })();
+  // The fixed labels of the main screen
+  onLang(function () {
+    var $ = function (id) { return document.getElementById(id); };
+    $("appTitle").textContent = L("Piano Lessons", "Lecciones de piano");
+    $("allLessons").textContent = L("All lessons", "Todas las lecciones");
+    $("lock").innerHTML = "&#128274; " + L("Menu", "Menú");
+    $("loadHint").textContent = L("Loading sound…", "Cargando sonido…");
+    $("prev").innerHTML = "&#9664; " + L("Back", "Atrás");
+    $("next").innerHTML = L("Next", "Siguiente") + " &#9654;";
+    if (!ids.length) $("vt").textContent = L("Loading lessons…", "Cargando lecciones…");
+    if (player && player.getPlaylistIndex && player.getPlayerState) { refresh(); if (cover.classList.contains("on")) setCover(player.getPlayerState()); }
+  });
 
   // ---- Play along: an on-screen piano with a choice of sounds: real grand-piano samples or Web Audio synths ----
   (function () {
@@ -892,10 +1058,11 @@
     var ctx = null, master = null, wave = null, organWave = null, pulseWave = null, driveCurve = null, voices = {}, held = {};
     var robotLast = null, robotOffT = -9, glideFrom = null;   // robot voice: previous note, for the portamento
     var instrument = "grand";
-    var INSTR = [["grand", "&#127929;", "Grand piano"], ["soft", "&#127932;", "Soft piano"], ["musicbox", "&#127925;", "Music box"],
-                 ["epiano", "&#127928;", "Electric piano"], ["organ", "&#127926;", "Organ"],
-                 ["robot", "&#129302;", "Robot voice"], ["lead", "&#127899;&#65039;", "Synth lead"], ["808", "&#128266;", "808 bass"],
-                 ["chip", "&#128126;", "Chiptune"], ["warmpad", "&#127756;", "Warm pad"], ["polysynth", "&#127898;&#65039;", "Polysynth"]];
+    var INSTR = [["grand", "&#127929;", "Grand piano", "Piano de cola"], ["soft", "&#127932;", "Soft piano", "Piano suave"], ["musicbox", "&#127925;", "Music box", "Caja de música"],
+                 ["epiano", "&#127928;", "Electric piano", "Piano eléctrico"], ["organ", "&#127926;", "Organ", "Órgano"],
+                 ["robot", "&#129302;", "Robot voice", "Voz de robot"], ["lead", "&#127899;&#65039;", "Synth lead", "Sintetizador"], ["808", "&#128266;", "808 bass", "Bajo 808"],
+                 ["chip", "&#128126;", "Chiptune", "Videojuego"], ["warmpad", "&#127756;", "Warm pad", "Colchón cálido"], ["polysynth", "&#127898;&#65039;", "Polysynth", "Polisintetizador"]];
+    function iname(x) { return L(x[2], x[3]); }
     try { var si = localStorage.getItem("instrument"); if (si === "pad") si = "warmpad";   // the old synth pad is now the sampled warm pad
           if (INSTR.some(function (x) { return x[0] === si; })) instrument = si; } catch (e) {}
     var instBtn = document.getElementById("instBtn"), loadHint = document.getElementById("loadHint");
@@ -1131,7 +1298,7 @@
       releaseAll();
       instrument = id;
       var x = INSTR.filter(function (i) { return i[0] === id; })[0];
-      instBtn.innerHTML = x[1] + " " + x[2];
+      instBtn.innerHTML = x[1] + " " + iname(x);
       if (save) try { localStorage.setItem("instrument", id); } catch (e) {}
       if (SETS[id] && document.body.classList.contains("play")) loadSet(id);
       hint();
@@ -1225,7 +1392,7 @@
 
     function apply(on) {
       document.body.classList.toggle("play", on);
-      btn.innerHTML = on ? "&#10005; Close piano" : "&#127929; Play along";
+      btn.innerHTML = on ? "&#10005; " + L("Close piano", "Cerrar piano") : "&#127929; " + L("Play along", "Tocar el piano");
       if (!on) { releaseAll(); instPop.classList.remove("open"); }
       else if (SETS[instrument]) loadSet(instrument);
       window.applyPlayVol();
@@ -1236,7 +1403,7 @@
     var instPop = document.getElementById("instPop"), instGrid = document.getElementById("instGrid");
     INSTR.forEach(function (x) {                           // the sound picker: a grid of big buttons
       var b = document.createElement("button"); b.dataset.id = x[0];
-      b.innerHTML = "<b>" + x[1] + "</b>" + x[2];
+      b.innerHTML = "<b>" + x[1] + "</b>" + iname(x);
       b.onclick = function (e) { e.stopPropagation(); audio(); setInstrument(x[0], true); instPop.classList.remove("open"); };
       instGrid.appendChild(b);
     });
@@ -1250,6 +1417,11 @@
     try { start = localStorage.getItem("playMode") === "1"; } catch (e) {}
     apply(start);
     btn.onclick = function () { audio(); apply(!document.body.classList.contains("play")); };
+    relabels.push(function () {
+      btn.innerHTML = document.body.classList.contains("play") ? "&#10005; " + L("Close piano", "Cerrar piano") : "&#127929; " + L("Play along", "Tocar el piano");
+      setInstrument(instrument, false);
+      Array.prototype.forEach.call(instGrid.children, function (b, i) { b.innerHTML = "<b>" + INSTR[i][1] + "</b>" + iname(INSTR[i]); });
+    });
   })();
 
   // ---- Voice quiz: the child reads the question aloud and says the answer; the app listens offline (Vosk) ----
@@ -1260,7 +1432,7 @@
     function put(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
     var cfg = { on: get("voiceOn", "0") === "1", lang: get("voiceLang", "en") === "es" ? "es" : "en",
       read: get("voiceRead", "1") === "1", fb: get("voiceFb", "1") === "1" };   // read = questions aloud, fb = spoken praise and explanations; both work with Voice quiz off
-    var READ_RATE = 0.85, SAY_RATE = 0.95;
+    var READ_RATE = 0.85, SAY_RATE = 0.9;
     var EN = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
       thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20, thirty: 30, forty: 40,
       fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90 };
@@ -1381,8 +1553,9 @@
     function node(n, at) { var e = document.createElementNS(NS, n); for (var k in at) e.setAttribute(k, at[k]); return e; }
     function box(host, r) {
       var e = host.querySelector('[data-r="' + r + '"]'); if (!e) return null;
-      var b = e.getBoundingClientRect(), h = host.getBoundingClientRect();
-      return { l: b.left - h.left, r: b.right - h.left, t: b.top - h.top, b: b.bottom - h.top, e: e };
+      var b = e.getBoundingClientRect(), h = host.getBoundingClientRect(), k = host.offsetWidth ? h.width / host.offsetWidth : 1;
+      k = k || 1;                                       // a screen fitted by fitInto() is scaled; the arcs are drawn in the unscaled space
+      return { l: (b.left - h.left) / k, r: (b.right - h.left) / k, t: (b.top - h.top) / k, b: (b.bottom - h.top) / k, e: e };
     }
     function clear(host, svg) {
       svg.textContent = ""; host._h = null; host.classList.remove("hint");
@@ -1686,6 +1859,35 @@
     };
   })();
 
+  // ---- Fit to the screen: a centred overlay's content is scaled down (never up) when it is taller or wider than the window,
+  // so nothing ever needs scrolling. Watched with a ResizeObserver (the scale is a transform, so it does not change the size it watches). ----
+  function fitInto(el) {
+    if (!el || !el.offsetWidth) return;
+    var s = Math.min(1, (innerWidth - 16) / el.offsetWidth, (innerHeight - 12) / el.offsetHeight);
+    el.style.transform = s < 0.995 ? "scale(" + s.toFixed(3) + ")" : "";
+  }
+  var fitted = [];
+  function autoFit(el) {
+    if (!el) return;
+    fitted.push(el);
+    if (window.ResizeObserver) new ResizeObserver(function () { fitInto(el); }).observe(el);
+  }
+  window.addEventListener("resize", function () { fitted.forEach(fitInto); });
+  // Confetti for a right answer: coloured bits fall over the whole screen for ~3 s.
+  function confetti(n) {
+    var box = document.createElement("div"), C = ["#ffd23f", "#ff5a7a", "#4cc9ff", "#5ee6a0", "#b18cff", "#ff9f43"], i;
+    box.className = "confetti"; document.body.appendChild(box);
+    for (i = 0; i < (n || 80); i++) {
+      var p = document.createElement("i"), dx = (Math.random() - 0.5) * 260, rot = (Math.random() - 0.5) * 1440;
+      p.style.left = Math.random() * innerWidth + "px"; p.style.background = C[i % C.length];
+      if (i % 3 === 0) p.style.borderRadius = "50%";
+      box.appendChild(p);
+      p.animate([{ transform: "translate(0,0) rotate(0deg)" }, { transform: "translate(" + dx + "px," + (innerHeight + 60) + "px) rotate(" + rot + "deg)" }],
+        { duration: 1700 + Math.random() * 1300, delay: Math.random() * 450, easing: "cubic-bezier(.25,.6,.5,1)", fill: "both" });
+    }
+    setTimeout(function () { box.remove(); }, 3700);
+  }
+
   // ---- Math quiz: after every N lessons, the next one plays only after small sums are solved ----
   // It hooks the lesson change itself, so Next, a thumbnail and YouTube's autoplay are all caught.
   // Strict on purpose: a wrong answer = red screen + a freeze + a NEW question (no guessing), and the
@@ -1793,7 +1995,7 @@
     function unheard(my) {
       if (my !== qid) return;
       vBuf = ""; clearTimeout(vWait);           // a fresh try starts a fresh sentence
-      if (++vTries >= 3) { stopVoice(); buttonsOn(); $("qmsg").textContent = "\ud83d\udc46 Tap the answer"; return; }
+      if (++vTries >= 3) { stopVoice(); buttonsOn(); $("qmsg").textContent = "\ud83d\udc46 " + L("Tap the answer", "Toca la respuesta"); return; }
       $("qmsg").textContent = voice.cfg.lang === "es" ? "No te o\u00ed, int\u00e9ntalo otra vez \ud83c\udfa4" : "I didn't hear \u2014 try again \ud83c\udfa4";
       armVoiceTimer(my);
     }
@@ -1828,7 +2030,7 @@
     }
     function beginVoice(my) {
       if (my !== qid || !open) return;
-      if (voice.state() === "loading") { $("qmsg").textContent = "Preparing voice\u2026"; voice.once(function () { beginVoice(my); }); return; }
+      if (voice.state() === "loading") { $("qmsg").textContent = L("Preparing voice…", "Preparando la voz…"); voice.once(function () { beginVoice(my); }); return; }
       if (voice.state() !== "ready") { buttonsOn(); return; }
       t0 = Date.now(); eye0 = window.eyeMs || 0; locked = false;
       $("qmsg").textContent = "";
@@ -1980,15 +2182,15 @@
       curHs = cfg.style === "test" ? hintPick(log, Math.random()) : cfg.style;
       anim.clear($("qhost"), $("qsvg"));
       if (useVoice && voice.state() === "off") voice.prepare();
-      $("qtitle").innerHTML = earnOnly ? "&#10135; Earn more time with math!" : math ? "&#129504; Math time!" : "&#129504; Math time! Solve it to play the next lesson";
-      $("qprog").textContent = math ? "\u2b50 " + stars + "   \u00b7   Level " + level : "";
+      $("qtitle").innerHTML = earnOnly ? "&#10135; " + L("Earn more time with math!", "¡Gana más tiempo con mates!") : "&#129504; " + (math ? L("Math time!", "¡Hora de mates!") : L("Math time! Solve it to play the next lesson", "¡Hora de mates! Resuélvelo para ver la siguiente lección"));
+      $("qprog").textContent = math ? "\u2b50 " + stars + "   \u00b7   " + L("Level ", "Nivel ") + level : "";
       $("qstreak").textContent = guard.streakText();
       showHearts();
       var a = q.a, b = q.b, pics = lv === 1 || (lv === 2 && a <= 10 && b <= 10);
       var thing = THINGS[rnd(0, THINGS.length - 1)], size = (q.plus ? a + b : a) > 10 ? 36 : 54;
       $("qpic").innerHTML = !pics ? "" : q.plus ? items(a, thing, a, size) + '<span class="op">+</span>' + items(b, thing, b, size)
                                                 : items(a, thing, a - b, size);   // take-away: the last b are crossed out
-      if (lv >= 4) { $("qeq").innerHTML = colHtml(a, q.plus, b); $("qeq").style.fontSize = "84px"; }   // written like on paper
+      if (lv >= 4) { $("qeq").innerHTML = colHtml(a, q.plus, b); $("qeq").style.fontSize = "70px"; }   // written like on paper
       else { $("qeq").innerHTML = rowHtml(a, b, q.plus); $("qeq").style.fontSize = pics ? "" : "96px"; }
       var wrong = [], cands = [1, -1, 2, -2];
       if (lv >= 4) cands.push(10, -10);
@@ -2010,10 +2212,11 @@
         $("qans").appendChild(btn);
       });
       var cueSay = es ? "\u00a1Probemos esta otra vez!" : "Let's try this one again!";
-      $("qmsg").textContent = rv ? "\ud83d\udd01 " + cueSay : "\ud83e\udd14 Think\u2026";
+      $("qmsg").textContent = rv ? "\ud83d\udd01 " + cueSay : "\ud83e\udd14 " + L("Think…", "Piensa…");
       $("qrep").hidden = !(voice.cfg.read && voice.can());
       $("qtbtn").hidden = !cfg.hint;
-      $("qtbtn").innerHTML = lv >= 4 ? (es ? "&#128161; Muéstrame" : "&#128161; Show me") : "&#129504; Show me the trick";
+      $("qtbtn").innerHTML = lv >= 4 ? (es ? "&#128161; Muéstrame" : "&#128161; Show me") : "&#129504; " + L("Show me the trick", "Enséñame el truco");
+      $("tSkip").innerHTML = L("Skip", "Saltar") + " &#9654;";
       clearTimeout(thinkTimer);
       function go() {
         thinkTimer = setTimeout(function () {      // think time: no rapid tapping; it starts when the question has been read
@@ -2079,7 +2282,7 @@
     // Say it, and go on with `fn` when the voice is done and at least minMs have passed (silent: just minMs).
     function speakThen(text, minMs, fn) {
       var my = qid, t = Date.now(), fired = false;
-      function go() { if (fired) return; fired = true; setTimeout(function () { if (my === qid) fn(); }, Math.max(0, minMs - (Date.now() - t))); }
+      function go() { if (fired) return; fired = true; setTimeout(function () { if (my === qid) fn(); }, Math.max(1500, minMs - (Date.now() - t))); }   // the solved sum stays at least 1.5 s after the voice
       if (!voice.say(text, go)) go();
     }
 
@@ -2101,6 +2304,10 @@
       var heartWon = showHearts() > 0;
       if (ok) {
         if (btn) btn.classList.add("yes");
+        var qbox = $("qeq").querySelector('[data-r="q"]');            // the ? becomes the answer, in green, and stays a moment
+        if (qbox) { qbox.textContent = answer; qbox.classList.add("got"); }
+        $("qtbtn").hidden = true; $("qrep").hidden = true;
+        confetti();
         sessRight++; sessMiss = 0; put("quizSessMiss", 0); miss = 0; put("quizMiss", 0);
         var up = false;
         if (!curRv) {                                                // a repeated question never moves the level
@@ -2115,17 +2322,18 @@
         if (heartWon) text += lang === "es" ? " \u00a1Y recuperaste un coraz\u00f3n!" : " And you won a heart back!";
         if (math) {                                              // math-only: no lesson to unlock, it just goes on
           stars++;
-          $("qprog").textContent = "\u2b50 " + stars + "   \u00b7   Level " + level;
-          if (cheer) $("qpic").innerHTML = CHEER;
-          $("qmsg").textContent = (up ? "\u2b50 Level up! Level " + level + "  " : praise + " ") + worked + tail;
-          speakThen(text, cheer ? 2800 : 1600, function () { guard.afterEarn(); if (open) ask(); });
+          $("qprog").textContent = "\u2b50 " + stars + "   \u00b7   " + L("Level ", "Nivel ") + level;
+          $("qpic").innerHTML = yay() + (cheer ? CHEER : "");
+          $("qmsg").textContent = (up ? "\u2b50 " + L("Level up! Level ", "¡Subiste de nivel! Nivel ") + level + "  " : praise + " ") + worked + tail;
+          speakThen(text, cheer ? 3500 : 3000, function () { guard.afterEarn(); if (open) ask(); });
         } else if (sessRight >= cfg.need) {
-          $("qpic").innerHTML = CHEER;
-          $("qmsg").textContent = (up ? "\u2b50 Level up! " : praise + " ") + worked + tail;
-          speakThen(text, cheer ? 2600 : 1800, finish);
+          $("qpic").innerHTML = yay() + CHEER;
+          $("qmsg").textContent = (up ? "\u2b50 " + L("Level up! ", "¡Subiste de nivel! ") : praise + " ") + worked + tail;
+          speakThen(text, cheer ? 3500 : 3000, finish);
         } else {
-          $("qmsg").textContent = (up ? "\u2b50 Level up! " : praise + " ") + worked + "  \u00b7  " + (cfg.need - sessRight) + " more" + tail;
-          speakThen(text, earned ? 2200 : 1600, ask);
+          $("qpic").innerHTML = yay();
+          $("qmsg").textContent = (up ? "\u2b50 " + L("Level up! ", "¡Subiste de nivel! ") : praise + " ") + worked + "  \u00b7  " + L((cfg.need - sessRight) + " more", "faltan " + (cfg.need - sessRight)) + tail;
+          speakThen(text, earned ? 3500 : 3000, ask);
         }
         return;
       }
@@ -2138,10 +2346,14 @@
       put("quizFreezeUntil", Date.now() + secs * 1000); put("quizFreezeTxt", txt); put("quizFreezeLv", lv);
       if (!guard.cfg.calm) buzzer();
       var slip = lv >= 4 ? slipSay(slipKind(curA, curB, curPlus, n), curA, curB, lang) : "";   // a classic slip is named kindly, then explained
-      freeze(Date.now() + secs * 1000, txt, lv, (slip ? slip + " " : "") + wrongSay(curA, curB, curPlus, lv, lang, n), slip);
+      freeze(Date.now() + secs * 1000, txt, lv, n, slip);
     }
+    function yay() { return '<div class="qyay">🎉 ' + L("Yahoo! Correct!", "¡Yupi! ¡Correcto!") + "</div>"; }
 
-    function freeze(until, txt, lv, text, slip) {
+    // The mistake screen. `said` = his answer: the explanation is then told one step at a time, each step lit up while it is spoken,
+    // with its arcs drawn on the sum, and a short pause between steps. Without `said` (the app reopened mid-freeze) it is just shown.
+    var STEP_GAP_MS = 700;
+    function freeze(until, txt, lv, said, slip) {
       locked = true; qid++; stopVoice();
       var my = qid, m = txt.match(/^(\d+) ([+\u2212]) (\d+) = (\d+)$/), es = voice.cfg.lang === "es", calm = guard.cfg.calm, speaking = false;
       var ex = m && lv ? explain(+m[1], +m[3], m[2] === "+", lv, voice.cfg.lang) : null;
@@ -2149,20 +2361,33 @@
       redT.forEach(clearTimeout); redT = [];
       anim.clear($("qredHost"), $("qredSvg"));
       if (m && lv >= 4) $("qredEq").innerHTML = colHtml(+m[1], m[2] === "+", +m[3], +m[4], true); else if (m) $("qredEq").innerHTML = rowHtml(+m[1], +m[3], m[2] === "+", +m[4]); else $("qredEq").textContent = txt;
-      if (ex) ex.hints.forEach(function (h, k) {                      // the trick is drawn on the equation while it is explained
-        redT.push(setTimeout(function () { if (my !== qid) return; $("qredHost").classList.add("hint"); anim.draw($("qredHost"), $("qredSvg"), ex.hints, k + 1, true); }, 900 + k * 2800));
-      });
+      var telling = said !== undefined && !!ex;
       $("qredDots").innerHTML = ex && lv <= 2 ? dotsHtml(+m[1], +m[3], m[2] === "+") : "";
       $("qredSteps").innerHTML = (slip ? '<div class="slip">' + slip + "</div>" : "") + (!ex ? "" : (lv >= 4 ? '<div class="leg"><i class="t">' + (es ? "decenas" : "tens") + '</i> &nbsp; <i class="o">' + (es ? "unidades" : "ones") + "</i></div>" : "") +
-        ex.steps.map(function (st) { return "<div>" + st.v + "</div>"; }).join(""));
+        ex.steps.map(function (st) { return '<div class="st' + (telling ? " dim" : "") + '">' + st.v + "</div>"; }).join(""));
       $("qred").classList.toggle("ex", !!ex); $("qred").classList.toggle("calm", calm);
       $("qred").classList.add("on");
-      if (text && voice.cfg.fb && voice.can()) {                     // the freeze waits for the voice: it lasts at least until the speech ends plus 1 s
+      if (ex && !telling) redT.push(setTimeout(function () { if (my !== qid) return; $("qredHost").classList.add("hint"); anim.draw($("qredHost"), $("qredSvg"), ex.hints, ex.hints.length, false); }, 50));
+      if (telling) {                                                 // the freeze lasts until the whole explanation is told, plus 1.5 s
         speaking = true;
-        setTimeout(function () {
+        var lang = voice.cfg.lang, seq = wrongParts(+m[1], +m[3], m[2] === "+", lv, lang, said, slip), maxK = 0,
+            stepEls = $("qredSteps").querySelectorAll(".st");
+        function light(i) { [].forEach.call(stepEls, function (d, k) { d.classList.toggle("dim", i >= 0 && k > i); d.classList.toggle("now", k === i); }); }
+        function run(i) {
           if (my !== qid) return;
-          voice.say(text, function () { speaking = false; until = Math.max(until, Date.now() + 1000); put("quizFreezeUntil", until); });
-        }, calm ? 0 : 900);                                          // after the buzzer
+          if (i >= seq.length) { speaking = false; until = Math.max(until, Date.now() + 1500); put("quizFreezeUntil", until); return; }
+          var it = seq[i], t = Date.now(), fired = false;
+          if (it.step >= 0) {
+            light(it.step);
+            ex.steps[it.step].h.forEach(function (h) { if (h.k > maxK) maxK = h.k; });
+            var upto = ex.hints.filter(function (h) { return h.k <= maxK; }).length;
+            if (upto) { $("qredHost").classList.add("hint"); anim.draw($("qredHost"), $("qredSvg"), ex.hints, upto, true); }
+          }
+          if (it.fin) { light(-1); if (ex.hints.length) anim.draw($("qredHost"), $("qredSvg"), ex.hints, ex.hints.length, false); }
+          function next() { if (fired) return; fired = true; redT.push(setTimeout(function () { run(i + 1); }, Math.max(STEP_GAP_MS, 1400 - (Date.now() - t)))); }
+          if (!(voice.cfg.fb && voice.say(it.say, next))) redT.push(setTimeout(next, Math.max(1800, it.say.length * 70)));   // no voice: time to read it
+        }
+        redT.push(setTimeout(function () { run(0); }, calm ? 300 : 1000));   // after the buzzer
       }
       clearInterval(freezeTimer); freezeTimer = null;
       var lastT = Date.now();
@@ -2215,7 +2440,7 @@
       show: show,
       mathStart: function () { stars = 0; sessRight = 0; show(); },
       earnStart: function () { earnOnly = true; stars = 0; sessRight = 0; show(); },   // locked for screen time: a math session that only earns minutes
-      resume: function () { if (appMode.math()) appMode.start(); else if (get("quizPending", "0") === "1") show(); },   // after a lock
+      resume: function () { if (appMode.home()) return; if (appMode.math()) appMode.start(); else if (get("quizPending", "0") === "1") show(); },   // after a lock
       log: function () { return log; },
       practising: function () { return { list: review.slice(), mastered: masteredToday() }; },
       mathStop: function () {
@@ -2241,11 +2466,12 @@
   })();
 
   // ---- App mode: Piano lessons (videos + play-along + the quiz between lessons) or Math only (a non-stop quiz).
-  // Chosen behind the PIN, remembered in localStorage "appMode".
+  // The start screen lets him pick; the grown-up can instead fix the start to one mode ("startMode": choose | piano | math).
   var appMode = (function () {
-    var m = "piano";
-    try { m = localStorage.getItem("appMode") === "math" ? "math" : "piano"; } catch (e) {}
+    var m = "piano", start = "choose", atHome = false, homeEl = document.getElementById("home");
+    try { m = localStorage.getItem("appMode") === "math" ? "math" : "piano"; var sm = localStorage.getItem("startMode"); if (sm === "piano" || sm === "math") start = sm; } catch (e) {}
     function apply(next) {
+      atHome = false; document.body.classList.remove("athome"); homeEl.classList.remove("on");
       m = next;
       try { localStorage.setItem("appMode", m); } catch (e) {}
       document.body.classList.toggle("math", m === "math");
@@ -2255,11 +2481,30 @@
       } else {
         quiz.mathStop();
         if (!player && window.YT && YT.Player) onYouTubeIframeAPIReady();   // first time in this run
+        else if (player) quiz.resume();                                   // a quiz left open before going home comes back
       }
     }
+    function home() {
+      quiz.mathStop(); voice.hush(true);
+      if (player && player.pauseVideo) player.pauseVideo();
+      atHome = true; document.body.classList.remove("math"); document.body.classList.add("athome"); homeEl.classList.add("on");
+    }
+    function fixed() { document.body.classList.toggle("fixedStart", start !== "choose"); }
+    onLang(function () {
+      document.getElementById("homeHi").textContent = L("Hi! What do you want to do?", "¡Hola! ¿Qué quieres hacer?");
+      document.querySelector("#homePiano span").textContent = L("Piano lessons", "Lecciones de piano");
+      document.querySelector("#homeMath span").textContent = L("Math", "Mates");
+    });
+    document.getElementById("homePiano").onclick = function () { apply("piano"); };
+    document.getElementById("homeMath").onclick = function () { apply("math"); };
+    document.getElementById("homeBtn").onclick = function () { if (start === "choose" && !(quiz.isOpen() && m !== "math")) home(); };   // never a way out of the quiz between lessons
+    fixed();
     return {
       math: function () { return m === "math"; },
-      set: function (next) { if (next !== m) apply(next); },
+      home: function () { return atHome; },
+      startMode: function () { return start; },
+      setStart: function (s) { start = s; try { localStorage.setItem("startMode", s); } catch (e) {} fixed(); if (s === "choose") home(); else apply(s); },
+      boot: function () { if (start === "choose") home(); else apply(start); },
       start: function () { if (m === "math") { document.body.classList.add("math"); quiz.mathStart(); } }
     };
   })();
@@ -2515,8 +2760,9 @@
     window.addEventListener("pagehide", lock);
     function open() {
       $("ge").textContent = "";
-      if (bridge && !bridge.hasPin()) { mode = "new"; show("Create a 4-digit PIN"); }
-      else { mode = "check"; show("Enter the grown-up PIN"); }
+      $("gFor").textContent = L("For grown-ups", "Para adultos");
+      if (bridge && !bridge.hasPin()) { mode = "new"; show(L("Create a 4-digit PIN", "Crea un PIN de 4 números")); }
+      else { mode = "check"; show(L("Enter the grown-up PIN", "Escribe el PIN de adulto")); }
       gate.classList.add("open"); eye.menu(true);          // the camera rests while the grown-up menu is open
     }
     function closeGate() { lock(); }
@@ -2524,19 +2770,19 @@
     function submit() {
       if (ans.length !== 4) return;
       if (mode === "check") {
-        if (Date.now() < lockedUntil) { $("ge").textContent = "Too many tries, wait a minute"; show("Enter the grown-up PIN"); return; }
+        if (Date.now() < lockedUntil) { $("ge").textContent = L("Too many tries, wait a minute", "Demasiados intentos, espera un minuto"); show(L("Enter the grown-up PIN", "Escribe el PIN de adulto")); return; }
         if (bridge && bridge.checkPin(ans)) {
           fails = 0; $("ge").textContent = ""; unlock();
-          $("gq").textContent = "Unlocked"; $("ga").textContent = "";
+          $("gq").textContent = L("Unlocked", "Desbloqueado"); $("ga").textContent = "";
         } else {
           if (++fails >= 3) { lockedUntil = Date.now() + 60000; fails = 0; }
-          $("ge").textContent = "Wrong PIN"; show("Enter the grown-up PIN");
+          $("ge").textContent = L("Wrong PIN", "PIN incorrecto"); show(L("Enter the grown-up PIN", "Escribe el PIN de adulto"));
         }
       } else if (mode === "new") {
-        first = ans; mode = "confirm"; $("ge").textContent = ""; show("Type the same PIN again");
+        first = ans; mode = "confirm"; $("ge").textContent = ""; show(L("Type the same PIN again", "Escribe el mismo PIN otra vez"));
       } else if (mode === "confirm") {
         if (ans === first) { bridge.setPin(ans); $("ge").textContent = ""; closeGate(); }
-        else { mode = "new"; $("ge").textContent = "The PINs didn't match"; show("Create a 4-digit PIN"); }
+        else { mode = "new"; $("ge").textContent = L("The PINs didn't match", "Los PIN no coinciden"); show(L("Create a 4-digit PIN", "Crea un PIN de 4 números")); }
       }
     }
 
@@ -2560,7 +2806,7 @@
       $("vNote").textContent = voice.note();
     }
     function mlabel() {
-      $("qMode").textContent = "Mode: " + (appMode.math() ? "\u2797 Math only" : "\ud83c\udfb9 Piano lessons") + " (tap to switch)";
+      $("qMode").textContent = "Start screen: " + { choose: "🏠 he chooses", piano: "🎹 Piano lessons", math: "➗ Math only" }[appMode.startMode()] + " (tap to change)";
       $("qTry").disabled = appMode.math();
     }
     function elabel() {
@@ -2585,8 +2831,8 @@
     $("vOn").onclick = function () { voice.setOn(!voice.cfg.on); vlabel(); };
     $("vRead").onclick = function () { voice.setRead(!voice.cfg.read); vlabel(); };
     $("vFb").onclick = function () { voice.setFb(!voice.cfg.fb); vlabel(); };
-    $("vLang").onclick = function () { voice.setLang(voice.cfg.lang === "es" ? "en" : "es"); vlabel(); };
-    $("qMode").onclick = function () { appMode.set(appMode.math() ? "piano" : "math"); mlabel(); closeGate(); };
+    $("vLang").onclick = function () { voice.setLang(voice.cfg.lang === "es" ? "en" : "es"); relabelAll(); vlabel(); };
+    $("qMode").onclick = function () { appMode.setStart({ choose: "piano", piano: "math", math: "choose" }[appMode.startMode()]); mlabel(); closeGate(); };
     function cycle(list, v) { return list[(list.indexOf(v) + 1) % list.length]; }
     $("qOn").onclick = function () { quiz.cfg.on = !quiz.cfg.on; quiz.save(); label(); };
     $("qEvery").onclick = function () { quiz.cfg.every = cycle([1, 2, 3, 4], quiz.cfg.every); quiz.save(); label(); };
@@ -2747,7 +2993,7 @@
     label(); vlabel(); mlabel(); elabel(); glabel();
 
     $("doClose").onclick = function () { if (bridge) bridge.unlock(); };
-    $("doChange").onclick = function () { mode = "new"; $("ge").textContent = ""; show("Create a new 4-digit PIN"); };
+    $("doChange").onclick = function () { mode = "new"; $("ge").textContent = ""; show(L("Create a new 4-digit PIN", "Crea un PIN nuevo de 4 números")); };
     $("doCancel").onclick = closeGate;
     }
     $("lock").onclick = open;
@@ -2755,6 +3001,7 @@
     ["1","2","3","4","5","6","7","8","9","Cancel","0","⌫"].forEach(function (k) {
       var b = document.createElement("button");
       b.textContent = k;
+      if (k === "Cancel") onLang(function () { b.textContent = L("Cancel", "Cancelar"); });
       b.onclick = function () {
         if (k === "Cancel") { closeGate(); return; }
         if (k === "⌫") { ans = ans.slice(0, -1); }
@@ -2768,8 +3015,9 @@
 </script>
 <script>
   if (window.Voice && Voice.ttsInit) Voice.ttsInit();  // the speaking voices (questions, praise, explanations) work without Voice quiz
+  autoFit(document.querySelector(".qcard")); autoFit(document.getElementById("qredIn")); autoFit(document.getElementById("tIn"));
   guard.start();                                     // a lock survives a restart
-  appMode.start();                                   // Math-only mode comes straight back after a restart
+  appMode.boot();                                    // the start screen (or the mode the grown-up fixed)
   if (voice.cfg.on) setTimeout(voice.prepare, 1500); // loads the voice model (and asks for the microphone the first time)
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
