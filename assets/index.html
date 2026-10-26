@@ -460,10 +460,33 @@
   .wpad canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
   .wpad.shake { animation: wshake .35s; }
   @keyframes wshake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
-  .home .opts { gap: 3vw; }
-  .home .opts button { width: min(28vw, 300px, 62vh); }
   .home .opts button:nth-child(3) { animation-delay: -3.2s; }
   #homeWrite { --edge: #c2541f; background: linear-gradient(160deg, #ffc36b, #ff7a59 70%); }
+  /* Colouring */
+  .colour { position: fixed; left: 10px; right: 10px; top: var(--wtop, 56px); bottom: 10px; z-index: 4; display: none; flex-direction: column; gap: 8px; }
+  body.incolour .colour { display: flex; }
+  body.incolour .stage > :not(header), body.incolour aside { display: none !important; }
+  body.incolour header > :not(#lock):not(#homeBtn) { display: none !important; }
+  .cstars { font-size: 24px; color: #ffd21f; letter-spacing: 2px; }
+  .cleft { flex: 1; min-width: 0; color: var(--muted); font-size: 16px; white-space: nowrap; overflow: hidden; }
+  .cpal { display: flex; gap: 6px; }
+  .cpal button { width: 34px; height: 34px; padding: 0; border-radius: 50%; border: 3px solid #fff3; box-shadow: none; }
+  .cpal button.cur { border-color: #fff; transform: scale(1.18); }
+  .wbar button:disabled { opacity: .35; }
+  .wbar button.go { background: linear-gradient(#3fc77a, #27a25c); box-shadow: 0 4px 0 #17663a; animation: cgo 1s infinite alternate; }
+  @keyframes cgo { to { transform: scale(1.12); } }
+  .home .opts { gap: 2vw; }
+  .home .opts button { width: min(22vw, 250px, 58vh); }
+  .home .opts button:nth-child(4) { animation-delay: -1.6s; }
+  .cgal { position: absolute; inset: 0; z-index: 2; overflow-y: auto; padding: 14px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; background: #fffdf5; }
+  .cgal[hidden] { display: none; }
+  .cgal button { position: relative; border: 3px solid #e8dcb8; border-radius: 16px; background: #fff; padding: 6px; aspect-ratio: 4 / 3; }
+  .cgal button.cur { border-color: var(--accent); }
+  .cgal button img { width: 100%; height: 100%; object-fit: contain; }
+  .cgal button span { position: absolute; left: 0; right: 0; bottom: 4px; font-size: 20px; color: #f0b400; text-shadow: 0 1px 0 #fff; }
+  .cgal button.lock img { opacity: .25; }
+  .cgal button.lock span { font-size: 34px; bottom: 30%; }
+  #homeColour { --edge: #2a7f62; background: linear-gradient(160deg, #8ef0c0, #3bb3a0 70%); }
 </style>
 </head>
 <body>
@@ -514,6 +537,9 @@
       <button class="set" id="qNeed"></button>
       <button class="set" id="qLevel"></button>
       <button class="set" id="wLevel"></button>
+      <button class="set" id="cAdd">🎨 Add a colouring picture (from the tablet)</button>
+      <button class="set" id="cClear"></button>
+      <input type="file" id="cFile" accept="image/*" hidden>
       <button class="set" id="qAct">&#128200; Activity</button>
       <button class="set" id="qRes">&#128202; Results</button>
       <button class="set" id="qSens"></button>
@@ -571,10 +597,18 @@
       <line x1="24" y1="100" x2="154" y2="100" stroke="#ef8f9f" stroke-width="3"/>
       <text x="30" y="99" font-size="44" font-weight="700" fill="#3d4bd6">abc</text>
       <g class="note"><g transform="rotate(32 160 64)"><rect x="151" y="8" width="18" height="80" rx="4" fill="#ffd86b"/><rect x="151" y="8" width="18" height="13" rx="4" fill="#ff8fb1"/>
-      <path d="M151 88 L160 110 L169 88z" fill="#f5d0a0"/><path d="M157 102 L160 110 L163 102z" fill="#2b2160"/></g></g></svg><span></span></button></div></div>
+      <path d="M151 88 L160 110 L169 88z" fill="#f5d0a0"/><path d="M157 102 L160 110 L163 102z" fill="#2b2160"/></g></g></svg><span></span></button><button id="homeColour"><svg class="art" viewBox="0 0 200 140" aria-hidden="true">
+      <rect x="14" y="20" width="150" height="110" rx="14" fill="#fffdf5"/>
+      <path d="M89 112 C55 90 36 72 36 52 C36 38 47 30 59 30 C70 30 80 37 89 48 C98 37 108 30 119 30 C131 30 142 38 142 52 C142 72 123 90 89 112 Z" fill="#ff6fb5" stroke="#2b2160" stroke-width="4"/>
+      <path d="M58 50 C62 44 68 42 72 44" stroke="#fff9" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <g class="note"><g transform="rotate(-28 160 64)"><rect x="151" y="14" width="20" height="76" rx="4" fill="#4cc9ff"/><rect x="151" y="30" width="20" height="8" fill="#fff6"/>
+      <path d="M151 90 L161 112 L171 90z" fill="#4cc9ff"/><path d="M157 104 L161 112 L165 104z" fill="#2b2160"/></g></g></svg><span></span></button></div></div>
 <div class="write" id="write"><div class="wbar"><div class="wlv" id="wLv"></div><div class="wrow" id="wRow"></div><div class="wdots" id="wDots"></div>
   <button id="wHear" hidden>&#128266;</button><button id="wShow">&#128064; <span></span></button><button id="wClear">&#8634;</button></div>
   <div class="wpad" id="wPad"><canvas id="wBg"></canvas><canvas id="wInk"></canvas></div></div>
+<div class="colour" id="colour"><div class="wbar"><button id="cPics">&#128444;&#65039;</button><button id="cPrev">&#9664;</button><div class="wlv" id="cTitle"></div><div class="cstars" id="cStars"></div><div class="cleft" id="cLeft"></div>
+  <div class="cpal" id="cPal"></div><button id="cUndo">&#8630;</button><button id="cNext">&#9654;</button></div>
+  <div class="wpad" id="cPad"><canvas id="cPaint"></canvas><canvas id="cLive"></canvas><canvas id="cLine"></canvas><div class="cgal" id="cGal" hidden></div></div></div>
 <div class="eyecov" id="eyecov"><div class="big">&#128064;</div><div class="msg" id="eyemsg"></div><div class="sub" id="eyesub"></div></div>
 
 <div class="gate" id="act">
@@ -1033,7 +1067,7 @@
   function save(i) { try { localStorage.setItem(KEY, String(i)); } catch (e) {} }
 
   function onYouTubeIframeAPIReady() {
-    if (player || document.body.classList.contains("math") || document.body.classList.contains("inwrite") || document.body.classList.contains("athome")) return;   // maths, writing and the start screen never load the videos
+    if (player || document.body.classList.contains("math") || document.body.classList.contains("inwrite") || document.body.classList.contains("incolour") || document.body.classList.contains("athome")) return;   // maths, writing, colouring and the start screen never load the videos
     player = new YT.Player("player", {
       playerVars: {
         listType: "playlist", list: PLAYLIST, index: saved(),
@@ -2615,7 +2649,7 @@
       show: show,
       mathStart: function () { stars = 0; sessRight = 0; show(); },
       earnStart: function () { earnOnly = true; stars = 0; sessRight = 0; show(); },   // locked for screen time: a math session that only earns minutes
-      resume: function () { if (appMode.home() || appMode.write()) return; if (appMode.math()) appMode.start(); else if (get("quizPending", "0") === "1") show(); },   // after a lock
+      resume: function () { if (appMode.home() || appMode.write() || appMode.colour()) return; if (appMode.math()) appMode.start(); else if (get("quizPending", "0") === "1") show(); },   // after a lock
       log: function () { return log; },
       practising: function () { return { list: review.slice(), mastered: masteredToday() }; },
       mathStop: function () {
@@ -2977,21 +3011,355 @@
     };
   })();
 
+  // ---- Colouring: real colouring pages (assets/colour, public domain, from Openclipart) plus the grown-up's own pictures.
+  // The page is read as a bitmap: dark pixels are lines, every closed white area is a shape. The crayon only paints inside the
+  // shape the stroke started in, and going over a line makes the picture shake, the lines flash red and a "bonk" - he feels
+  // the line is a wall. Stars count the line crossings. Progress "colourProg", log "colourLog", own pictures in IndexedDB. ----
+  var colouring = (function () {
+    var BUILTIN = [["rocket", "el cohete"], ["penguin", "el pingüino"], ["frog", "la rana"], ["kitten", "el gatito"], ["octopus", "el pulpo"], ["owl", "el búho"],
+      ["butterfly", "la mariposa"], ["triceratops", "el triceratops"], ["robot", "el robot"], ["puppy", "el perrito"], ["aeroplane", "el avión"], ["cupcake owl", "el búho magdalena"],
+      ["happy octopus", "el pulpo feliz"], ["monster", "el monstruo"], ["shark", "el tiburón"], ["sea turtle", "la tortuga marina"], ["dinosaur", "el dinosaurio"],
+      ["sandcastle", "el castillo de arena"], ["unicorn", "el unicornio"], ["elephant", "el elefante"], ["tiger", "el tigre"], ["dog", "el perro"], ["dragon", "el dragón"],
+      ["big butterfly", "la mariposa grande"], ["tortoise", "la tortuga"], ["lion", "el león"], ["footballer", "el futbolista"], ["astronaut", "el astronauta"],
+      ["crocodile", "el cocodrilo"], ["horse", "el caballo"], ["baby unicorn", "el unicornio bebé"], ["pirate", "el pirata"], ["flying unicorn", "el unicornio volador"],
+      ["mermaid", "la sirena"], ["rescue team", "los vehículos de rescate"], ["under the sea", "el fondo del mar"]].map(function (p, i) {
+        return { src: "colour/" + (i < 9 ? "0" : "") + (i + 1) + ".png", id: "b" + (i + 1), en: p[0], es: p[1] };
+      });
+    var PICS = BUILTIN.slice();
+    var CRAYONS = ["#ff4d4d", "#ff9f1c", "#ffd21f", "#2ecc71", "#4cc9ff", "#3d5afe", "#9b5de5", "#ff6fb5", "#a0522d", "#f5d0a0", "#9e9e9e", "#333333"];
+    var pad = document.getElementById("cPad"), pc = document.getElementById("cPaint"), lc = document.getElementById("cLive"), oc = document.getElementById("cLine");
+    var px = pc.getContext("2d"), lx = lc.getContext("2d"), ox_ = oc.getContext("2d");
+    var on = false, W = 0, H = 0, DPR = 1, T = { s: 1, x: 0, y: 0 }, img = null, imgFor = -1, label = null, ink = null, nLab = 0, area = [], req = [], got = null, cellLab = null, painted = null;
+    var CELL = 3, gw = 0, gh = 0, inkDark = null, inkRed = null, masks = {}, maskOrder = [];
+    var strokes = [], curS = null, active = null, penAt = 0, penUsed = false, colour = CRAYONS[0], done = false, saidAt = 0, rect = null, t0 = 0, crossAt = 0, crosses = 0;
+    function get(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
+    function put(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    var prog = null;
+    try { prog = JSON.parse(get("colourProg", "null")); } catch (e) {}
+    if (!prog || typeof prog.open !== "number" || !prog.stars) prog = { pic: 0, open: 0, stars: {} };
+    function save() { put("colourProg", JSON.stringify(prog)); }
+    function pic() { return PICS[prog.pic] || PICS[0]; }
+    function unlocked(i) { return i <= prog.open || (PICS[i] && PICS[i].own); }
+    function tell(text) { saidAt = Date.now(); voice.tell(text); }
+    function brush() { var lv = Math.min(prog.pic, BUILTIN.length - 1); return pic().own ? 16 : Math.round(30 - lv * 0.45); }   // the crayon thins as the pictures get harder
+
+    // ---- the grown-up's own pictures (IndexedDB; never leave the tablet) ----
+    var db = null;
+    function idb(fn) {
+      if (db) return fn(db);
+      try { var rq = indexedDB.open("colouring", 1); } catch (e) { return; }
+      rq.onupgradeneeded = function () { rq.result.createObjectStore("own", { keyPath: "id" }); };
+      rq.onsuccess = function () { db = rq.result; fn(db); };
+    }
+    function loadOwn(then) {
+      idb(function (d) {
+        var all = d.transaction("own").objectStore("own").getAll();
+        all.onsuccess = function () {
+          PICS = BUILTIN.concat(all.result.sort(function (a, b) { return a.t - b.t; }).map(function (o) { return { src: o.data, id: o.id, en: "your picture", es: "tu dibujo", own: true }; }));
+          if (prog.pic >= PICS.length) prog.pic = 0;
+          if (then) then();
+        };
+      });
+    }
+    loadOwn();
+    function addOwn(file, then) {                      // shrink to at most 1200 px and keep it
+      var fr = new FileReader();
+      fr.onload = function () {
+        var im = new Image();
+        im.onload = function () {
+          var k = Math.min(1, 1200 / Math.max(im.width, im.height)), c = document.createElement("canvas");
+          c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+          var g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+          var o = { id: "o" + Date.now(), t: Date.now(), data: c.toDataURL("image/png") };
+          idb(function (d) { var tx = d.transaction("own", "readwrite"); tx.objectStore("own").put(o); tx.oncomplete = function () { loadOwn(then); }; });
+        };
+        im.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    }
+    function clearOwn(then) { idb(function (d) { var tx = d.transaction("own", "readwrite"); tx.objectStore("own").clear(); tx.oncomplete = function () { loadOwn(then); }; }); }
+
+    // ---- read the page: lines, shapes, the 3 px grid used for scoring ----
+    function measure() {
+      DPR = window.devicePixelRatio || 1;
+      W = pad.clientWidth; H = pad.clientHeight; if (!W || !H || !img) return false;
+      [pc, lc, oc].forEach(function (c) { c.width = Math.round(W * DPR); c.height = Math.round(H * DPR); c.getContext("2d").setTransform(DPR, 0, 0, DPR, 0, 0); });
+      var s = Math.min(W / img.width, H / img.height) * 0.96; T = { s: s, x: (W - img.width * s) / 2, y: (H - img.height * s) / 2 };
+      var cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+      var g = cv.getContext("2d", { willReadFrequently: true }); g.fillStyle = "#fff"; g.fillRect(0, 0, W, H); g.drawImage(img, T.x, T.y, img.width * s, img.height * s);
+      var d = g.getImageData(0, 0, W, H).data, n = W * H, i, x, y;
+      var raw = new Uint8Array(n);
+      for (i = 0; i < n; i++) raw[i] = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2] < 175 ? 1 : 0;
+      ink = dilate(raw, 1);                            // what he sees: 1 px bolder all round
+      var wall = dilate(raw, 3);                       // what makes the shapes: gaps of up to 6 px in an outline are closed
+      label = new Int32Array(n); area = [0, 0]; nLab = 1;   // 0 = line, 1 = the paper around the picture, 2.. = shapes
+      var stack = new Int32Array(n);
+      for (i = 0; i < n; i++) {
+        if (wall[i] || label[i]) continue;
+        var id = ++nLab, top = 0, cnt = 0, edge = false, pix = [];
+        stack[top++] = i; label[i] = id;
+        while (top) {
+          var p = stack[--top]; cnt++; pix.push(p);
+          var px_ = p % W, py = (p - px_) / W;
+          if (px_ === 0 || py === 0 || px_ === W - 1 || py === H - 1) edge = true;
+          if (px_ > 0 && !wall[p - 1] && !label[p - 1]) { label[p - 1] = id; stack[top++] = p - 1; }
+          if (px_ < W - 1 && !wall[p + 1] && !label[p + 1]) { label[p + 1] = id; stack[top++] = p + 1; }
+          if (py > 0 && !wall[p - W] && !label[p - W]) { label[p - W] = id; stack[top++] = p - W; }
+          if (py < H - 1 && !wall[p + W] && !label[p + W]) { label[p + W] = id; stack[top++] = p + W; }
+        }
+        if (edge || cnt < 30) {                        // the paper outside, and specks too small to colour
+          var to = edge ? 1 : 0;
+          for (var k = 0; k < pix.length; k++) label[pix[k]] = to;
+          if (edge) area[1] += cnt;
+          nLab--;
+        } else area[id] = cnt;
+      }
+      // the white between the closed wall and the visible line goes to the nearest shape (grown out one ring at a time)
+      var q = [], q2;
+      for (i = 0; i < n; i++) if (!ink[i] && !label[i]) { x = i % W; if ((x > 0 && label[i - 1]) || (x < W - 1 && label[i + 1]) || (i >= W && label[i - W]) || (i < n - W && label[i + W])) q.push(i); }
+      while (q.length) {
+        q2 = [];
+        for (k = 0; k < q.length; k++) {
+          i = q[k]; if (label[i]) continue; x = i % W;
+          var nb = (x > 0 && label[i - 1]) || (x < W - 1 && label[i + 1]) || (i >= W && label[i - W]) || (i < n - W && label[i + W]);
+          if (!nb) continue; label[i] = nb;
+          if (nb > 1) area[nb]++; else area[1]++;
+          if (x > 0 && !ink[i - 1] && !label[i - 1]) q2.push(i - 1);
+          if (x < W - 1 && !ink[i + 1] && !label[i + 1]) q2.push(i + 1);
+          if (i >= W && !ink[i - W] && !label[i - W]) q2.push(i - W);
+          if (i < n - W && !ink[i + W] && !label[i + W]) q2.push(i + W);
+        }
+        q = q2;
+      }
+      for (i = 0; i < n; i++) if (!ink[i] && !label[i]) ink[i] = 1;   // white specks nobody owns: part of the line
+      var fig = 0; for (i = 2; i <= nLab; i++) fig += area[i];
+      req = []; for (i = 2; i <= nLab; i++) req[i] = area[i] >= Math.max(120, fig * 0.002);   // shapes big enough to count
+      gw = Math.ceil(W / CELL); gh = Math.ceil(H / CELL); cellLab = new Int32Array(gw * gh); painted = new Uint8Array(gw * gh); got = new Int32Array(nLab + 1);
+      for (y = 0; y < gh; y++) for (x = 0; x < gw; x++) cellLab[y * gw + x] = label[Math.min(H - 1, y * CELL + 1) * W + Math.min(W - 1, x * CELL + 1)];
+      inkDark = inkLayer(43, 33, 96); inkRed = inkLayer(235, 40, 40); masks = {}; maskOrder = [];
+      return true;
+    }
+    function dilate(src, r) {                          // square max filter, rows then columns (running counts)
+      var a = new Uint8Array(W * H), out = new Uint8Array(W * H), x, y, c;
+      for (y = 0; y < H; y++) {
+        var o = y * W; c = 0;
+        for (x = 0; x < Math.min(W, r); x++) c += src[o + x];
+        for (x = 0; x < W; x++) { if (x + r < W) c += src[o + x + r]; if (x - r - 1 >= 0) c -= src[o + x - r - 1]; a[o + x] = c > 0 ? 1 : 0; }
+      }
+      for (x = 0; x < W; x++) {
+        c = 0;
+        for (y = 0; y < Math.min(H, r); y++) c += a[y * W + x];
+        for (y = 0; y < H; y++) { if (y + r < H) c += a[(y + r) * W + x]; if (y - r - 1 >= 0) c -= a[(y - r - 1) * W + x]; out[y * W + x] = c > 0 ? 1 : 0; }
+      }
+      return out;
+    }
+    function inkLayer(r, g, b) {
+      var c = document.createElement("canvas"); c.width = W; c.height = H;
+      var cx = c.getContext("2d"), im = cx.createImageData(W, H), a = im.data;
+      for (var i = 0; i < W * H; i++) if (ink[i]) { a[i * 4] = r; a[i * 4 + 1] = g; a[i * 4 + 2] = b; a[i * 4 + 3] = 255; }
+      cx.putImageData(im, 0, 0); return c;
+    }
+    function drawLines(red) { ox_.clearRect(0, 0, W, H); ox_.drawImage(red ? inkRed : inkDark, 0, 0, W, H); }
+    function mask(t) {                                 // where a stroke meant for shape t may paint: the shape itself and the lines around it
+      if (masks[t]) return masks[t];
+      var c = document.createElement("canvas"); c.width = W; c.height = H;
+      var cx = c.getContext("2d"), im = cx.createImageData(W, H), a = im.data;
+      for (var i = 0; i < W * H; i++) if (label[i] === t || ink[i]) a[i * 4 + 3] = 255;
+      cx.putImageData(im, 0, 0);
+      masks[t] = c; maskOrder.push(t);
+      if (maskOrder.length > 12) delete masks[maskOrder.shift()];
+      return c;
+    }
+    function labAt(X, Y) { X = Math.round(X); Y = Math.round(Y); return X < 0 || Y < 0 || X >= W || Y >= H ? 1 : label[Y * W + X]; }
+    function targetAt(X, Y) {                          // a stroke starting on a line belongs to the nearest shape
+      for (var r = 0; r <= 8; r += 2) for (var dy = -r; dy <= r; dy += 2) for (var dx = -r; dx <= r; dx += 2) { var l = labAt(X + dx, Y + dy); if (l) return l; }
+      return 1;
+    }
+    function stamp(X, Y, rad, st) {
+      var r2 = rad * rad, x0 = Math.max(0, Math.floor((X - rad) / CELL)), x1 = Math.min(gw - 1, Math.floor((X + rad) / CELL)),
+        y0 = Math.max(0, Math.floor((Y - rad) / CELL)), y1 = Math.min(gh - 1, Math.floor((Y + rad) / CELL));
+      for (var cy = y0; cy <= y1; cy++) for (var cx = x0; cx <= x1; cx++) {
+        var ddx = cx * CELL + 1 - X, ddy = cy * CELL + 1 - Y; if (ddx * ddx + ddy * ddy > r2) continue;
+        var i = cy * gw + cx; if (painted[i] || cellLab[i] !== st.target) continue;
+        painted[i] = 1; got[st.target]++;
+      }
+    }
+    function P(p) { return [T.x + p[0] * T.s, T.y + p[1] * T.s]; }
+    function segment(st, a, b) {                       // draw on the live layer, then cut away everything outside the shape
+      var A = P(a), B = P(b), rad = st.w / 2 * b[2];
+      lx.globalCompositeOperation = "source-over";
+      lx.strokeStyle = st.c; lx.lineWidth = rad * 2; lx.lineCap = "round"; lx.lineJoin = "round";
+      lx.beginPath(); lx.moveTo(A[0], A[1]); lx.lineTo(B[0], B[1]); lx.stroke();
+      var bx = Math.min(A[0], B[0]) - rad - 2, by = Math.min(A[1], B[1]) - rad - 2, bw = Math.abs(A[0] - B[0]) + rad * 2 + 4, bh = Math.abs(A[1] - B[1]) + rad * 2 + 4;
+      lx.save(); lx.beginPath(); lx.rect(bx, by, bw, bh); lx.clip(); lx.globalCompositeOperation = "destination-in"; lx.drawImage(mask(st.target), 0, 0, W, H); lx.restore();
+      lx.globalCompositeOperation = "source-over";
+      var len = Math.hypot(B[0] - A[0], B[1] - A[1]), k, n = Math.max(1, Math.ceil(len / Math.max(1.5, rad / 2)));
+      for (k = 0; k <= n; k++) stamp(A[0] + (B[0] - A[0]) * k / n, A[1] + (B[1] - A[1]) * k / n, rad, st);
+    }
+    function commit() { px.drawImage(lc, 0, 0, W, H); lx.clearRect(0, 0, W, H); }
+    function replay(keep) {                            // keep: same picture and size (an undo) - redraw without reading the page again
+      if (keep && label && W === pad.clientWidth && H === pad.clientHeight) { painted = new Uint8Array(gw * gh); got = new Int32Array(nLab + 1); }
+      else if (!measure()) return;
+      px.clearRect(0, 0, W, H); lx.clearRect(0, 0, W, H); drawLines(false);
+      strokes.forEach(function (st) { var q = P(st.pts[0]); st.target = targetAt(q[0], q[1]); segment(st, st.pts[0], st.pts[0]);
+        for (var i = 1; i < st.pts.length; i++) segment(st, st.pts[i - 1], st.pts[i]); commit(); });
+      bar();
+    }
+    new ResizeObserver(function () { if (on && img) replay(true); }).observe(pad);   // reads the page again only if the size really changed
+    function score() {                                 // share of the shapes coloured (the paper around does not count)
+      var t = 0, g_ = 0, big = 0;
+      for (var k = 2; k <= nLab; k++) if (req[k]) { var c = Math.ceil(area[k] / (CELL * CELL)); t += c; g_ += Math.min(c, got[k]); }
+      for (k = 2; k <= nLab; k++) if (req[k] && area[k] / (CELL * CELL) > t * 0.015 && got[k] < area[k] / (CELL * CELL) * 0.6) big++;
+      return { pct: t ? g_ / t : 0, holes: big };
+    }
+    function finished() { var s = score(); return s.pct >= 0.85 && !s.holes; }
+    function stars() { return crosses <= 1 ? 3 : crosses <= 4 ? 2 : 1; }
+
+    // ---- over the line: the picture shakes, the lines flash red, a soft bonk and a buzz ----
+    function bonk() {
+      if (!window.pianoAudio) return;
+      try {
+        var ac = window.pianoAudio(), t = ac.currentTime, o = ac.createOscillator(), g = ac.createGain();
+        o.type = "sine"; o.frequency.setValueAtTime(330, t); o.frequency.exponentialRampToValueAtTime(110, t + 0.18);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.35, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+        o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + 0.3);
+      } catch (e) {}
+    }
+    var redT = 0;
+    function crossed() {
+      var now = Date.now(); if (now - crossAt < 900) return; crossAt = now; crosses++;
+      pad.classList.remove("shake"); void pad.offsetWidth; pad.classList.add("shake");
+      drawLines(true); clearTimeout(redT); redT = setTimeout(function () { drawLines(false); }, 450);
+      bonk(); try { if (navigator.vibrate) navigator.vibrate(120); } catch (e) {}
+      if (now - saidAt > 6000) tell(L("Oops! Stay inside the lines.", "¡Uy! No te salgas de las líneas."));
+      bar();
+    }
+
+    // ---- input ----
+    function pt(e) { var f = e.pointerType === "pen" && e.pressure > 0 ? 0.6 + Math.min(1, e.pressure) * 0.6 : 1;
+      return [(e.clientX - rect.left - T.x) / T.s, (e.clientY - rect.top - T.y) / T.s, f]; }
+    function palm(e) { return e.pointerType === "touch" && (Date.now() - penAt < 1500 || (e.width > 45 && e.height > 45)); }
+    pad.addEventListener("pointerdown", function (e) {
+      e.preventDefault();
+      if (e.pointerType === "pen") { penAt = Date.now(); penUsed = true; }
+      if (active !== null || palm(e) || done || !label) return;
+      active = e.pointerId; rect = pad.getBoundingClientRect(); try { pad.setPointerCapture(e.pointerId); } catch (x) {}
+      var p = pt(e), q = P(p);
+      curS = { c: colour, w: brush() * (penUsed ? 0.8 : 1), pts: [p], target: targetAt(q[0], q[1]), was: true };
+      strokes.push(curS); segment(curS, p, p);
+    });
+    pad.addEventListener("pointermove", function (e) {
+      if (e.pointerType === "pen") penAt = Date.now();
+      if (e.pointerId !== active) return;
+      var evs = (e.getCoalescedEvents && e.getCoalescedEvents()) || []; if (!evs.length) evs = [e];
+      evs.forEach(function (ev) {
+        var p = pt(ev), q = curS.pts[curS.pts.length - 1]; if (Math.hypot(p[0] - q[0], p[1] - q[1]) * T.s < 1.5) return;
+        curS.pts.push(p); segment(curS, q, p);
+        var c = P(p), l = labAt(c[0], c[1]), inside = l === curS.target || l === 0;   // on the line itself is still fine
+        if (!inside && curS.was) crossed();
+        curS.was = inside;
+      });
+    });
+    function up(e) {
+      if (e.pointerId !== active) return; active = null; curS = null;
+      commit(); check();
+    }
+    pad.addEventListener("pointerup", up); pad.addEventListener("pointercancel", up);
+    pad.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+
+    function check() {
+      bar();
+      if (!finished()) return;
+      done = true;
+      var n = stars(), id = pic().id;
+      prog.stars[id] = Math.max(prog.stars[id] || 0, n);
+      if (!pic().own) prog.open = Math.max(prog.open, Math.min(BUILTIN.length - 1, prog.pic + 1));
+      save();
+      var log; try { log = JSON.parse(get("colourLog", "[]")); } catch (e) { log = []; }
+      var d = new Date(), two = function (x) { return (x < 10 ? "0" : "") + x; };
+      log.push({ d: d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()) + " " + two(d.getHours()) + ":" + two(d.getMinutes()),
+        pic: pic().en, stars: n, crosses: crosses, strokes: strokes.length, sec: Math.round((Date.now() - t0) / 1000), pen: penUsed });
+      put("colourLog", JSON.stringify(log.slice(-1000)));
+      confetti(n === 3 ? 140 : 80); bar();
+      tell(n === 3 ? L("Perfect! You stayed inside the lines. Three stars!", "¡Perfecto! No te saliste de las líneas. ¡Tres estrellas!")
+        : n === 2 ? L("Great colouring! Two stars!", "¡Muy bien coloreado! ¡Dos estrellas!")
+        : L("All done! Stay inside the lines next time for more stars.", "¡Terminado! La próxima vez no te salgas de las líneas y ganarás más estrellas."));
+    }
+    function starTxt(n) { return "★★★".slice(0, n) + "☆☆☆".slice(n); }
+    function bar() {
+      var p = pic(), best = prog.stars[p.id] || 0, s = label ? score() : { pct: 0 };
+      document.getElementById("cTitle").textContent = "🎨 " + (p.own ? "⭐" : (prog.pic + 1) + "/" + BUILTIN.length) + " · " + L(p.en, p.es.replace(/^(el|la|los|las|tu) /, ""));
+      document.getElementById("cStars").textContent = done ? starTxt(stars()) : best ? starTxt(best) : "";
+      document.getElementById("cLeft").textContent = done ? "" : Math.min(100, Math.round(s.pct / 0.85 * 100)) + "%" + (crosses ? "  ·  " + L("over the line: ", "fuera: ") + crosses : "");
+      document.getElementById("cPrev").disabled = prog.pic === 0;
+      document.getElementById("cNext").disabled = !unlocked(prog.pic + 1);
+      document.getElementById("cNext").classList.toggle("go", done && prog.pic < PICS.length - 1);
+    }
+    function load(i) {
+      if (!PICS[i] || !unlocked(i)) return;
+      prog.pic = i; save();
+      strokes = []; done = false; crosses = 0; t0 = Date.now(); label = null;
+      var im = new Image(); imgFor = i;
+      im.onload = function () { if (imgFor !== i) return; img = im; replay(); };
+      im.src = PICS[i].src;
+      bar();
+      tell(L("Colour the " + PICS[i].en + ". Stay inside the lines!", "Colorea " + PICS[i].es + ". ¡No te salgas de las líneas!"));
+    }
+    // ---- the picture gallery ----
+    var gal = document.getElementById("cGal");
+    function gallery() {
+      gal.innerHTML = "";
+      PICS.forEach(function (p, i) {
+        var b = document.createElement("button"), ok = unlocked(i), st = prog.stars[p.id] || 0;
+        b.className = ok ? "" : "lock"; if (i === prog.pic) b.className += " cur";
+        b.innerHTML = '<img src="' + p.src + '" alt=""><span>' + (ok ? (st ? starTxt(st) : "") : "🔒") + "</span>";
+        b.onclick = function () { if (!ok) return; gal.hidden = true; load(i); };
+        gal.appendChild(b);
+      });
+      gal.hidden = false;
+    }
+    document.getElementById("cPics").onclick = function () { if (gal.hidden) gallery(); else gal.hidden = true; };
+    var pal = document.getElementById("cPal");
+    CRAYONS.forEach(function (c, i) {
+      var b = document.createElement("button"); b.style.background = c; if (!i) b.className = "cur";
+      b.onclick = function () { colour = c; Array.prototype.forEach.call(pal.children, function (x) { x.classList.toggle("cur", x === b); }); };
+      pal.appendChild(b);
+    });
+    document.getElementById("cUndo").onclick = function () { if (done || !strokes.length) return; strokes.pop(); replay(true); };
+    document.getElementById("cPrev").onclick = function () { load(prog.pic - 1); };
+    document.getElementById("cNext").onclick = function () { load(prog.pic + 1); };
+    onLang(function () { bar(); });
+    function top() { var h = document.querySelector("header"); if (h) document.documentElement.style.setProperty("--wtop", Math.round(h.getBoundingClientRect().bottom + 8) + "px"); }
+    window.addEventListener("resize", function () { if (on) top(); });
+    return {
+      start: function () { on = true; gal.hidden = true; setTimeout(function () { top(); if (!img || done) load(done && unlocked(prog.pic + 1) ? prog.pic + 1 : prog.pic); else replay(); }, 30); },   // after the panel is laid out
+      stop: function () { on = false; active = null; },
+      addOwn: addOwn, clearOwn: clearOwn,
+      ownCount: function () { return PICS.length - BUILTIN.length; },
+      pics: function () { return PICS; },
+      peek: function () { var s = label ? score() : null; return { pic: prog.pic, open: prog.open, done: done, crosses: crosses, shapes: nLab - 1, paper: area[1], score: s, T: T, W: W, H: H }; }   // for the grown-up's computer
+    };
+  })();
+
   var appMode = (function () {
     var m = "piano", start = "choose", atHome = false, homeEl = document.getElementById("home");
-    try { m = localStorage.getItem("appMode"); if (m !== "math" && m !== "write") m = "piano"; var sm = localStorage.getItem("startMode"); if (sm === "piano" || sm === "math" || sm === "write") start = sm; } catch (e) {}
+    try { m = localStorage.getItem("appMode"); if (m !== "math" && m !== "write" && m !== "colour") m = "piano"; var sm = localStorage.getItem("startMode"); if (sm === "piano" || sm === "math" || sm === "write" || sm === "colour") start = sm; } catch (e) {}
     function apply(next) {
       atHome = false; document.body.classList.remove("athome"); homeEl.classList.remove("on");
       m = next;
       try { localStorage.setItem("appMode", m); } catch (e) {}
-      document.body.classList.toggle("math", m === "math"); document.body.classList.toggle("inwrite", m === "write");
+      document.body.classList.toggle("math", m === "math"); document.body.classList.toggle("inwrite", m === "write"); document.body.classList.toggle("incolour", m === "colour");
       if (m !== "write") writing.stop();
+      if (m !== "colour") colouring.stop();
       if (m === "math") {
         if (player && player.pauseVideo) player.pauseVideo();
         quiz.mathStop(); quiz.mathStart();
       } else if (m === "write") {
         if (player && player.pauseVideo) player.pauseVideo();
         quiz.mathStop(); writing.start();
+      } else if (m === "colour") {
+        if (player && player.pauseVideo) player.pauseVideo();
+        quiz.mathStop(); colouring.start();
       } else {
         quiz.mathStop();
         if (!player && window.YT && YT.Player) onYouTubeIframeAPIReady();   // first time in this run
@@ -2999,9 +3367,9 @@
       }
     }
     function home() {
-      quiz.mathStop(); writing.stop(); voice.hush(true);
+      quiz.mathStop(); writing.stop(); colouring.stop(); voice.hush(true);
       if (player && player.pauseVideo) player.pauseVideo();
-      atHome = true; document.body.classList.remove("math", "inwrite"); document.body.classList.add("athome"); homeEl.classList.add("on");
+      atHome = true; document.body.classList.remove("math", "inwrite", "incolour"); document.body.classList.add("athome"); homeEl.classList.add("on");
     }
     function fixed() { document.body.classList.toggle("fixedStart", start !== "choose"); }
     onLang(function () {
@@ -3009,15 +3377,18 @@
       document.querySelector("#homePiano span").textContent = L("Piano lessons", "Lecciones de piano");
       document.querySelector("#homeMath span").textContent = L("Maths", "Mates");
       document.querySelector("#homeWrite span").textContent = L("Writing", "Escritura");
+      document.querySelector("#homeColour span").textContent = L("Colouring", "Colorear");
     });
     document.getElementById("homePiano").onclick = function () { apply("piano"); };
     document.getElementById("homeMath").onclick = function () { apply("math"); };
     document.getElementById("homeWrite").onclick = function () { apply("write"); };
+    document.getElementById("homeColour").onclick = function () { apply("colour"); };
     document.getElementById("homeBtn").onclick = function () { if (start === "choose" && !(quiz.isOpen() && m !== "math")) home(); };   // never a way out of the quiz between lessons
     fixed();
     return {
       math: function () { return m === "math"; },
       write: function () { return m === "write"; },
+      colour: function () { return m === "colour"; },
       home: function () { return atHome; },
       startMode: function () { return start; },
       setStart: function (s) { start = s; try { localStorage.setItem("startMode", s); } catch (e) {} fixed(); if (s === "choose") home(); else apply(s); },
@@ -3313,6 +3684,7 @@
       $("qNeed").textContent = "Correct answers needed: " + c.need;
       $("qLevel").textContent = "Level: " + c.level + " (tap to change)";
       $("wLevel").textContent = "✍️ Writing level: " + writing.level() + " – " + writing.levelName() + " (tap to change)";
+      $("cClear").textContent = "🎨 Remove my own colouring pictures (" + colouring.ownCount() + ")"; $("cClear").disabled = !colouring.ownCount();
       $("qEvery").disabled = $("qNeed").disabled = $("qLevel").disabled = !c.on;
     }
     function vlabel() {
@@ -3324,7 +3696,7 @@
       $("vNote").textContent = voice.note();
     }
     function mlabel() {
-      $("qMode").textContent = "Start screen: " + { choose: "🏠 he chooses", piano: "🎹 Piano lessons", math: "➗ Maths only", write: "✍️ Writing only" }[appMode.startMode()] + " (tap to change)";
+      $("qMode").textContent = "Start screen: " + { choose: "🏠 he chooses", piano: "🎹 Piano lessons", math: "➗ Maths only", write: "✍️ Writing only", colour: "🎨 Colouring only" }[appMode.startMode()] + " (tap to change)";
       $("qTry").disabled = appMode.math();
     }
     function elabel() {
@@ -3350,13 +3722,16 @@
     $("vRead").onclick = function () { voice.setRead(!voice.cfg.read); vlabel(); };
     $("vFb").onclick = function () { voice.setFb(!voice.cfg.fb); vlabel(); };
     $("vLang").onclick = function () { voice.setLang(voice.cfg.lang === "es" ? "en" : "es"); relabelAll(); vlabel(); };
-    $("qMode").onclick = function () { appMode.setStart({ choose: "piano", piano: "math", math: "write", write: "choose" }[appMode.startMode()]); mlabel(); closeGate(); };
+    $("qMode").onclick = function () { appMode.setStart({ choose: "piano", piano: "math", math: "write", write: "colour", colour: "choose" }[appMode.startMode()]); mlabel(); closeGate(); };
     function cycle(list, v) { return list[(list.indexOf(v) + 1) % list.length]; }
     $("qOn").onclick = function () { quiz.cfg.on = !quiz.cfg.on; quiz.save(); label(); };
     $("qEvery").onclick = function () { quiz.cfg.every = cycle([1, 2, 3, 4], quiz.cfg.every); quiz.save(); label(); };
     $("qNeed").onclick = function () { quiz.cfg.need = cycle([1, 2, 3], quiz.cfg.need); quiz.save(); label(); };
     $("qLevel").onclick = function () { quiz.cfg.level = cycle([1, 2, 3, 4, 5, 6, 7], quiz.cfg.level); label(); };
     $("wLevel").onclick = function () { writing.setLevel(writing.level() % WRITE_LEVELS.length + 1); label(); };
+    $("cAdd").onclick = function () { $("cFile").value = ""; $("cFile").click(); };
+    $("cFile").onchange = function () { var f = $("cFile").files[0]; if (f) colouring.addOwn(f, function () { $("cAdd").textContent = "🎨 Added! Add another colouring picture"; label(); }); };
+    $("cClear").onclick = function () { colouring.clearOwn(label); };
 
     // Results panel: today / all time, level, streak, and the last 20 mistakes
     function two(n) { return n < 10 ? "0" + n : "" + n; }

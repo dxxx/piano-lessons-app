@@ -67,6 +67,17 @@ public class MainActivity extends Activity {
 
     // Eye-distance guard (front camera, on-device only); the page decides when it is wanted
     private static final int REQ_CAM = 72;
+    private static final int REQ_FILE = 73;
+    private android.webkit.ValueCallback<android.net.Uri[]> fileCb;
+
+    @Override
+    protected void onActivityResult(int code, int result, android.content.Intent data) {
+        super.onActivityResult(code, result, data);
+        if (code != REQ_FILE || fileCb == null) return;
+        android.net.Uri u = result == RESULT_OK && data != null ? data.getData() : null;
+        fileCb.onReceiveValue(u == null ? null : new android.net.Uri[]{u});
+        fileCb = null;
+    }
     private EyeGuard eye;
     private boolean eyeOn, eyeMenuOpen, eyeResumed;
 
@@ -113,21 +124,32 @@ public class MainActivity extends Activity {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
-                boolean font = url.startsWith(PAGE_ORIGIN + "fonts/");
-                if (!font && !url.startsWith(PAGE_ORIGIN + "sounds/")) return null;
+                boolean font = url.startsWith(PAGE_ORIGIN + "fonts/"), pic = url.startsWith(PAGE_ORIGIN + "colour/");
+                if (!font && !pic && !url.startsWith(PAGE_ORIGIN + "sounds/")) return null;
                 String path = request.getUrl().getPath();               // /sounds/grand/C4.mp3
                 if (path == null || path.length() < 2 || path.contains("..")) return null;
                 try {
                     InputStream in = getAssets().open(path.substring(1));
                     Map<String, String> headers = new HashMap<String, String>();
                     headers.put("Access-Control-Allow-Origin", "*");
-                    return new WebResourceResponse(font ? "font/woff2" : "audio/mpeg", null, 200, "OK", headers, in);
+                    return new WebResourceResponse(font ? "font/woff2" : pic ? (path.endsWith(".json") ? "application/json" : "image/png") : "audio/mpeg", null, 200, "OK", headers, in);
                 } catch (Exception e) {
                     return null;
                 }
             }
         });
         web.setWebChromeClient(new WebChromeClient() {
+            /** <input type=file> (a grown-up adding a colouring picture): the system picker, result in onActivityResult. */
+            @Override
+            public boolean onShowFileChooser(WebView view, android.webkit.ValueCallback<android.net.Uri[]> cb, FileChooserParams params) {
+                if (fileCb != null) fileCb.onReceiveValue(null);
+                fileCb = cb;
+                android.content.Intent i = new android.content.Intent(android.content.Intent.ACTION_GET_CONTENT);
+                i.addCategory(android.content.Intent.CATEGORY_OPENABLE); i.setType("image/*");
+                try { startActivityForResult(i, REQ_FILE); } catch (Exception e) { fileCb = null; return false; }
+                return true;
+            }
+
             @Override
             public boolean onCreateWindow(WebView view, boolean dialog, boolean userGesture, android.os.Message msg) {
                 return false; // YouTube logo / "Watch on YouTube" / suggestions: refused
