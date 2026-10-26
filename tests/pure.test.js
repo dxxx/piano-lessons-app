@@ -195,7 +195,13 @@ console.log("OK", nh, "sums checked for hints");
   q = P.writeAdvance({ lv: 1, i: P.WRITE_LEVELS[0].items.length - 1, r: 3, words: 0 }); eq(q.lv, 2); eq(q.i, 0); eq(q.up, true);
   q = P.writeAdvance({ lv: 6, i: 9, r: 3, words: 0 }); eq(q.lv, 7); eq(q.r, 2);
   q = P.writeAdvance({ lv: 7, i: 0, r: 3, words: P.WORDS_NEED - 1 }); eq(q.lv, 8); eq(q.words, 0); eq(q.up, true);
-  q = P.writeAdvance({ lv: 8, i: 0, r: 3, words: 40 }); eq(q.lv, 8); eq(q.up, false); eq(q.words, 41);
+  const top = P.WRITE_LEVELS.length; eq(top, 15);
+  q = P.writeAdvance({ lv: 8, i: 0, r: 3, words: P.WORDS_NEED - 1 }); eq(q.lv, 9); eq(q.r, 2);
+  q = P.writeAdvance({ lv: 11, i: 0, r: 3, words: 9 }); eq(q.lv, 12); eq(q.r, 3);          // apostrophes need 10, then listen-and-write starts on his own
+  eq(P.writeFirst(12), 3); eq(P.writeFirst(14), 2);
+  q = P.writeAdvance({ lv: 14, i: 0, r: 3, words: 7 }); eq(q.lv, 15); eq(q.up, true);       // sentences need 8
+  q = P.writeAdvance({ lv: top, i: 0, r: 3, words: 40 }); eq(q.lv, top); eq(q.up, false); eq(q.words, 41); eq(q.r, 3);
+  P.WRITE_LEVELS.forEach((l, i) => assert(l.items.length >= 4 && l.en && l.es, "level " + (i + 1)));
   const all = P.WRITE_LEVELS.slice(0, 4).map(l => l.items.join("")).join("").split("").sort().join("");
   eq(all, "abcdefghijklmnopqrstuvwxyz");
 }
