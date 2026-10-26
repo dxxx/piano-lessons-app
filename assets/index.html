@@ -1071,7 +1071,8 @@
     var INSTR = [["grand", "&#127929;", "Grand piano", "Piano de cola"], ["soft", "&#127932;", "Soft piano", "Piano suave"], ["musicbox", "&#127925;", "Music box", "Caja de música"],
                  ["epiano", "&#127928;", "Electric piano", "Piano eléctrico"], ["organ", "&#127926;", "Organ", "Órgano"],
                  ["robot", "&#129302;", "Robot voice", "Voz de robot"], ["lead", "&#127899;&#65039;", "Synth lead", "Sintetizador"], ["808", "&#128266;", "808 bass", "Bajo 808"],
-                 ["chip", "&#128126;", "Chiptune", "Videojuego"], ["warmpad", "&#127756;", "Warm pad", "Colchón cálido"], ["polysynth", "&#127898;&#65039;", "Polysynth", "Polisintetizador"]];
+                 ["chip", "&#128126;", "Chiptune", "Videojuego"], ["warmpad", "&#127756;", "Warm pad", "Colchón cálido"], ["polysynth", "&#127898;&#65039;", "Polysynth", "Polisintetizador"],
+                 ["xylo", "&#127752;", "Xylophone", "Xilófono"]];
     function iname(x) { return L(x[2], x[3]); }
     try { var si = localStorage.getItem("instrument"); if (si === "pad") si = "warmpad";   // the old synth pad is now the sampled warm pad
           if (INSTR.some(function (x) { return x[0] === si; })) instrument = si; } catch (e) {}
@@ -1149,7 +1150,7 @@
         fetch("sounds/" + set.dir + "/" + s.n + ".mp3")
           .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.arrayBuffer(); })
           .then(function (ab) { return new Promise(function (ok, no) { ac.decodeAudioData(ab, ok, no); }); })
-          .then(function (buf) { if (set.loop) buf.loop = loopPoints(buf); set.buffers[s.m] = buf; }, function () {})
+          .then(function (buf) { if (set.loop) buf.loop = loopPoints(buf); buf.onset = onsetOf(buf); set.buffers[s.m] = buf; }, function () {})
           .then(done);
       });
     }
@@ -1159,11 +1160,18 @@
     function hz(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
     function vg(v) { return Math.pow(v / 0.8, 1.3); }
     function vb(v) { return 0.6 + 0.5 * v; }
+    // Where the sound really starts: the recordings open with 5-22 ms of silence (plus MP3 padding), skipped at play time so the key answers at once
+    function onsetOf(buf) {
+      var d = buf.getChannelData(0), n = Math.min(d.length, Math.floor(buf.sampleRate * 0.2)), pk = 0, i;
+      for (i = 0; i < n; i++) pk = Math.max(pk, Math.abs(d[i]));
+      for (i = 0; i < n && Math.abs(d[i]) < pk * 0.03; i++);
+      return Math.max(0, i / buf.sampleRate - 0.0015);
+    }
     function sampled(set, ac, midi, t, s, v) {
       var src = ac.createBufferSource(), g = ac.createGain(), buf = set.buffers[s.m];
       src.buffer = buf; src.playbackRate.value = Math.pow(2, (midi - s.m) / 12);
       if (buf.loop) { src.loop = true; src.loopStart = buf.loop.a; src.loopEnd = buf.loop.b; }   // sustains while held
-      g.gain.value = set.gain * vg(v); src.connect(g); g.connect(master); src.start(t);
+      g.gain.value = set.gain * vg(v); src.connect(g); g.connect(master); src.start(t, buf.onset || 0);
       return { g: g, o: [src], rel: set.rel };          // piano rings by itself (key release = damper fade); pads fade over rel
     }
     var VOICE = {
@@ -1197,6 +1205,29 @@
           o.connect(pg); pg.connect(g); o.start(t); o.stop(t + p[2] + 0.1); os.push(o);
         });
         return { g: g, o: os, rel: 0.12 };
+      },
+      xylo: function (ac, midi, t, s, v) {                   // wooden bars: partials tuned 1 : 3 : 6, a quick ring and a mallet "tok"
+        var f = hz(midi), g = ac.createGain(), os = [], gm = vg(v), br = vb(v), ring = Math.max(0.3, 0.45 + (84 - midi) / 55);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.34 * gm, t + 0.002);
+        g.gain.exponentialRampToValueAtTime(0.0008, t + ring);
+        g.connect(master);
+        [[1, 1, ring], [3, 0.38, ring * 0.35], [6.1, 0.16, ring * 0.15]].forEach(function (p) {   // [ratio, level, seconds]
+          if (f * p[0] > 14000) return;
+          if (p[0] > 1) p = [p[0], p[1] * br * br, p[2]];
+          var o = ac.createOscillator(), pg = ac.createGain();
+          o.type = "sine"; o.frequency.value = f * p[0];
+          pg.gain.setValueAtTime(p[1], t); pg.gain.exponentialRampToValueAtTime(p[1] * 0.002, t + p[2]);
+          o.connect(pg); pg.connect(g); o.start(t); o.stop(t + p[2] + 0.1); os.push(o);
+        });
+        if (!ac.tok) {                                         // 30 ms of noise, made once, for the mallet hit
+          ac.tok = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.03), ac.sampleRate);
+          var nd = ac.tok.getChannelData(0); for (var i = 0; i < nd.length; i++) nd[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / nd.length, 4);
+        }
+        var nz = ac.createBufferSource(), bp = ac.createBiquadFilter(), ng = ac.createGain();
+        nz.buffer = ac.tok; bp.type = "bandpass"; bp.frequency.value = Math.min(f * 4, 9000); bp.Q.value = 1.2;
+        ng.gain.value = 0.35 * br; nz.connect(bp); bp.connect(ng); ng.connect(g); nz.start(t); os.push(nz);
+        return { g: g, o: os, rel: 0.15 };
       },
       epiano: function (ac, midi, t, s, v) {                 // FM: soft body + a bell-like "tine" at the start
         var f = hz(midi), g = ac.createGain(), car = ac.createOscillator(), gm = vg(v), br = vb(v);
@@ -1404,13 +1435,17 @@
       if (el) {
         var m = +el.dataset.m;
         fingers[m] = (fingers[m] || 0) + 1;
+        if (fingers[m] === 1) noteOn(m, e ? velocity(e, el, isDown) : 0.8);   // sound first, then the key highlight (a restyle)
         el.classList.add("on");
-        if (fingers[m] === 1) { noteOn(m, e ? velocity(e, el, isDown) : 0.8); act.note(m, instrument); }
+        if (fingers[m] === 1) act.note(m, instrument);
       }
     }
     function release(id) { press(id, null); delete held[id]; }
 
-    keysEl.addEventListener("pointerdown", function (e) { e.preventDefault(); audio(); press(e.pointerId, keyAt(e.clientX, e.clientY), e, true); });   // sound starts on pointerdown; audio() also wakes a suspended context
+    // Touch lag log for the grown-up's computer: ms from the finger touching the glass to our code running (w = waited) and to the sound being started (t = total)
+    var lag = window.pianoLag = [];
+    keysEl.addEventListener("pointerdown", function (e) { e.preventDefault(); var t0 = performance.now(); audio(); press(e.pointerId, keyAt(e.clientX, e.clientY), e, true);
+      lag.push({ w: Math.round(t0 - e.timeStamp), t: Math.round(performance.now() - e.timeStamp), v: player && player.getPlayerState ? player.getPlayerState() : -9 }); if (lag.length > 60) lag.shift(); });   // sound starts on pointerdown; audio() also wakes a suspended context
     keysEl.addEventListener("pointermove", function (e) { if (e.pointerId in held) press(e.pointerId, keyAt(e.clientX, e.clientY), e, false); });
     ["pointerup", "pointercancel", "pointerleave"].forEach(function (ev) {
       keysEl.addEventListener(ev, function (e) { release(e.pointerId); });

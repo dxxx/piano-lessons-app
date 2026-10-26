@@ -13,6 +13,8 @@ Every version, newest first. Each released version has a download on the
 - **One language at a time**: everything he sees (buttons, lessons, quiz, PIN screen, sound names) follows Menu → Language; the grown-up menu stays English
 - **Black keys are labelled too** (C#, D#, F#, G#, A#), like the white keys
 - **Wider video**: in Big video and Play along the video fills the whole width and the top is cut off instead of the bottom, so the keyboard in the lesson video sits right above the piano
+- **New sound: Xylophone** 🌈 (wooden bars with a mallet tap), the 12th sound in the sound picker
+- **Faster keys**: the grand piano and the other recorded sounds skip the silent start of each recording (5-22 ms), and the sound now starts before the key lights up
 - **Surround sound** 🎧: each note comes from its own place, low notes on the left and high notes on the right like a real piano, with a soft room echo that fills the tablet's 4 speakers. Pick 🔈 Off / 🏠 Room / 🏛️ Big hall under the sound button (Room by default)
 - The grown-up's computer can read the quiz and activity log over USB (USB debugging must be on; nothing goes over the network)
 
