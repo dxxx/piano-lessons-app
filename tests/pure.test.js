@@ -2,7 +2,7 @@
 const fs = require("fs"), assert = require("assert"), path = require("path");
 const html = fs.readFileSync(path.join(__dirname, "..", "assets", "index.html"), "utf8");
 const src = html.slice(html.indexOf("// <pure>"), html.indexOf("// </pure>"));
-const P = new Function(src + "; return { explain, eqSay, qSay, rightSay, wrongSay, pickIdx, mistakeCount, heartState, heartsHtml, dayStep, clockBehind, limitLeft, earnStep, qKey, reviewAfter, reviewDue, trickName, splitText, easyIntro, PRAISE, slipAnswers, slipKind, slipSay, hintPick, hintStats, needsRegroup, wrongParts };")();
+const P = new Function(src + "; return { explain, eqSay, qSay, rightSay, wrongSay, pickIdx, mistakeCount, heartState, heartsHtml, dayStep, clockBehind, limitLeft, earnStep, qKey, reviewAfter, reviewDue, trickName, splitText, easyIntro, PRAISE, slipAnswers, slipKind, slipSay, hintPick, hintStats, needsRegroup, wrongParts, WRITE_LEVELS, WORDS_NEED, writeFirst, inkCheck, densify, writeAdvance };")();
 const say = (a, b, plus, lv, l) => P.explain(a, b, plus, lv, l).say;
 const eq = (got, want) => assert.strictEqual(got, want);
 
@@ -180,3 +180,23 @@ eq(Q[0].lv, 4);                                           // an item keeps its o
   eq(s.filter((x) => x.step >= 0).length, P.explain(84, 39, false, 7, "es").steps.length);
 }
 console.log("OK", nh, "sums checked for hints");
+
+// Writing: the stroke check and the level steps
+{
+  const line = []; for (let y = 0; y <= 100; y += 2) line.push([50, y]);
+  const good = P.densify([[51, 0], [49, 100]], 2), half = P.densify([[50, 0], [50, 50]], 2), wild = P.densify([[90, 0], [90, 100]], 2);
+  const g = P.inkCheck(line, good, 11); assert(g.cov === 1 && g.off === 0, "traced line");
+  assert(P.inkCheck(line, half, 11).cov < 0.8, "half a line is not enough");
+  assert(P.inkCheck(line, wild, 11).off === 1, "a line far away is all off");
+  eq(P.densify([[0, 0], [10, 0]], 2).length, 6);
+  eq(P.writeFirst(1), 1); eq(P.writeFirst(7), 2);
+  let q = P.writeAdvance({ lv: 1, i: 0, r: 1, words: 0 }); eq(q.r, 2); eq(q.fresh, false);
+  q = P.writeAdvance({ lv: 1, i: 0, r: 3, words: 0 }); eq(q.i, 1); eq(q.r, 1); eq(q.fresh, true); eq(q.up, false);
+  q = P.writeAdvance({ lv: 1, i: P.WRITE_LEVELS[0].items.length - 1, r: 3, words: 0 }); eq(q.lv, 2); eq(q.i, 0); eq(q.up, true);
+  q = P.writeAdvance({ lv: 6, i: 9, r: 3, words: 0 }); eq(q.lv, 7); eq(q.r, 2);
+  q = P.writeAdvance({ lv: 7, i: 0, r: 3, words: P.WORDS_NEED - 1 }); eq(q.lv, 8); eq(q.words, 0); eq(q.up, true);
+  q = P.writeAdvance({ lv: 8, i: 0, r: 3, words: 40 }); eq(q.lv, 8); eq(q.up, false); eq(q.words, 41);
+  const all = P.WRITE_LEVELS.slice(0, 4).map(l => l.items.join("")).join("").split("").sort().join("");
+  eq(all, "abcdefghijklmnopqrstuvwxyz");
+}
+console.log("writing ok");

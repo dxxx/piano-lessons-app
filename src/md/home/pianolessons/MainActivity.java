@@ -327,7 +327,7 @@ public class MainActivity extends Activity {
             @Override
             public void onInit(int status) {
                 if (status == TextToSpeech.SUCCESS && tts != null) {
-                    ttsEn = tts.isLanguageAvailable(new Locale("en", "US")) >= TextToSpeech.LANG_AVAILABLE;
+                    ttsEn = tts.isLanguageAvailable(new Locale("en", "GB")) >= TextToSpeech.LANG_AVAILABLE || tts.isLanguageAvailable(new Locale("en", "US")) >= TextToSpeech.LANG_AVAILABLE;
                     ttsEs = tts.isLanguageAvailable(new Locale("es", "ES")) >= TextToSpeech.LANG_AVAILABLE;
                     ttsReady = true;
                     tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {   // the page waits for "spoke"
@@ -463,7 +463,7 @@ public class MainActivity extends Activity {
                 public void run() {
                     boolean es = "es".equals(lang);
                     if (!ttsReady || tts == null || !(es ? ttsEs : ttsEn)) { js("spoke", id); return; }   // no voice installed
-                    tts.setLanguage(es ? new Locale("es", "ES") : new Locale("en", "US"));
+                    tts.setLanguage(es ? new Locale("es", "ES") : tts.isLanguageAvailable(new Locale("en", "GB")) >= TextToSpeech.LANG_AVAILABLE ? new Locale("en", "GB") : new Locale("en", "US"));   // British voice first: he goes to school in England
                     tts.setSpeechRate(rate);
                     if (tts.speak(text, TextToSpeech.QUEUE_FLUSH, null, id) != TextToSpeech.SUCCESS) js("spoke", id);
                 }

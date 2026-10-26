@@ -439,6 +439,31 @@
     .oct { width: 26px; }
     .wk { font-size: 14px; padding-bottom: 6px; }
   }
+  /* Writing practice */
+  .write { position: fixed; left: 10px; right: 10px; top: var(--wtop, 56px); bottom: 10px; z-index: 4; display: none; flex-direction: column; gap: 8px; }
+  body.inwrite .write { display: flex; }
+  body.inwrite .stage > :not(header), body.inwrite aside { display: none !important; }
+  body.inwrite header > :not(#lock):not(#homeBtn) { display: none !important; }
+  .wbar { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+  .wlv { font-weight: 700; font-size: 17px; white-space: nowrap; color: var(--accent); }
+  .wrow { flex: 1; min-width: 0; display: flex; gap: 4px; overflow: hidden; font-size: 20px; }
+  .wrow span { min-width: 30px; padding: 2px 8px; border-radius: 8px; text-align: center; color: var(--muted); background: #ffffff12; white-space: nowrap; }
+  .wrow span.ok { color: #12452b; background: #8ee6b5; }
+  .wrow span.wnow { color: #2a1c00; background: var(--accent); }
+  .wdots { display: flex; gap: 6px; }
+  .wdots i { width: 14px; height: 14px; border-radius: 50%; background: #ffffff26; }
+  .wdots i.on { background: var(--accent); } .wdots i.ok { background: #5fd38f; }
+  .wbar button { flex: none; border: 0; border-radius: 999px; padding: 8px 16px; font: inherit; font-size: 16px; font-weight: 700; color: #fff;
+    background: linear-gradient(#41357c, #332a66); box-shadow: 0 4px 0 #1b1540; }
+  .wbar button:active { transform: translateY(3px); box-shadow: 0 1px 0 #1b1540; }
+  .wpad { position: relative; flex: 1; min-height: 0; border-radius: 24px; background: #fffdf5; box-shadow: inset 0 0 0 3px #f1e7c9, 0 6px 0 #0003; overflow: hidden; touch-action: none; }
+  .wpad canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+  .wpad.shake { animation: wshake .35s; }
+  @keyframes wshake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+  .home .opts { gap: 3vw; }
+  .home .opts button { width: min(28vw, 300px, 62vh); }
+  .home .opts button:nth-child(3) { animation-delay: -3.2s; }
+  #homeWrite { --edge: #c2541f; background: linear-gradient(160deg, #ffc36b, #ff7a59 70%); }
 </style>
 </head>
 <body>
@@ -488,6 +513,7 @@
       <button class="set" id="qEvery"></button>
       <button class="set" id="qNeed"></button>
       <button class="set" id="qLevel"></button>
+      <button class="set" id="wLevel"></button>
       <button class="set" id="qAct">&#128200; Activity</button>
       <button class="set" id="qRes">&#128202; Results</button>
       <button class="set" id="qSens"></button>
@@ -539,7 +565,16 @@
       <g><rect x="14" y="76" width="54" height="54" rx="12" fill="#ff6fa8"/><rect x="14" y="76" width="54" height="10" rx="5" fill="#fff4"/><text x="41" y="118" font-size="38" fill="#fff" text-anchor="middle">2</text></g>
       <g><circle cx="100" cy="103" r="20" fill="#ffd86b"/><text x="100" y="116" font-size="34" fill="#7a4a00" text-anchor="middle">+</text></g>
       <g><rect x="132" y="76" width="54" height="54" rx="12" fill="#4cb8ff"/><rect x="132" y="76" width="54" height="10" rx="5" fill="#fff4"/><text x="159" y="118" font-size="38" fill="#fff" text-anchor="middle">3</text></g>
-      <circle cx="30" cy="30" r="5" fill="#fff8"/><circle cx="172" cy="44" r="4" fill="#fff8"/><circle cx="160" cy="16" r="3" fill="#fff6"/></svg><span></span></button></div></div>
+      <circle cx="30" cy="30" r="5" fill="#fff8"/><circle cx="172" cy="44" r="4" fill="#fff8"/><circle cx="160" cy="16" r="3" fill="#fff6"/></svg><span></span></button><button id="homeWrite"><svg class="art" viewBox="0 0 200 140" aria-hidden="true">
+      <rect x="14" y="24" width="150" height="106" rx="14" fill="#fffdf5"/>
+      <g stroke="#9fc3ef" stroke-width="2"><line x1="24" y1="50" x2="154" y2="50"/><line x1="24" y1="73" x2="154" y2="73" stroke-dasharray="6 5"/></g>
+      <line x1="24" y1="100" x2="154" y2="100" stroke="#ef8f9f" stroke-width="3"/>
+      <text x="30" y="99" font-size="44" font-weight="700" fill="#3d4bd6">abc</text>
+      <g class="note"><g transform="rotate(32 160 64)"><rect x="151" y="8" width="18" height="80" rx="4" fill="#ffd86b"/><rect x="151" y="8" width="18" height="13" rx="4" fill="#ff8fb1"/>
+      <path d="M151 88 L160 110 L169 88z" fill="#f5d0a0"/><path d="M157 102 L160 110 L163 102z" fill="#2b2160"/></g></g></svg><span></span></button></div></div>
+<div class="write" id="write"><div class="wbar"><div class="wlv" id="wLv"></div><div class="wrow" id="wRow"></div><div class="wdots" id="wDots"></div>
+  <button id="wShow">&#128064; <span></span></button><button id="wClear">&#8634;</button></div>
+  <div class="wpad" id="wPad"><canvas id="wBg"></canvas><canvas id="wInk"></canvas></div></div>
 <div class="eyecov" id="eyecov"><div class="big">&#128064;</div><div class="msg" id="eyemsg"></div><div class="sub" id="eyesub"></div></div>
 
 <div class="gate" id="act">
@@ -859,6 +894,49 @@
       HINT_STYLES.forEach(function (k) { var p = s[k].nok / s[k].nx; if (p > best) { best = p; win = k; } });
     return { s: s, win: win, need: HINT_TEST_NEED };
   }
+  // ---- Writing practice (UK, Year 1 -> Year 2): lower case by letter family, capitals, digits, then the tricky words ----
+  var WRITE_LEVELS = [
+    { en: "Curly caterpillar letters", es: "Letras oruga", items: "c a d o g q e s f".split(" ") },
+    { en: "Long ladder letters", es: "Letras escalera", items: "l i t u j y".split(" ") },
+    { en: "One-armed robot letters", es: "Letras robot", items: "r n m h b p k".split(" ") },
+    { en: "Zigzag letters", es: "Letras zigzag", items: "v w x z".split(" ") },
+    { en: "Capital letters", es: "Mayúsculas", items: "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("") },
+    { en: "Numbers", es: "Números", items: "0123456789".split("") },
+    { en: "Year 1 tricky words", es: "Palabras de 1.º", words: true,
+      items: "the a do to today of said says are were was is his has I you your they be he me she we no go so by my here there where love come some one once ask friend school put push pull full house our".split(" ") },
+    { en: "Year 2 tricky words", es: "Palabras de 2.º", words: true,
+      items: "door floor poor because find kind mind behind child children wild climb most only both old cold gold hold told every everybody even great break steak pretty beautiful after fast last past father class grass pass plant path bath hour move prove improve sure sugar eye could should would who whole any many clothes busy people water again half money Mr Mrs parents Christmas".split(" ") }
+  ];
+  var WORDS_NEED = 12;                                   // words written on his own before the next word level
+  // Letters go trace -> dotted -> own (rounds 1-3); words go dotted -> own (2-3)
+  function writeFirst(lv) { return WRITE_LEVELS[lv - 1].words ? 2 : 1; }
+  // How well the ink follows one stroke: cov = share of the stroke's points with ink within tol, off = share of ink farther than 1.6 tol
+  function inkCheck(tpl, ink, tol) {
+    var t2 = tol * tol, far = tol * tol * 2.56, hit = 0, off = 0, i, j, ok;
+    function sq(a, b) { var x = a[0] - b[0], y = a[1] - b[1]; return x * x + y * y; }
+    for (i = 0; i < tpl.length; i++) for (j = 0; j < ink.length; j++) if (sq(tpl[i], ink[j]) <= t2) { hit++; break; }
+    for (j = 0; j < ink.length; j++) { ok = false; for (i = 0; i < tpl.length; i++) if (sq(tpl[i], ink[j]) <= far) { ok = true; break; } if (!ok) off++; }
+    return { cov: tpl.length ? hit / tpl.length : 0, off: ink.length ? off / ink.length : 1 };
+  }
+  // Fill in the gaps of a fast stroke so no part of the line is missed: a point at least every `step`
+  function densify(g, step) {
+    var out = g.length ? [g[0]] : [];
+    for (var i = 1; i < g.length; i++) {
+      var a = g[i - 1], b = g[i], n = Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / step);
+      for (var k = 1; k <= n; k++) out.push([a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n]);
+    }
+    return out;
+  }
+  // After an item is finished in round r: the next round, the next item (fresh) or the next level (up)
+  function writeAdvance(p) {
+    var q = { lv: p.lv, i: p.i, r: p.r, words: p.words, fresh: false, up: false }, L = WRITE_LEVELS[p.lv - 1], top = WRITE_LEVELS.length;
+    if (p.r < 3) { q.r = p.r + 1; return q; }
+    q.fresh = true;
+    if (!L.words) { q.i = p.i + 1; if (q.i >= L.items.length) { q.i = 0; if (p.lv < top) { q.lv = p.lv + 1; q.up = true; } } }
+    else { q.words = p.words + 1; if (q.words >= WORDS_NEED && p.lv < top) { q.lv = p.lv + 1; q.words = 0; q.i = 0; q.up = true; } }
+    q.r = writeFirst(q.lv);
+    return q;
+  }
   // </pure>
 
   // ---- Activity log for the grown-ups (shown behind the PIN). Small aggregate counters in localStorage "actLog",
@@ -942,7 +1020,7 @@
   function save(i) { try { localStorage.setItem(KEY, String(i)); } catch (e) {} }
 
   function onYouTubeIframeAPIReady() {
-    if (player || document.body.classList.contains("math") || document.body.classList.contains("athome")) return;   // math-only mode and the start screen never load the videos
+    if (player || document.body.classList.contains("math") || document.body.classList.contains("inwrite") || document.body.classList.contains("athome")) return;   // maths, writing and the start screen never load the videos
     player = new YT.Player("player", {
       playerVars: {
         listType: "playlist", list: PLAYLIST, index: saved(),
@@ -2265,7 +2343,7 @@
       curHs = cfg.style === "test" ? hintPick(log, Math.random()) : cfg.style;
       anim.clear($("qhost"), $("qsvg"));
       if (useVoice && voice.state() === "off") voice.prepare();
-      $("qtitle").innerHTML = earnOnly ? "&#10135; " + L("Earn more time with math!", "¡Gana más tiempo con mates!") : "&#129504; " + (math ? L("Math time!", "¡Hora de mates!") : L("Math time! Solve it to play the next lesson", "¡Hora de mates! Resuélvelo para ver la siguiente lección"));
+      $("qtitle").innerHTML = earnOnly ? "&#10135; " + L("Earn more time with maths!", "¡Gana más tiempo con mates!") : "&#129504; " + (math ? L("Math time!", "¡Hora de mates!") : L("Maths time! Solve it to play the next lesson", "¡Hora de mates! Resuélvelo para ver la siguiente lección"));
       $("qprog").textContent = math ? "\u2b50 " + stars + "   \u00b7   " + L("Level ", "Nivel ") + level : "";
       $("qstreak").textContent = guard.streakText();
       showHearts();
@@ -2523,7 +2601,7 @@
       show: show,
       mathStart: function () { stars = 0; sessRight = 0; show(); },
       earnStart: function () { earnOnly = true; stars = 0; sessRight = 0; show(); },   // locked for screen time: a math session that only earns minutes
-      resume: function () { if (appMode.home()) return; if (appMode.math()) appMode.start(); else if (get("quizPending", "0") === "1") show(); },   // after a lock
+      resume: function () { if (appMode.home() || appMode.write()) return; if (appMode.math()) appMode.start(); else if (get("quizPending", "0") === "1") show(); },   // after a lock
       log: function () { return log; },
       practising: function () { return { list: review.slice(), mastered: masteredToday() }; },
       mathStop: function () {
@@ -2550,17 +2628,327 @@
 
   // ---- App mode: Piano lessons (videos + play-along + the quiz between lessons) or Math only (a non-stop quiz).
   // The start screen lets him pick; the grown-up can instead fix the start to one mode ("startMode": choose | piano | math).
+  // ---- Writing: handwriting practice on school lines (top, dashed middle, red base line, tail line).
+  // Each stroke is checked in order: start at the green dot, follow the line. Round 1 = a pen shows it, then trace a thick guide,
+  // 2 = dotted line, 3 = on his own (a small model in the corner). Finger or the MatePad pen (pressure = ink width; while the pen is
+  // in use a resting palm is ignored). Progress in "writeProg", every try in "writeLog" (read over USB). ----
+  var writing = (function () {
+    // Glyphs in units: top line y=0, middle 45, base line 100, tails to 145. Strokes split by "|", in the order they are written (UK formation)
+    var G = {
+      c: "M71 55 A27 27.5 0 1 0 71 90",
+      a: "M74 57 C68 49 60 45 50 45 C35 45 23 57 23 72.5 C23 88 35 100 50 100 C62 100 72 92 76 80 L77 45 L77 100",
+      d: "M74 57 C68 49 60 45 50 45 C35 45 23 57 23 72.5 C23 88 35 100 50 100 C62 100 72 92 76 80 L77 0 L77 100",
+      o: "M70 52 C64 47 57 45 50 45 C35 45 23 57 23 72.5 C23 88 35 100 50 100 C65 100 77 88 77 72.5 C77 62 74 56 70 52",
+      g: "M74 57 C68 49 60 45 50 45 C35 45 23 57 23 72.5 C23 88 35 100 50 100 C62 100 72 92 76 80 L77 45 L77 125 C77 140 66 146 52 146 C40 146 31 142 25 135",
+      q: "M74 57 C68 49 60 45 50 45 C35 45 23 57 23 72.5 C23 88 35 100 50 100 C62 100 72 92 76 80 L77 45 L77 145",
+      e: "M25 73 L76 73 C76 56 65 45 50 45 C35 45 24 57 24 72.5 C24 88 35 100 51 100 C61 100 69 96 74 90",
+      s: "M73 53 C67 47 59 45 50 45 C37 45 28 51 28 59 C28 68 38 71 50 73 C63 75 74 79 74 88 C74 96 64 100 50 100 C40 100 31 97 25 91",
+      f: "M70 8 C65 3 59 0 53 0 C42 0 36 8 36 20 L36 100|M18 45 L60 45",
+      l: "M50 0 L50 100",
+      i: "M50 45 L50 100|M50 24 L50 26",
+      t: "M45 15 L45 92 C45 98 50 100 56 100 C61 100 65 98 68 95|M27 45 L65 45",
+      u: "M24 45 L24 78 C24 92 34 100 48 100 C62 100 76 92 76 78 L76 45 L76 100",
+      j: "M58 45 L58 125 C58 140 49 146 38 146 C28 146 21 141 17 134|M58 24 L58 26",
+      y: "M24 45 L24 78 C24 92 34 100 48 100 C62 100 76 92 76 78 L76 45 L76 125 C76 140 65 146 51 146 C39 146 30 142 24 135",
+      r: "M24 45 L24 100 L24 70 C28 54 40 45 54 45 C62 45 68 47 74 52",
+      n: "M22 45 L22 100 L22 68 C26 52 38 45 50 45 C66 45 76 54 76 70 L76 100",
+      m: "M14 45 L14 100 L14 66 C17 52 25 45 34 45 C45 45 51 53 51 66 L51 100 L51 66 C54 52 62 45 71 45 C82 45 88 53 88 66 L88 100",
+      h: "M22 0 L22 100 L22 68 C26 52 38 45 50 45 C66 45 76 54 76 70 L76 100",
+      b: "M24 0 L24 100 L24 72 C24 57 36 45 51 45 C66 45 77 57 77 72.5 C77 88 66 100 51 100 C36 100 24 88 24 76",
+      p: "M24 45 L24 145 L24 72 C24 57 36 45 51 45 C66 45 77 57 77 72.5 C77 88 66 100 51 100 C36 100 24 88 24 76",
+      k: "M22 0 L22 100|M68 45 L24 74 L74 100",
+      v: "M20 45 L50 100 L80 45",
+      w: "M8 45 L29 100 L50 55 L71 100 L92 45",
+      x: "M22 45 L78 100|M78 45 L22 100",
+      z: "M22 45 L78 45 L22 100 L78 100",
+      A: "M50 0 L12 100|M50 0 L88 100|M27 62 L73 62",
+      B: "M18 0 L18 100|M18 0 L52 0 C70 0 78 10 78 24 C78 38 68 48 52 48 L18 48 L56 48 C74 48 84 60 84 74 C84 90 72 100 56 100 L18 100",
+      C: "M80 15 C72 5 62 0 52 0 C28 0 12 22 12 50 C12 78 28 100 52 100 C63 100 73 95 81 85",
+      D: "M18 0 L18 100|M18 0 L42 0 C70 0 86 22 86 50 C86 78 70 100 42 100 L18 100",
+      E: "M18 0 L18 100|M18 0 L80 0|M18 50 L70 50|M18 100 L80 100",
+      F: "M18 0 L18 100|M18 0 L80 0|M18 50 L70 50",
+      G: "M80 15 C72 5 62 0 52 0 C28 0 12 22 12 50 C12 78 28 100 52 100 C70 100 86 88 86 62 L86 58 L58 58",
+      H: "M16 0 L16 100|M84 0 L84 100|M16 50 L84 50",
+      I: "M50 0 L50 100",
+      J: "M70 0 L70 70 C70 90 59 100 44 100 C30 100 20 92 16 80",
+      K: "M18 0 L18 100|M80 0 L18 62|M40 44 L84 100",
+      L: "M18 0 L18 100 L80 100",
+      M: "M12 0 L12 100|M12 0 L50 64 L88 0 L88 100",
+      N: "M16 0 L16 100|M16 0 L84 100 L84 0",
+      O: "M50 0 C26 0 10 22 10 50 C10 78 26 100 50 100 C74 100 90 78 90 50 C90 22 74 0 50 0",
+      P: "M18 0 L18 100|M18 0 L52 0 C72 0 82 12 82 27 C82 42 72 54 52 54 L18 54",
+      Q: "M50 0 C26 0 10 22 10 50 C10 78 26 100 50 100 C74 100 90 78 90 50 C90 22 74 0 50 0|M60 72 L90 104",
+      R: "M18 0 L18 100|M18 0 L52 0 C72 0 82 12 82 27 C82 42 72 54 52 54 L18 54|M50 54 L84 100",
+      S: "M80 14 C72 4 62 0 50 0 C30 0 18 10 18 25 C18 42 34 46 50 50 C68 54 84 59 84 76 C84 92 70 100 50 100 C35 100 23 94 15 84",
+      T: "M50 0 L50 100|M12 0 L88 0",
+      U: "M16 0 L16 64 C16 88 30 100 50 100 C70 100 84 88 84 64 L84 0",
+      V: "M12 0 L50 100 L88 0",
+      W: "M5 0 L27 100 L50 30 L73 100 L95 0",
+      X: "M16 0 L84 100|M84 0 L16 100",
+      Y: "M14 0 L50 50|M86 0 L50 50 L50 100",
+      Z: "M16 0 L84 0 L16 100 L84 100",
+      "0": "M50 0 C30 0 18 22 18 50 C18 78 30 100 50 100 C70 100 82 78 82 50 C82 22 70 0 50 0",
+      "1": "M34 18 L54 0 L54 100",
+      "2": "M20 24 C22 10 34 0 50 0 C67 0 79 11 79 26 C79 44 58 60 20 100 L82 100",
+      "3": "M22 12 C29 4 39 0 50 0 C65 0 77 9 77 23 C77 38 65 47 48 47 C68 47 81 58 81 73 C81 89 68 100 50 100 C37 100 26 95 19 86",
+      "4": "M62 0 L14 66 L86 66|M62 0 L62 100",
+      "5": "M24 0 L22 44 C32 38 41 36 50 36 C68 36 81 50 81 68 C81 87 67 100 49 100 C36 100 26 95 19 86|M24 0 L76 0",
+      "6": "M72 6 C65 2 58 0 50 0 C30 0 18 24 18 55 C18 84 32 100 50 100 C68 100 82 87 82 69 C82 51 69 39 52 39 C37 39 25 47 19 60",
+      "7": "M16 0 L84 0 L38 100",
+      "8": "M76 18 C76 8 64 0 50 0 C36 0 24 9 24 23 C24 38 38 45 50 49 C66 54 80 62 80 76 C80 90 67 100 50 100 C33 100 20 90 20 76 C20 62 34 54 50 49 C62 45 76 38 76 18",
+      "9": "M78 24 C74 10 63 2 50 2 C35 2 23 13 23 28 C23 43 35 54 50 54 C65 54 78 43 78 24 L78 100"
+    };
+    var NS = "http://www.w3.org/2000/svg", svg = document.createElementNS(NS, "svg"), pe = document.createElementNS(NS, "path"), cache = {};
+    svg.setAttribute("width", "0"); svg.setAttribute("height", "0"); svg.style.position = "absolute"; svg.appendChild(pe); document.body.appendChild(svg);
+    function glyph(ch) {                                   // the strokes as points every 2 units, plus the letter's left and right edge
+      if (cache[ch]) return cache[ch];
+      if (!G[ch]) return null;
+      var x0 = 1e9, x1 = -1e9, strokes = G[ch].split("|").map(function (d) {
+        pe.setAttribute("d", d);
+        var len = pe.getTotalLength(), n = Math.max(2, Math.ceil(len / 2)), pts = [];
+        for (var i = 0; i <= n; i++) { var p = pe.getPointAtLength(len * i / n); pts.push([p.x, p.y]); x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); }
+        pts.len = len; return pts;
+      });
+      return (cache[ch] = { strokes: strokes, x0: x0, x1: x1 });
+    }
+    function layout(item) {                                // a word: the letters side by side, 18 units apart
+      var x = 0, out = [], gap = item.length > 1 ? 18 : 0;
+      item.split("").forEach(function (ch) {
+        var g = glyph(ch); if (!g) { x += 40; return; }
+        g.strokes.forEach(function (s) { var t = s.map(function (p) { return [p[0] - g.x0 + x, p[1]]; }); t.len = s.len; out.push(t); });
+        x += g.x1 - g.x0 + gap;
+      });
+      return { strokes: out, w: Math.max(20, x - gap) };
+    }
+
+    var pad = document.getElementById("wPad"), bgc = document.getElementById("wBg"), inc = document.getElementById("wInk");
+    var bx = bgc.getContext("2d"), ix = inc.getContext("2d", { desynchronized: true });   // low-latency ink for the pen
+    var on = false, raf = 0, cur = null, T = { s: 1, ox: 0, oy: 0 }, tol = 12, W = 0, H = 0, rect = null;
+    var active = null, penAt = 0, penUsed = false, demo = null, busy = false, saidAt = 0;
+    function get(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
+    function put(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    var prog = null;
+    try { prog = JSON.parse(get("writeProg", "null")); } catch (e) {}
+    if (!prog || !(prog.lv >= 1 && prog.lv <= WRITE_LEVELS.length)) prog = { lv: 1, i: 0, r: 1, words: 0, item: null, recent: [] };
+    function save() { put("writeProg", JSON.stringify(prog)); }
+    function logTry(ok, why) {
+      var log; try { log = JSON.parse(get("writeLog", "[]")); } catch (e) { log = []; }
+      var d = new Date(), two = function (n) { return (n < 10 ? "0" : "") + n; };
+      log.push({ d: d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()) + " " + two(d.getHours()) + ":" + two(d.getMinutes()),
+        it: cur.item, lv: prog.lv, r: prog.r, ok: ok, why: why || "", pen: penUsed });
+      if (log.length > 3000) log = log.slice(-3000);
+      put("writeLog", JSON.stringify(log));
+    }
+    function lvl() { return WRITE_LEVELS[prog.lv - 1]; }
+    function itemNow() {
+      var L_ = lvl();
+      if (!L_.words) return L_.items[prog.i % L_.items.length];
+      if (!prog.item || L_.items.indexOf(prog.item) < 0) {
+        var rest = L_.items.filter(function (w) { return (prog.recent || []).indexOf(w) < 0; });
+        prog.item = rest[Math.floor(Math.random() * rest.length)] || L_.items[0];
+        save();
+      }
+      return prog.item;
+    }
+    function nameOf(item) {                                // what the voice says: "small a" / "capital A" / "7" / the word
+      if (item.length > 1 || /[0-9]/.test(item)) return item;
+      var up = item !== item.toLowerCase();
+      return up ? L("capital " + item, item + " mayúscula") : L("small " + item.toUpperCase(), item + " minúscula");
+    }
+    function tell(text, done) { saidAt = Date.now(); if (!voice.tell(text, done) && done) setTimeout(done, 300); }
+
+    // ---- geometry: units <-> pixels ----
+    function tpl(k) { var st = cur.lay.strokes[k]; if (!cur.dx) return st; var t = st.map(function (p) { return [p[0] + cur.dx, p[1]]; }); t.len = st.len; return t; }
+    function X(u) { return T.ox + u * T.s; } function Y(u) { return T.oy + u * T.s; }
+    function resize() {
+      var r = window.devicePixelRatio || 1;
+      W = pad.clientWidth; H = pad.clientHeight; if (!W || !H) return;
+      [bgc, inc].forEach(function (c) { c.width = Math.round(W * r); c.height = Math.round(H * r); c.getContext("2d").setTransform(r, 0, 0, r, 0, 0); });
+      if (!cur) return;
+      var w = cur.lay.w, s = Math.min(H / 175, (W - 60) / (w + 30), 3.2);
+      T = { s: s, ox: (W - w * s) / 2, oy: (H - 145 * s) / 2 };
+      tol = Math.max(16 / s, 11) * (penUsed ? 0.85 : 1);
+      drawInk(); kick();
+    }
+    new ResizeObserver(function () { if (on) resize(); }).observe(pad);
+
+    // ---- drawing ----
+    function poly(c, st, n) { c.beginPath(); c.moveTo(X(st[0][0]), Y(st[0][1])); for (var i = 1; i < (n || st.length); i++) c.lineTo(X(st[i][0]), Y(st[i][1])); c.stroke(); }
+    function drawBg(t) {
+      var c = bx; c.clearRect(0, 0, W, H); c.lineCap = "round"; c.lineJoin = "round";
+      [[0, "#9fc3ef", [], 2], [45, "#9fc3ef", [12, 9], 2], [100, "#ef8f9f", [], 3], [145, "#cfdcef", [], 2]].forEach(function (l) {
+        c.setLineDash(l[2]); c.strokeStyle = l[1]; c.lineWidth = l[3]; c.beginPath(); c.moveTo(14, Y(l[0])); c.lineTo(W - 14, Y(l[0])); c.stroke();
+      });
+      c.setLineDash([]);
+      if (!cur) return;
+      var r = prog.r, n = cur.lay.strokes.length, word = cur.item.length > 1;
+      for (var k = 0; k < n; k++) {
+        if (k < cur.k) continue;
+        var st = tpl(k), now = k === cur.k;
+        if (r === 1) { c.strokeStyle = "#ebe5fa"; c.lineWidth = tol * T.s * 1.6; poly(c, st); }
+        if (r < 3 || (word && r === 3)) {
+          c.setLineDash([2, 11]); c.lineWidth = r === 3 ? 4 : now ? 6 : 5;
+          c.strokeStyle = r === 3 ? "#ece6f8" : now ? "#7b6fd0" : "#cbc3ec"; poly(c, st); c.setLineDash([]);
+        }
+      }
+      if (cur.k < n && (r < 3 || cur.hint)) {
+        var s0 = tpl(cur.k), rr = Math.max(11, tol * T.s * 0.42);
+        if (r < 3 && t && !demo && s0.len > 8) {           // a bright dot runs along the stroke: which way to go
+          var f = (t % 1700) / 1300; if (f <= 1) { var p = s0[Math.min(s0.length - 1, Math.floor(f * (s0.length - 1)))];
+            c.fillStyle = "rgba(255,170,40,.85)"; c.beginPath(); c.arc(X(p[0]), Y(p[1]), rr * 0.6, 0, 7); c.fill(); }
+        }
+        c.fillStyle = "#2fbf71"; c.beginPath(); c.arc(X(s0[0][0]), Y(s0[0][1]), rr, 0, 7); c.fill();
+        c.fillStyle = "#fff"; c.font = "700 " + Math.round(rr * 1.2) + "px Fredoka, sans-serif"; c.textAlign = "center"; c.textBaseline = "middle";
+        c.fillText(String(cur.k + 1), X(s0[0][0]), Y(s0[0][1]) + 1);
+      }
+      if (r === 3 && !word) {                              // the model, small, top left
+        var m = Math.min(0.32 * T.s, 150 / cur.lay.w);
+        c.strokeStyle = "#b9b2d6"; c.lineWidth = Math.max(3, m * 7);
+        cur.lay.strokes.forEach(function (st) { c.beginPath(); st.forEach(function (p, i) { var x = 24 + p[0] * m, y = 18 + p[1] * m; if (i) c.lineTo(x, y); else c.moveTo(x, y); }); c.stroke(); });
+      }
+      if (demo) drawDemo(t);
+    }
+    function drawDemo(t) {                                 // a pen writes the item stroke by stroke
+      var el_ = t - demo.t0, c = bx, n = cur.lay.strokes.length;
+      c.strokeStyle = "#ff8a3d"; c.lineWidth = Math.max(6, tol * T.s * 0.42); c.lineCap = "round";
+      for (var k = 0; k < n; k++) {
+        var st = tpl(k), d = 450 + st.len * 9;
+        if (el_ <= 0) break;
+        var f = Math.min(1, el_ / d), m = Math.max(2, Math.ceil(f * st.length));
+        poly(c, st, m);
+        if (f < 1) { var p = st[m - 1]; c.fillStyle = "#ff5a1f"; c.beginPath(); c.arc(X(p[0]), Y(p[1]), c.lineWidth * 0.9, 0, 7); c.fill(); return; }
+        el_ -= d + 220;
+      }
+      if (el_ > 250) { demo = null; if (prog.r === 1) tell(L("Your turn! Start at the green dot.", "¡Te toca! Empieza en el punto verde.")); }
+    }
+    function frame(t) { raf = 0; if (!on || !cur) return; drawBg(t); if (demo || prog.r < 3) raf = requestAnimationFrame(frame); }
+    function kick() { if (!raf && on) raf = requestAnimationFrame(frame); }
+    function inkW(p) { return Math.max(5, tol * T.s * 0.42) * p[2]; }
+    function seg(a, b, col) { ix.strokeStyle = col; ix.lineWidth = inkW(b); ix.lineCap = "round"; ix.beginPath(); ix.moveTo(X(a[0]), Y(a[1])); ix.lineTo(X(b[0]), Y(b[1])); ix.stroke(); }
+    function gesture(g, col) { if (g.length === 1) seg(g[0], g[0], col); for (var i = 1; i < g.length; i++) seg(g[i - 1], g[i], col); }
+    function drawInk(bad) {
+      ix.clearRect(0, 0, W, H); if (!cur) return;
+      cur.done.forEach(function (gs) { gs.forEach(function (g) { gesture(g, "#1fa463"); }); });
+      cur.ink.forEach(function (g) { gesture(g, bad ? "#e5484d" : "#3d4bd6"); });
+    }
+
+    // ---- input ----
+    function pt(e) { var f = e.pointerType === "pen" && e.pressure > 0 ? 0.5 + Math.min(1, e.pressure) * 0.9 : 1;
+      return [(e.clientX - rect.left - T.ox) / T.s, (e.clientY - rect.top - T.oy) / T.s, f]; }
+    function palm(e) { return e.pointerType === "touch" && (Date.now() - penAt < 1500 || (e.width > 45 && e.height > 45)); }
+    inc.addEventListener("pointerdown", function (e) {
+      e.preventDefault();
+      if (e.pointerType === "pen") { penAt = Date.now(); if (!penUsed) { penUsed = true; resize(); } }
+      if (active !== null || palm(e) || !cur || busy || cur.k >= cur.lay.strokes.length) return;
+      demo = null; active = e.pointerId; rect = inc.getBoundingClientRect();
+      try { inc.setPointerCapture(e.pointerId); } catch (x) {}
+      var p = pt(e);
+      if (prog.r === 3 && cur.item.length === 1 && !cur.k && !cur.ink.length) { cur.dx = p[0] - cur.lay.strokes[0][0][0]; kick(); }   // on his own: the letter goes where he starts it
+      cur.ink.push([p]); seg(p, p, "#3d4bd6");
+    });
+    inc.addEventListener("pointermove", function (e) {
+      if (e.pointerType === "pen") penAt = Date.now();
+      if (e.pointerId !== active) return;
+      var g = cur.ink[cur.ink.length - 1], evs = (e.getCoalescedEvents && e.getCoalescedEvents()) || [];
+      if (!evs.length) evs = [e];
+      evs.forEach(function (ev) { var p = pt(ev), q = g[g.length - 1]; if (Math.hypot(p[0] - q[0], p[1] - q[1]) * T.s < 1.5) return; g.push(p); seg(q, p, "#3d4bd6"); });
+    });
+    function up(e) { if (e.pointerId !== active) return; active = null; if (e.pointerType === "pen") penAt = Date.now(); judge(); }
+    inc.addEventListener("pointerup", up); inc.addEventListener("pointercancel", up);
+    inc.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+
+    // ---- checking ----
+    function judge() {
+      var st = tpl(cur.k), g = cur.ink[cur.ink.length - 1], t_ = tol * (prog.r === 3 ? 1.25 : 1);
+      if (st.len < 8) {                                    // the dot on i and j
+        var near = g.every(function (p) { return Math.hypot(p[0] - st[0][0], p[1] - st[0][1]) < t_ * 1.7; });
+        return near ? strokeOk() : miss("off");
+      }
+      if (cur.ink.length === 1 && Math.hypot(g[0][0] - st[0][0], g[0][1] - st[0][1]) > t_ * 1.9) return miss("start");
+      var all = []; cur.ink.forEach(function (x) { all = all.concat(densify(x, 2)); });
+      var c = inkCheck(st, all, t_);
+      if (c.off > 0.3) return miss("off");
+      if (c.cov >= 0.8) return strokeOk();
+      if (cur.ink.length >= 3) return miss("short");
+    }                                                      // otherwise he lifted in the middle: carry on
+    function strokeOk() {
+      cur.done.push(cur.ink); cur.ink = []; cur.k++; cur.hint = false; drawInk(); kick();
+      if (cur.k >= cur.lay.strokes.length) itemDone();
+    }
+    function miss(why) {
+      cur.tries++; logTry(false, why); drawInk(true);
+      pad.classList.remove("shake"); void pad.offsetWidth; pad.classList.add("shake");
+      setTimeout(function () { cur.ink = []; drawInk(); }, 450);
+      if (prog.r === 3) cur.hint = true;
+      kick();
+      if (Date.now() - saidAt > 3500) tell(why === "start" ? L("Start at the green dot.", "Empieza en el punto verde.")
+        : prog.r === 3 ? L("Nearly! Try again.", "¡Casi! Otra vez.") : L("Follow the line. Try again!", "Sigue la línea. ¡Otra vez!"));
+    }
+    var PRAISE_W = [["Brilliant!", "¡Genial!"], ["Super writing!", "¡Qué bien escrito!"], ["Well done!", "¡Bien hecho!"], ["Fantastic!", "¡Fantástico!"], ["Great job!", "¡Buen trabajo!"]];
+    function itemDone() {
+      busy = true; logTry(true); confetti();
+      var pr = PRAISE_W[Math.floor(Math.random() * PRAISE_W.length)], item = cur.item;
+      var nx = writeAdvance(prog);
+      if (nx.fresh && lvl().words) { prog.recent = (prog.recent || []).concat(item).slice(-10); prog.item = null; }
+      prog.lv = nx.lv; prog.i = nx.i; prog.r = nx.r; prog.words = nx.words; save();
+      var msg = L(pr[0], pr[1]) + " " + nameOf(item) + (nx.up ? ". " + L("Level up! Now: ", "¡Subes de nivel! Ahora: ") + L(lvl().en, lvl().es) + "." : "");
+      if (nx.up) confetti(140);
+      var go = function () { if (!busy) return; busy = false; if (on) next(nx.fresh); };
+      tell(msg, function () { setTimeout(go, 700); });
+      setTimeout(go, 6000);
+    }
+    function next(fresh) {
+      var item = itemNow();
+      if (fresh || !cur || cur.item !== item) cur = { item: item, lay: layout(item), k: 0, ink: [], done: [], tries: 0, dx: 0, hint: false };
+      else { cur.k = 0; cur.ink = []; cur.done = []; cur.dx = 0; cur.hint = false; }
+      bar(); resize(); announce();
+    }
+    function announce() {
+      var nm = nameOf(cur.item);
+      if (prog.r === 1) { tell(L("Watch: ", "Mira: ") + nm); demo = { t0: performance.now() + 500 }; kick(); }
+      else if (prog.r === 2) tell(cur.item.length > 1 ? L("Write the word: ", "Escribe la palabra: ") + nm : L("Now on the dotted line: ", "Ahora sobre la línea de puntos: ") + nm);
+      else tell(L("Now on your own: ", "Ahora tú solo: ") + nm);
+    }
+    function bar() {
+      var L_ = lvl();
+      document.getElementById("wLv").textContent = L("Level ", "Nivel ") + prog.lv + " · " + L(L_.en, L_.es);
+      var row = document.getElementById("wRow");
+      if (!L_.words) row.innerHTML = L_.items.map(function (x, k) { return "<span class=\"" + (k < prog.i ? "ok" : k === prog.i ? "wnow" : "") + "\">" + x + "</span>"; }).join("");
+      else row.innerHTML = "<span class=\"wnow\">" + cur.item + "</span><span>" + Math.min(prog.words, WORDS_NEED) + " / " + WORDS_NEED + "</span>";
+      var dots = "", f = writeFirst(prog.lv);
+      for (var r = f; r <= 3; r++) dots += "<i class=\"" + (r < prog.r ? "ok" : r === prog.r ? "on" : "") + "\"></i>";
+      document.getElementById("wDots").innerHTML = dots;
+    }
+    document.getElementById("wShow").onclick = function () { if (!cur || busy) return; demo = { t0: performance.now() }; kick(); };
+    document.getElementById("wClear").onclick = function () { if (!cur || busy) return; cur.k = 0; cur.ink = []; cur.done = []; cur.dx = 0; drawInk(); kick(); };
+    onLang(function () { document.querySelector("#wShow span").textContent = L("Show me", "Enséñame"); if (cur) bar(); });
+    function top() { var h = document.querySelector("header"); if (h) document.documentElement.style.setProperty("--wtop", Math.round(h.getBoundingClientRect().bottom + 8) + "px"); }
+    window.addEventListener("resize", function () { if (on) top(); });
+    return {
+      start: function () { on = true; busy = false; requestAnimationFrame(function () { top(); next(false); }); },
+      stop: function () { on = false; busy = false; demo = null; active = null; if (raf) cancelAnimationFrame(raf); raf = 0; },
+      level: function () { return prog.lv; },
+      levelName: function () { return lvl().en; },
+      peek: function () { return cur && { item: cur.item, k: cur.k, n: cur.lay.strokes.length, r: prog.r, lv: prog.lv, i: prog.i, T: T, tol: tol, dx: cur.dx, busy: busy, strokes: cur.lay.strokes }; },   // for the grown-up's computer
+      setLevel: function (n) { prog = { lv: n, i: 0, r: writeFirst(n), words: 0, item: null, recent: [] }; save(); cur = null; if (on) next(true); }
+    };
+  })();
+
   var appMode = (function () {
     var m = "piano", start = "choose", atHome = false, homeEl = document.getElementById("home");
-    try { m = localStorage.getItem("appMode") === "math" ? "math" : "piano"; var sm = localStorage.getItem("startMode"); if (sm === "piano" || sm === "math") start = sm; } catch (e) {}
+    try { m = localStorage.getItem("appMode"); if (m !== "math" && m !== "write") m = "piano"; var sm = localStorage.getItem("startMode"); if (sm === "piano" || sm === "math" || sm === "write") start = sm; } catch (e) {}
     function apply(next) {
       atHome = false; document.body.classList.remove("athome"); homeEl.classList.remove("on");
       m = next;
       try { localStorage.setItem("appMode", m); } catch (e) {}
-      document.body.classList.toggle("math", m === "math");
+      document.body.classList.toggle("math", m === "math"); document.body.classList.toggle("inwrite", m === "write");
+      if (m !== "write") writing.stop();
       if (m === "math") {
         if (player && player.pauseVideo) player.pauseVideo();
         quiz.mathStop(); quiz.mathStart();
+      } else if (m === "write") {
+        if (player && player.pauseVideo) player.pauseVideo();
+        quiz.mathStop(); writing.start();
       } else {
         quiz.mathStop();
         if (!player && window.YT && YT.Player) onYouTubeIframeAPIReady();   // first time in this run
@@ -2568,22 +2956,25 @@
       }
     }
     function home() {
-      quiz.mathStop(); voice.hush(true);
+      quiz.mathStop(); writing.stop(); voice.hush(true);
       if (player && player.pauseVideo) player.pauseVideo();
-      atHome = true; document.body.classList.remove("math"); document.body.classList.add("athome"); homeEl.classList.add("on");
+      atHome = true; document.body.classList.remove("math", "inwrite"); document.body.classList.add("athome"); homeEl.classList.add("on");
     }
     function fixed() { document.body.classList.toggle("fixedStart", start !== "choose"); }
     onLang(function () {
       document.getElementById("homeHi").textContent = L("Hi! What do you want to do?", "¡Hola! ¿Qué quieres hacer?");
       document.querySelector("#homePiano span").textContent = L("Piano lessons", "Lecciones de piano");
-      document.querySelector("#homeMath span").textContent = L("Math", "Mates");
+      document.querySelector("#homeMath span").textContent = L("Maths", "Mates");
+      document.querySelector("#homeWrite span").textContent = L("Writing", "Escritura");
     });
     document.getElementById("homePiano").onclick = function () { apply("piano"); };
     document.getElementById("homeMath").onclick = function () { apply("math"); };
+    document.getElementById("homeWrite").onclick = function () { apply("write"); };
     document.getElementById("homeBtn").onclick = function () { if (start === "choose" && !(quiz.isOpen() && m !== "math")) home(); };   // never a way out of the quiz between lessons
     fixed();
     return {
       math: function () { return m === "math"; },
+      write: function () { return m === "write"; },
       home: function () { return atHome; },
       startMode: function () { return start; },
       setStart: function (s) { start = s; try { localStorage.setItem("startMode", s); } catch (e) {} fixed(); if (s === "choose") home(); else apply(s); },
@@ -2687,15 +3078,15 @@
     step();
     function words() {                                            // [icon, headline, line under it] for the lock screen
       var r = g.lock.r, u = g.lock.until ? new Date(g.lock.until) : null;
-      if (r === "time") return ["\u23f0", es() ? "Se acab\u00f3 el tiempo de pantalla por hoy" : "Screen time is over for today", es() ? "Pide a mam\u00e1 o a pap\u00e1" : "Ask Mom or Dad"];
+      if (r === "time") return ["\u23f0", es() ? "Se acab\u00f3 el tiempo de pantalla por hoy" : "Screen time is over for today", es() ? "Pide a mam\u00e1 o a pap\u00e1" : "Ask Mum or Dad"];
       return ["\ud83d\uded1", es() ? "Hora de descansar" : "Time for a break",
-        u ? (es() ? "Vuelve a las " : "Back at ") + two(u.getHours()) + ":" + two(u.getMinutes()) : es() ? "Pide a mam\u00e1 o a pap\u00e1 que lo desbloqueen" : "Ask Mom or Dad to unlock"];
+        u ? (es() ? "Vuelve a las " : "Back at ") + two(u.getHours()) + ":" + two(u.getMinutes()) : es() ? "Pide a mam\u00e1 o a pap\u00e1 que lo desbloqueen" : "Ask Mum or Dad to unlock"];
     }
     function canEarn() { return !!g.lock && g.lock.r === "time" && cfg.earn && g.e < cfg.cap; }
     function render() {
       var w = words();
       $("lkIcon").textContent = w[0]; $("lkMsg").textContent = w[1]; $("lkSub").textContent = w[2];
-      $("lkEarn").hidden = !canEarn(); $("lkEarn").textContent = es() ? "\u2797 Gana m\u00e1s tiempo con mates" : "\u2797 Earn more time with math";
+      $("lkEarn").hidden = !canEarn(); $("lkEarn").textContent = es() ? "\u2797 Gana m\u00e1s tiempo con mates" : "\u2797 Earn more time with maths";
     }
     function apply() {
       var l = !!g.lock;
@@ -2874,10 +3265,11 @@
     // Quiz settings, behind the PIN; each tap cycles to the next choice
     function label() {
       var c = quiz.cfg;
-      $("qOn").textContent = "Math quiz: " + (c.on ? "ON" : "OFF");
+      $("qOn").textContent = "Maths quiz: " + (c.on ? "ON" : "OFF");
       $("qEvery").textContent = "Quiz after every " + c.every + " lesson" + (c.every > 1 ? "s" : "");
       $("qNeed").textContent = "Correct answers needed: " + c.need;
       $("qLevel").textContent = "Level: " + c.level + " (tap to change)";
+      $("wLevel").textContent = "✍️ Writing level: " + writing.level() + " – " + writing.levelName() + " (tap to change)";
       $("qEvery").disabled = $("qNeed").disabled = $("qLevel").disabled = !c.on;
     }
     function vlabel() {
@@ -2889,7 +3281,7 @@
       $("vNote").textContent = voice.note();
     }
     function mlabel() {
-      $("qMode").textContent = "Start screen: " + { choose: "🏠 he chooses", piano: "🎹 Piano lessons", math: "➗ Math only" }[appMode.startMode()] + " (tap to change)";
+      $("qMode").textContent = "Start screen: " + { choose: "🏠 he chooses", piano: "🎹 Piano lessons", math: "➗ Maths only", write: "✍️ Writing only" }[appMode.startMode()] + " (tap to change)";
       $("qTry").disabled = appMode.math();
     }
     function elabel() {
@@ -2915,12 +3307,13 @@
     $("vRead").onclick = function () { voice.setRead(!voice.cfg.read); vlabel(); };
     $("vFb").onclick = function () { voice.setFb(!voice.cfg.fb); vlabel(); };
     $("vLang").onclick = function () { voice.setLang(voice.cfg.lang === "es" ? "en" : "es"); relabelAll(); vlabel(); };
-    $("qMode").onclick = function () { appMode.setStart({ choose: "piano", piano: "math", math: "choose" }[appMode.startMode()]); mlabel(); closeGate(); };
+    $("qMode").onclick = function () { appMode.setStart({ choose: "piano", piano: "math", math: "write", write: "choose" }[appMode.startMode()]); mlabel(); closeGate(); };
     function cycle(list, v) { return list[(list.indexOf(v) + 1) % list.length]; }
     $("qOn").onclick = function () { quiz.cfg.on = !quiz.cfg.on; quiz.save(); label(); };
     $("qEvery").onclick = function () { quiz.cfg.every = cycle([1, 2, 3, 4], quiz.cfg.every); quiz.save(); label(); };
     $("qNeed").onclick = function () { quiz.cfg.need = cycle([1, 2, 3], quiz.cfg.need); quiz.save(); label(); };
     $("qLevel").onclick = function () { quiz.cfg.level = cycle([1, 2, 3, 4, 5, 6, 7], quiz.cfg.level); label(); };
+    $("wLevel").onclick = function () { writing.setLevel(writing.level() % WRITE_LEVELS.length + 1); label(); };
 
     // Results panel: today / all time, level, streak, and the last 20 mistakes
     function two(n) { return n < 10 ? "0" + n : "" + n; }
@@ -2981,7 +3374,7 @@
     }
     function dayRows(list) {   // list of day records
       var nn = 0, pa = 0, mt = 0, ey = 0; list.forEach(function (d) { nn += d.nn; pa += d.pa; mt += d.mt || 0; ey += d.ey || 0; });
-      return row("Too close to the screen", ey + (ey === 1 ? " time" : " times")) + row("Math-only time", mins(mt)) + row("Play along", mins(pa)) + row("Notes played", nn) +
+      return row("Too close to the screen", ey + (ey === 1 ? " time" : " times")) + row("Maths-only time", mins(mt)) + row("Play along", mins(pa)) + row("Notes played", nn) +
         row("Favourite sound", topOf(list.map(function (d) { return d.ins; }), 1, function (k) { return INAME[k] || k; })) +
         row("Most played notes", topOf(list.map(function (d) { return d.nt; }), 5));
     }
@@ -3043,7 +3436,7 @@
       $("hintOn").textContent = "\ud83d\udca1 Hints: " + (quiz.cfg.hint ? "after " + quiz.cfg.hint + " s (column sums: nudge, full hint at " + 2 * quiz.cfg.hint + " s)" : "OFF");
       $("hintSty").textContent = "\ud83c\udfa8 Hint style: " + { test: "test all 3 (A, B, C take turns)", A: "\u2728 Magic numbers", B: "\ud83e\uddf1 Blocks", C: "\ud83d\ude4b Do it with me" }[quiz.cfg.style];
       $("gLim").textContent = "\u23f0 Daily screen time: " + (c.limit ? c.limit + " min" : "Off");
-      $("gEarn").textContent = "\u2797 Earn minutes with math: " + (c.earn ? "ON" : "OFF");
+      $("gEarn").textContent = "\u2797 Earn minutes with maths: " + (c.earn ? "ON" : "OFF");
       $("gNeed").textContent = "Streak needed: " + c.need; $("gMin").textContent = "Minutes per streak: " + c.min; $("gCap").textContent = "Max earned per day: " + c.cap;
       $("gNeed").disabled = $("gMin").disabled = $("gCap").disabled = !c.earn;
       $("gLock").textContent = "\ud83d\uded1 Mistake lock: " + (c.lockOn ? "ON" : "OFF");
