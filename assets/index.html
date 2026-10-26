@@ -97,6 +97,7 @@
   body.play #playMode { margin-left: 0 !important; }
   #instBtn { display: none; }
   body.play #instBtn { display: block; }
+  body.play.sndfix #instBtn { display: none; }
   #instPop { position: fixed; inset: 0; z-index: 8; display: none; align-items: center; justify-content: center; background: rgba(10,8,20,.6); }
   #instPop.open { display: flex; }
   #instPop .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; background: var(--panel); padding: 18px; border-radius: 22px; width: min(640px, 94vw); max-height: 94vh; overflow-y: auto; }
@@ -487,6 +488,55 @@
   .cgal button.lock img { opacity: .25; }
   .cgal button.lock span { font-size: 34px; bottom: 30%; }
   #homeColour { --edge: #2a7f62; background: linear-gradient(160deg, #8ef0c0, #3bb3a0 70%); }
+  /* Grown-up menu: a settings sheet - top bar, section rail, grouped rows (label left, value right, switches for ON/OFF) */
+  .gate .card.menu { width: calc(100vw - 24px); max-width: 1120px; height: calc(100vh - 24px); max-height: none; padding: 0; overflow: hidden; text-align: left; display: flex; }
+  .gate .card.menu > :not(#choices) { display: none; }
+  .gate .card.menu #choices { display: flex; flex: 1; min-width: 0; margin: 0; }
+  .msheet { flex: 1; min-width: 0; display: grid; grid-template-columns: 220px 1fr; grid-template-rows: auto 1fr; }
+  .mtop { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 12px 14px 12px 22px; border-bottom: 1px solid #ffffff14; }
+  .mtop h2 { flex: 1; margin: 0; font-size: 22px; font-weight: 700; }
+  .gate .choices .mbtn { flex: none; padding: 10px 18px; font-size: 16px; border-radius: 999px; background: #ffffff12; color: var(--muted); box-shadow: none; }
+  .gate .choices .mbtn.primary { background: linear-gradient(#ffdb6e, #ffb21e); color: #3a2400; box-shadow: 0 4px 0 #c77d00; font-weight: 700; }
+  .gate .choices .mbtn:active { transform: translateY(3px); box-shadow: none; }
+  .mnav { display: flex; flex-direction: column; gap: 2px; padding: 12px 10px; background: #00000026; overflow-y: auto; }
+  .gate .choices .mnav button { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: 12px; background: transparent; color: var(--muted); font-size: 16px; text-align: left; box-shadow: none; transition: background .15s, color .15s; }
+  .mnav svg { flex: none; width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+  .gate .choices .mnav button[aria-current] { background: #ffffff17; color: var(--ink); }
+  .mnav button[aria-current] svg { stroke: var(--accent); }
+  .mpane { overflow-y: auto; padding: 18px 26px 28px; scrollbar-width: thin; scrollbar-color: #ffffff30 transparent; }
+  .mpane section { display: none; max-width: 640px; }
+  .mpane section.on { display: block; }
+  .mpane h3 { margin: 0 0 14px; font-size: 21px; font-weight: 700; }
+  .mpane h4 { margin: 22px 4px 8px; font-size: 14px; font-weight: 600; color: var(--muted); }
+  .mpane h3 + h4 { margin-top: 0; }
+  .mlist { border-radius: 16px; background: #ffffff0d; overflow: hidden; }
+  .mlist + .mlist { margin-top: 16px; }
+  .gate .choices .mlist button { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 54px; padding: 10px 16px; border-radius: 0; background: transparent; color: var(--ink); font-size: 16px !important; text-align: left; box-shadow: none; }
+  .gate .choices .mlist button + button { border-top: 1px solid #ffffff12; }
+  .gate .choices .mlist button:active { background: #ffffff12; }
+  .gate .choices .mlist button.dep { padding-left: 34px; }
+  .gate .choices .mlist button:disabled { color: #ffffff59; }
+  .gate .choices .mlist button[hidden] { display: none; }
+  .set .k { flex: 1; min-width: 0; }
+  .set .k small { display: block; margin-top: 2px; font-size: 13px; line-height: 1.35; color: var(--muted); }
+  .set .v { flex: none; max-width: 50%; text-align: right; color: var(--accent); font-weight: 600; }
+  .set .v::after { content: ""; display: inline-block; width: 7px; height: 7px; margin: 0 2px 2px 10px; border: solid #ffffff59; border-width: 2px 2px 0 0; transform: rotate(45deg); }
+  .set:disabled .v { color: inherit; }
+  .set.tog .v { width: 48px; height: 28px; border-radius: 999px; background: #ffffff26; position: relative; font-size: 0; transition: background .18s; }
+  .set.tog .v::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; margin: 0; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px #0004; transform: none; transition: transform .18s cubic-bezier(.2, .8, .2, 1); }
+  .set.tog.is-on .v { background: #3fc77a; }
+  .set.tog.is-on .v::after { transform: translateX(20px); }
+  .mpane .note { margin: 10px 4px 0; font-size: 14px; line-height: 1.45; color: var(--muted); }
+  .mpane .note:empty { display: none; }
+  .mpane section[data-s="today"] .note { margin: 0 4px 14px; }
+  .mquick { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 18px; }
+  .gate .choices .mquick button { padding: 14px 12px; font-size: 16px; border-radius: 16px; background: #3a2f72; box-shadow: 0 4px 0 #1b1540; color: var(--ink); }
+  .gate .choices .mquick button.primary { background: linear-gradient(#ffdb6e, #ffb21e); color: #3a2400; box-shadow: 0 4px 0 #c77d00; font-weight: 700; }
+  .gate .choices .mquick button:active { transform: translateY(3px); box-shadow: 0 1px 0 #0005; }
+  .gate .choices .mquick button:disabled { opacity: .4; }
+  .gate .choices .mquick button[hidden] { display: none; }
+  .gate .choices button:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
+  @media (max-width: 700px) { .msheet { grid-template-columns: 64px 1fr; } .mnav span { display: none; } .mpane { padding: 14px; } }
 </style>
 </head>
 <body>
@@ -530,50 +580,132 @@
 </div>
 <!-- The grown-up menu is not part of the page until the PIN is accepted: it is cloned in on unlock and removed on lock -->
 <template id="menuTpl">
-      <button class="set" id="qMode"></button>
-      <button class="primary" id="doClose">Close the app</button>
-      <button class="set" id="qOn"></button>
-      <button class="set" id="qEvery"></button>
-      <button class="set" id="qNeed"></button>
-      <button class="set" id="qLevel"></button>
-      <button class="set" id="wLevel"></button>
-      <button class="set" id="cAdd">🎨 Add a colouring picture (from the tablet)</button>
-      <button class="set" id="cClear"></button>
-      <input type="file" id="cFile" accept="image/*" hidden>
-      <button class="set" id="qAct">&#128200; Activity</button>
-      <button class="set" id="qRes">&#128202; Results</button>
-      <button class="set" id="qSens"></button>
-      <button class="set" id="vRead"></button>
-      <button class="set" id="vFb"></button>
-      <button class="set" id="vLang"></button>
-      <button class="set" id="vOn"></button>
-      <div class="note" id="vNote"></div>
-      <button class="set" id="rvOn"></button>
-      <button class="set" id="hintOn"></button>
-      <button class="set" id="hintSty"></button>
-      <button class="set" id="gLim"></button>
-      <button class="set" id="tP15">&#10133; 15 min today</button>
-      <button class="set" id="tP30">&#10133; 30 min today</button>
-      <button class="set" id="tNone">No limit today</button>
-      <button class="set" id="gEarn"></button>
-      <button class="set" id="gNeed"></button>
-      <button class="set" id="gMin"></button>
-      <button class="set" id="gCap"></button>
-      <button class="set" id="gLock"></button>
-      <button class="set" id="gMax"></button>
-      <button class="set" id="gWin"></button>
-      <button class="set" id="gCalm"></button>
-      <button class="primary" id="lkNow">&#128275; Unlock now</button>
-      <button class="set" id="lkBreak">&#9749; Break 15 min, then unlock</button>
-      <div class="note" id="gNote"></div>
-      <button class="set" id="eOn"></button>
-      <button class="set" id="eSens"></button>
-      <button class="set" id="eCal"></button>
-      <button class="set" id="eReset">Use the automatic distance</button>
-      <div class="note" id="eNote"></div>
-      <button class="set" id="qTry">Show a quiz now</button>
-      <button id="doChange">Change PIN</button>
-      <button id="doCancel">Back to lessons</button>
+  <div class="msheet">
+    <div class="mtop"><h2>Grown-ups</h2><button class="mbtn" id="doClose">Close the app</button><button class="mbtn primary" id="doCancel">Back to lessons</button></div>
+    <nav class="mnav" id="mNav">
+        <button data-s="today"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg><span>Today</span></button>
+        <button data-s="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11L12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/></svg><span>Start screen</span></button>
+        <button data-s="piano"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M8 5v14M12 5v14M16 5v14"/><path d="M8 5v7.5M12 5v7.5" stroke-width="3.2"/></svg><span>Piano</span></button>
+        <button data-s="maths"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h6M7 4v6M14 7h6M4.5 15.5l5 5M9.5 15.5l-5 5M14 16h6M14 20h6"/></svg><span>Maths</span></button>
+        <button data-s="write"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4.5-1 11-11a2.1 2.1 0 0 0-3-3l-11 11z"/><path d="M14.5 6.5l3 3"/></svg><span>Writing</span></button>
+        <button data-s="colour"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0 0 18c1.4 0 2-1 2-2 0-1.3-1-1.7-1-3 0-1 .8-1.8 2-1.8h2.3A3.7 3.7 0 0 0 21 10.5C21 6.4 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10.5" cy="7" r="1.2"/><circle cx="15.5" cy="7.5" r="1.2"/></svg><span>Colouring</span></button>
+        <button data-s="voice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span>Voice &amp; language</span></button>
+        <button data-s="time"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg><span>Screen time</span></button>
+        <button data-s="eye"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>Eye guard</span></button>
+        <button data-s="gen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg><span>General</span></button>
+    </nav>
+    <div class="mpane" id="mPane">
+      <section data-s="today"><h3>Today</h3>
+        <div class="note" id="gNote"></div>
+        <div class="mquick">
+          <button class="primary" id="lkNow">Unlock now</button>
+          <button id="lkBreak">Break 15 min, then unlock</button>
+          <button id="tP15">+ 15 min today</button>
+          <button id="tP30">+ 30 min today</button>
+          <button id="tNone">No limit today</button>
+        </div>
+        <div class="mlist">
+          <button class="set" id="qAct">Activity</button>
+          <button class="set" id="qRes">Maths results</button>
+          <button class="set" id="qTry">Show a quiz now</button>
+        </div>
+      </section>
+      <section data-s="home"><h3>Start screen</h3>
+        <div class="mlist"><button class="set" id="qMode"></button></div>
+        <h4>Activities he can pick</h4>
+        <div class="mlist">
+          <button class="set" id="hPiano"></button>
+          <button class="set" id="hMath"></button>
+          <button class="set" id="hWrite"></button>
+          <button class="set" id="hColour"></button>
+        </div>
+        <div class="note">A hidden activity is gone from the start screen. At least one always stays.</div>
+      </section>
+      <section data-s="piano"><h3>Piano</h3>
+        <div class="mlist">
+          <button class="set" id="pVol"></button>
+          <button class="set" id="qSens"></button>
+          <button class="set" id="pSnd"></button>
+        </div>
+        <div class="note">The loudness limit caps the piano and the game sounds, on top of the tablet's own volume.</div>
+      </section>
+      <section data-s="maths"><h3>Maths</h3>
+        <h4>Quiz between lessons</h4>
+        <div class="mlist">
+          <button class="set" id="qOn"></button>
+          <button class="set dep" id="qEvery"></button>
+          <button class="set dep" id="qNeed"></button>
+          <button class="set dep" id="qLevel"></button>
+        </div>
+        <h4>When he is stuck</h4>
+        <div class="mlist">
+          <button class="set" id="rvOn"></button>
+          <button class="set" id="hintOn"></button>
+          <button class="set" id="hintSty"></button>
+        </div>
+      </section>
+      <section data-s="write"><h3>Writing</h3>
+        <div class="mlist">
+          <button class="set" id="wLevel"></button>
+          <button class="set" id="wTol"></button>
+        </div>
+        <div class="note">Gentle accepts wobblier letters. Strict wants the stroke close to the guide.</div>
+      </section>
+      <section data-s="colour"><h3>Colouring</h3>
+        <div class="mlist">
+          <button class="set" id="cShake"></button>
+          <button class="set" id="cAll"></button>
+        </div>
+        <h4>Your own pictures</h4>
+        <div class="mlist">
+          <button class="set" id="cAdd">Add a colouring picture from the tablet</button>
+          <button class="set" id="cClear"></button>
+        </div>
+        <input type="file" id="cFile" accept="image/*" hidden>
+        <div class="note">Your own pictures stay on this tablet. Black-and-white pages work best.</div>
+      </section>
+      <section data-s="voice"><h3>Voice &amp; language</h3>
+        <div class="mlist">
+          <button class="set" id="vLang"></button>
+          <button class="set" id="vRead"></button>
+          <button class="set" id="vFb"></button>
+          <button class="set" id="vOn"></button>
+        </div>
+        <div class="note" id="vNote"></div>
+      </section>
+      <section data-s="time"><h3>Screen time</h3>
+        <div class="mlist">
+          <button class="set" id="gLim"></button>
+          <button class="set" id="gBed"></button>
+        </div>
+        <div class="mlist">
+          <button class="set" id="gEarn"></button>
+          <button class="set dep" id="gNeed"></button>
+          <button class="set dep" id="gMin"></button>
+          <button class="set dep" id="gCap"></button>
+        </div>
+        <h4>Mistakes</h4>
+        <div class="mlist">
+          <button class="set" id="gLock"></button>
+          <button class="set dep" id="gMax"></button>
+          <button class="set dep" id="gWin"></button>
+          <button class="set" id="gCalm"></button>
+        </div>
+      </section>
+      <section data-s="eye"><h3>Eye guard</h3>
+        <div class="mlist">
+          <button class="set" id="eOn"></button>
+          <button class="set dep" id="eSens"></button>
+          <button class="set" id="eCal"></button>
+          <button class="set" id="eReset">Use the automatic distance</button>
+        </div>
+        <div class="note" id="eNote"></div>
+      </section>
+      <section data-s="gen"><h3>General</h3>
+        <div class="mlist"><button class="set" id="doChange">Change PIN</button></div>
+      </section>
+    </div>
+  </div>
 </template>
 
 <div class="lockscr" id="lockscr"><div class="big" id="lkIcon"></div><div class="msg" id="lkMsg"></div><div class="sub" id="lkSub"></div><button id="lkEarn" hidden></button></div>
@@ -1206,8 +1338,9 @@
     function audio() {
       if (!ctx) {
         ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: "interactive" });
-        var vol = ctx.createGain(); vol.gain.value = 0.6;        // headroom for chords before the compressor
-        var comp = ctx.createDynamicsCompressor(); vol.connect(comp); comp.connect(ctx.destination); master = vol;
+        var vol = ctx.createGain(); vol.gain.value = 0.6 * loud / 100;   // headroom for chords before the compressor, times the grown-up's limit
+        out = ctx.createGain(); out.gain.value = loud / 100;
+        var comp = ctx.createDynamicsCompressor(); vol.connect(comp); comp.connect(out); out.connect(ctx.destination); master = vol; vol0 = vol;
         // Surround: a generated room echo (the two channels decorrelated, so it spreads across the tablet's speakers) mixed under the dry sound
         reverb = ctx.createConvolver(); reverb.buffer = roomImpulse(ctx, 2.6); wet = ctx.createGain();
         vol.connect(reverb); reverb.connect(wet); wet.connect(comp);
@@ -1229,6 +1362,19 @@
       return ctx;
     }
     window.pianoAudio = audio;   // the quiz reuses it for its sounds
+    // Grown-up limits: loudness (100/80/60 % of the app's sound) and whether he may change the sound
+    var LOUD = [100, 80, 60], loud = 100, out = null, vol0 = null, sndFix = false;
+    try { var lv = parseInt(localStorage.getItem("loudMax"), 10); if (LOUD.indexOf(lv) >= 0) loud = lv; sndFix = localStorage.getItem("sndFix") === "1"; } catch (e) {}
+    document.body.classList.toggle("sndfix", sndFix);
+    window.pianoLoud = function (next) {
+      if (next) { loud = LOUD[(LOUD.indexOf(loud) + 1) % LOUD.length]; try { localStorage.setItem("loudMax", loud); } catch (e) {}
+        if (ctx) { out.gain.setTargetAtTime(loud / 100, ctx.currentTime, 0.05); } }
+      return loud;
+    };
+    window.pianoSndFix = function (next) {
+      if (next) { sndFix = !sndFix; try { localStorage.setItem("sndFix", sndFix ? "1" : "0"); } catch (e) {} document.body.classList.toggle("sndfix", sndFix); }
+      return sndFix;
+    };
 
     // ---- Sampled instruments: lazy-loaded from the app's bundled assets/sounds/<dir>/ ----
     // Grand piano = Salamander; pads = FluidR3_GM renders. Notes every 3 semitones (C, D#/Eb, F#/Gb, A) over MIDI 24-96.
@@ -2785,6 +2931,8 @@
     var pad = document.getElementById("wPad"), bgc = document.getElementById("wBg"), inc = document.getElementById("wInk");
     var bx = bgc.getContext("2d"), ix = inc.getContext("2d", { desynchronized: true });   // low-latency ink for the pen
     var on = false, raf = 0, cur = null, T = { s: 1, ox: 0, oy: 0 }, tol = 12, W = 0, H = 0, rect = null;
+    var TOLK = { gentle: 1.3, normal: 1, strict: 0.8 }, strict = "normal";      // the grown-up's choice in the Menu
+    try { var wt = localStorage.getItem("writeTol"); if (TOLK[wt]) strict = wt; } catch (e) {}
     var active = null, penAt = 0, penUsed = false, demo = null, busy = false, saidAt = 0;
     function get(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
     function put(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
@@ -2835,7 +2983,7 @@
       if (!cur) return;
       var w = cur.lay.w, n = cur.lay.lines, s = Math.min(H / (LINE * n), (W - 60) / (w + 30), 3.2);
       T = { s: s, ox: (W - w * s) / 2, oy: (H - (145 + LINE * (n - 1)) * s) / 2 };
-      tol = Math.max(16 / s, 11) * (penUsed ? 0.85 : 1);
+      tol = Math.max(16 / s, 11) * (penUsed ? 0.85 : 1) * TOLK[strict];
       drawInk(); kick();
     }
     new ResizeObserver(function () { if (on) resize(); }).observe(pad);
@@ -3006,6 +3154,10 @@
       stop: function () { on = false; busy = false; demo = null; active = null; if (raf) cancelAnimationFrame(raf); raf = 0; },
       level: function () { return prog.lv; },
       levelName: function () { return lvl().en; },
+      strictness: function (next) {
+        if (next) { strict = { gentle: "normal", normal: "strict", strict: "gentle" }[strict]; try { localStorage.setItem("writeTol", strict); } catch (e) {} if (on && cur) resize(); }
+        return { gentle: "Gentle", normal: "Normal", strict: "Strict" }[strict];
+      },
       peek: function () { return cur && { item: cur.item, k: cur.k, n: cur.lay.strokes.length, r: prog.r, lv: prog.lv, i: prog.i, T: T, tol: tol, dx: dxOf(cur.k < cur.lay.strokes.length ? cur.lay.strokes[cur.k].li : 0), busy: busy, strokes: cur.lay.strokes }; },   // for the grown-up's computer
       setLevel: function (n) { prog = { lv: n, i: 0, r: writeFirst(n), words: 0, item: null, recent: [] }; save(); cur = null; if (on) next(true); }
     };
@@ -3039,7 +3191,8 @@
     if (!prog || typeof prog.open !== "number" || !prog.stars) prog = { pic: 0, open: 0, stars: {} };
     function save() { put("colourProg", JSON.stringify(prog)); }
     function pic() { return PICS[prog.pic] || PICS[0]; }
-    function unlocked(i) { return i <= prog.open || (PICS[i] && PICS[i].own); }
+    var opt = { quiet: get("colourQuiet", "0") === "1", all: get("colourAll", "0") === "1" };   // the grown-up's Menu choices
+    function unlocked(i) { return opt.all || i <= prog.open || (PICS[i] && PICS[i].own); }
     function tell(text) { saidAt = Date.now(); voice.tell(text); }
     function brush() { var lv = Math.min(prog.pic, BUILTIN.length - 1); return pic().own ? 16 : Math.round(30 - lv * 0.45); }   // the crayon thins as the pictures get harder
 
@@ -3228,6 +3381,7 @@
     var redT = 0;
     function crossed() {
       var now = Date.now(); if (now - crossAt < 900) return; crossAt = now; crosses++;
+      if (opt.quiet) { drawLines(true); clearTimeout(redT); redT = setTimeout(function () { drawLines(false); }, 450); bar(); return; }   // quiet: only the red lines
       pad.classList.remove("shake"); void pad.offsetWidth; pad.classList.add("shake");
       drawLines(true); clearTimeout(redT); redT = setTimeout(function () { drawLines(false); }, 450);
       bonk(); try { if (navigator.vibrate) navigator.vibrate(120); } catch (e) {}
@@ -3336,6 +3490,7 @@
       stop: function () { on = false; active = null; },
       addOwn: addOwn, clearOwn: clearOwn,
       ownCount: function () { return PICS.length - BUILTIN.length; },
+      opt: function (k) { if (k) { opt[k] = !opt[k]; put(k === "quiet" ? "colourQuiet" : "colourAll", opt[k] ? "1" : "0"); } return opt; },
       pics: function () { return PICS; },
       peek: function () { var s = label ? score() : null; return { pic: prog.pic, open: prog.open, done: done, crosses: crosses, shapes: nLab - 1, paper: area[1], score: s, T: T, W: W, H: H }; }   // for the grown-up's computer
     };
@@ -3372,6 +3527,11 @@
       atHome = true; document.body.classList.remove("math", "inwrite", "incolour"); document.body.classList.add("athome"); homeEl.classList.add("on");
     }
     function fixed() { document.body.classList.toggle("fixedStart", start !== "choose"); }
+    var CARD = { piano: "homePiano", math: "homeMath", write: "homeWrite", colour: "homeColour" }, hide = [];
+    try { hide = JSON.parse(localStorage.getItem("homeHide") || "[]").filter(function (k) { return CARD[k]; }); } catch (e) { hide = []; }
+    if (hide.length > 3) hide = [];
+    function cards() { Object.keys(CARD).forEach(function (k) { document.getElementById(CARD[k]).hidden = hide.indexOf(k) >= 0; }); }
+    cards();
     onLang(function () {
       document.getElementById("homeHi").textContent = L("Hi! What do you want to do?", "¡Hola! ¿Qué quieres hacer?");
       document.querySelector("#homePiano span").textContent = L("Piano lessons", "Lecciones de piano");
@@ -3391,6 +3551,15 @@
       colour: function () { return m === "colour"; },
       home: function () { return atHome; },
       startMode: function () { return start; },
+      shown: function (k) { return hide.indexOf(k) < 0; },
+      toggleShown: function (k) {                                   // never hides the last one; a hidden fixed start falls back to the choice
+        var i = hide.indexOf(k);
+        if (i >= 0) hide.splice(i, 1); else if (hide.length < 3) hide.push(k); else return false;
+        try { localStorage.setItem("homeHide", JSON.stringify(hide)); } catch (e) {}
+        cards();
+        if (hide.indexOf(start) >= 0) { start = "choose"; try { localStorage.setItem("startMode", start); } catch (e) {} fixed(); }
+        return true;
+      },
       setStart: function (s) { start = s; try { localStorage.setItem("startMode", s); } catch (e) {} fixed(); if (s === "choose") home(); else apply(s); },
       boot: function () { if (start === "choose") home(); else apply(start); },
       start: function () { if (m === "math") { document.body.classList.add("math"); quiz.mathStart(); } }
@@ -3473,16 +3642,17 @@
     var $ = function (id) { return document.getElementById(id); };
     function get(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
     function put(k, v) { try { localStorage.setItem(k, String(v)); } catch (e) {} }
+    var BEDS = [0, 1140, 1170, 1200, 1230, 1260], WAKE = 7 * 60;   // bedtime (minutes after midnight, 0 = off) until 07:00
     function num(k, d, ok) { var v = parseInt(get(k, ""), 10); return ok.indexOf(v) >= 0 ? v : d; }
     var cfg = {
       lockOn: get("lockOn", "1") === "1", max: num("lockMax", 5, [3, 5, 7, 10]), win: num("lockWin", 30, [15, 30, 60]), calm: get("calmRed", "0") === "1",
-      limit: num("limitMin", 60, [0, 30, 45, 60, 90, 120]),
+      limit: num("limitMin", 60, [0, 30, 45, 60, 90, 120]), bed: num("bedMin", 0, BEDS),
       earn: get("earnOn", "1") === "1", need: num("earnNeed", 5, [3, 5, 10]), min: num("earnMin", 5, [2, 5, 10]), cap: num("earnMax", 30, [15, 30, 60])
     };
     var g = null;
     try { g = JSON.parse(get("guardState", "{}")); } catch (e) {}
     if (!g || typeof g !== "object") g = {};
-    ["used", "seen", "x", "e", "s", "lv0", "clr"].forEach(function (k) { g[k] = +g[k] || 0; });
+    ["used", "seen", "x", "e", "s", "lv0", "clr", "bedOk"].forEach(function (k) { g[k] = +g[k] || 0; });
     g.day = g.day || ""; g.none = !!g.none; g.w = !!g.w; g.lock = g.lock && g.lock.r ? g.lock : null;   // lock: { r: mistakes|time|break, since, until }
     var earning = false, was = false, last = performance.now(), ticks = 0, noteCb = null, bannerT = null, HEART_BACK = 5;
     function es() { return voice.cfg.lang === "es"; }
@@ -3492,10 +3662,13 @@
     step();
     function words() {                                            // [icon, headline, line under it] for the lock screen
       var r = g.lock.r, u = g.lock.until ? new Date(g.lock.until) : null;
+      if (r === "bed") return ["\ud83c\udf19", es() ? "Hora de dormir" : "Bedtime", es() ? "\u00a1Que duermas bien! Hasta ma\u00f1ana" : "Sleep well! See you in the morning"];
       if (r === "time") return ["\u23f0", es() ? "Se acab\u00f3 el tiempo de pantalla por hoy" : "Screen time is over for today", es() ? "Pide a mam\u00e1 o a pap\u00e1" : "Ask Mum or Dad"];
       return ["\ud83d\uded1", es() ? "Hora de descansar" : "Time for a break",
         u ? (es() ? "Vuelve a las " : "Back at ") + two(u.getHours()) + ":" + two(u.getMinutes()) : es() ? "Pide a mam\u00e1 o a pap\u00e1 que lo desbloqueen" : "Ask Mum or Dad to unlock"];
     }
+    function inBed(now) { if (!cfg.bed) return false; var d = new Date(now), m = d.getHours() * 60 + d.getMinutes(); return m >= cfg.bed || m < WAKE; }
+    function wake(now) { var d = new Date(now); if (d.getHours() * 60 + d.getMinutes() >= WAKE) d.setDate(d.getDate() + 1); d.setHours(7, 0, 0, 0); return d.getTime(); }
     function canEarn() { return !!g.lock && g.lock.r === "time" && cfg.earn && g.e < cfg.cap; }
     function render() {
       var w = words();
@@ -3546,6 +3719,8 @@
         if (g.lock.until && now >= g.lock.until && !clockBehind(g, now)) unlock("auto");
         else if (g.lock.r === "time" && limitLeft(g, cfg.limit) > 0) unlock(earning ? "earned" : "more time");
       }
+      if (g.lock && g.lock.r === "bed" && !inBed(now)) unlock("auto");             // bedtime switched off, or the morning came
+      if (!g.lock && inBed(now) && now >= g.bedOk) lock("bed", wake(now));
       if (!g.lock) {
         var left = limitLeft(g, cfg.limit);
         if (left <= 0) lock("time");
@@ -3567,7 +3742,7 @@
       start: apply,
       onChange: function (f) { noteCb = f; },
       save: function () {
-        put("lockOn", cfg.lockOn ? 1 : 0); put("lockMax", cfg.max); put("lockWin", cfg.win); put("calmRed", cfg.calm ? 1 : 0); put("limitMin", cfg.limit);
+        put("lockOn", cfg.lockOn ? 1 : 0); put("lockMax", cfg.max); put("lockWin", cfg.win); put("calmRed", cfg.calm ? 1 : 0); put("limitMin", cfg.limit); put("bedMin", cfg.bed);
         put("earnOn", cfg.earn ? 1 : 0); put("earnNeed", cfg.need); put("earnMin", cfg.min); put("earnMax", cfg.cap);
         tick();
       },
@@ -3576,7 +3751,7 @@
         if (!cfg.lockOn) return null;
         return { max: cfg.max, left: Math.max(0, cfg.max - heartState(quiz.log(), Date.now(), cfg.win, g.clr, HEART_BACK).lost) };
       },
-      unlockNow: function () { g.clr = Date.now(); unlock("parent"); },
+      unlockNow: function () { var now = Date.now(); g.clr = now; if (inBed(now)) g.bedOk = wake(now); unlock("parent"); },   // a grown-up's unlock at bedtime holds until the morning
       breakFor: function (m) { lock("break", Date.now() + m * 60000); },
       extend: function (m) { g.x += m; g.w = false; tick(); },
       noLimit: function () { g.none = true; tick(); },
@@ -3604,7 +3779,7 @@
       earnedText: function () { return cfg.earn ? fmt(g.e) + " / " + fmt(cfg.cap) : "off"; },
       note: function () {
         var t = "Today: " + (cfg.limit ? Math.floor(g.used / 60) + " min used of " + (cfg.limit + g.x + g.e) + (g.e ? " (" + g.e + " earned)" : "") : "no daily limit") + (g.none ? ", no limit today" : "") + ".";
-        if (g.lock) t += " LOCKED (" + (g.lock.r === "time" ? "screen time" : g.lock.r === "break" ? "break" : "too many mistakes") + ") since " + two(new Date(g.lock.since).getHours()) + ":" + two(new Date(g.lock.since).getMinutes()) + ".";
+        if (g.lock) t += " LOCKED (" + (g.lock.r === "time" ? "screen time" : g.lock.r === "bed" ? "bedtime" : g.lock.r === "break" ? "break" : "too many mistakes") + ") since " + two(new Date(g.lock.since).getHours()) + ":" + two(new Date(g.lock.since).getMinutes()) + ".";
         return t;
       }
     };
@@ -3621,7 +3796,7 @@
 
     function show(prompt) {
       ans = ""; $("ga").textContent = ""; $("gq").textContent = prompt;
-      pad.hidden = false; choices.hidden = true; choices.textContent = "";
+      pad.hidden = false; choices.hidden = true; choices.textContent = ""; gate.querySelector(".card").classList.remove("menu");
     }
     // Unlocked only in memory, only while the menu is open; 60 s without a touch locks it again
     var idleTimer = null;
@@ -3629,10 +3804,45 @@
     function unlock() {
       pad.hidden = true; choices.textContent = "";
       choices.appendChild($("menuTpl").content.cloneNode(true));
-      choices.hidden = false; bindMenu(); armIdle();
+      choices.hidden = false; bindMenu(); sheet(); armIdle();
+    }
+    // Rows: "Label: value (detail)" -> label on the left (detail in small print), value on the right; ON/OFF becomes a switch
+    var EMO = /^[\s\u2190-\u2BFF\uFE0F\u200D\u20E3]+|^(?:\ud83c[\udc00-\udfff]|\ud83d[\udc00-\udfff]|\ud83e[\udc00-\udfff]|[\s\uFE0F\u200D])+/;
+    function esc(t) { return t.replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+    function rowify(b) {
+      var t = b.textContent;
+      if (!t || b.dataset.done === t) return;
+      t = t.replace(/\s*\(tap to change\)/, "").replace(EMO, "").replace(EMO, "");
+      var k = t, v = "", d = "", c = t.indexOf(": ");
+      if (c > 0) { k = t.slice(0, c); v = t.slice(c + 2).replace(EMO, ""); }
+      var m = (v || k).match(/^(.*?)\s*\((.+)\)\s*$/);
+      if (m) { if (v) v = m[1]; else k = m[1]; d = m[2]; }
+      var on = v === "ON", tog = on || v === "OFF";
+      b.classList.toggle("tog", tog); b.classList.toggle("is-on", on);
+      b.innerHTML = '<span class="k">' + esc(k) + (d ? "<small>" + esc(d) + "</small>" : "") + '</span><span class="v">' + esc(v) + "</span>";
+      if (tog) b.setAttribute("aria-pressed", on ? "true" : "false"); else b.removeAttribute("aria-pressed");
+      b.dataset.done = b.textContent;
+    }
+    var rows = new MutationObserver(function (ms) {
+      ms.forEach(function (m) { var n = m.target.nodeType === 1 ? m.target : m.target.parentNode, b = n && n.closest && n.closest("button.set"); if (b) rowify(b); });
+    });
+    function sheet() {
+      gate.querySelector(".card").classList.add("menu");
+      [].forEach.call(choices.querySelectorAll("button.set"), rowify);
+      rows.observe(choices, { childList: true, subtree: true, characterData: true });
+      var cur = "today"; try { cur = localStorage.getItem("menuSec") || "today"; } catch (e) {}
+      function go(k) {
+        [].forEach.call($("mNav").children, function (b) { if (b.dataset.s === k) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+        [].forEach.call($("mPane").children, function (x) { x.classList.toggle("on", x.dataset.s === k); });
+        $("mPane").scrollTop = 0;
+        try { localStorage.setItem("menuSec", k); } catch (e) {}
+      }
+      [].forEach.call($("mNav").children, function (b) { b.onclick = function () { go(b.dataset.s); }; });
+      if (!$("mPane").querySelector('section[data-s="' + cur + '"]')) cur = "today";
+      go(cur);
     }
     function lock() {
-      clearTimeout(idleTimer); idleTimer = null;
+      clearTimeout(idleTimer); idleTimer = null; if (rows) rows.disconnect(); gate.querySelector(".card").classList.remove("menu");
       choices.textContent = ""; choices.hidden = true; pad.hidden = false; ans = ""; $("ga").textContent = "";
       gate.classList.remove("open"); $("act").classList.remove("open"); $("res").classList.remove("open");
       eye.menu(false);
@@ -3680,11 +3890,17 @@
     function label() {
       var c = quiz.cfg;
       $("qOn").textContent = "Maths quiz: " + (c.on ? "ON" : "OFF");
-      $("qEvery").textContent = "Quiz after every " + c.every + " lesson" + (c.every > 1 ? "s" : "");
+      $("qEvery").textContent = "Quiz after: every " + (c.every > 1 ? c.every + " lessons" : "lesson");
       $("qNeed").textContent = "Correct answers needed: " + c.need;
-      $("qLevel").textContent = "Level: " + c.level + " (tap to change)";
+      $("qLevel").textContent = "Level: " + c.level;
       $("wLevel").textContent = "✍️ Writing level: " + writing.level() + " – " + writing.levelName() + " (tap to change)";
-      $("cClear").textContent = "🎨 Remove my own colouring pictures (" + colouring.ownCount() + ")"; $("cClear").disabled = !colouring.ownCount();
+      $("wTol").textContent = "Letter check: " + writing.strictness();
+      var co = colouring.opt();
+      $("cShake").textContent = "Shake and buzz over the line: " + (co.quiet ? "OFF" : "ON") + " (off: the lines only flash red)";
+      $("cAll").textContent = "All pictures open: " + (co.all ? "ON" : "OFF") + " (off: finish one to open the next)";
+      $("pVol").textContent = "Loudness limit: " + window.pianoLoud() + " %";
+      $("pSnd").textContent = "He can change the sound: " + (window.pianoSndFix() ? "OFF" : "ON");
+      $("cClear").textContent = "Remove my own pictures: " + colouring.ownCount(); $("cClear").disabled = !colouring.ownCount();
       $("qEvery").disabled = $("qNeed").disabled = $("qLevel").disabled = !c.on;
     }
     function vlabel() {
@@ -3696,7 +3912,10 @@
       $("vNote").textContent = voice.note();
     }
     function mlabel() {
-      $("qMode").textContent = "Start screen: " + { choose: "🏠 he chooses", piano: "🎹 Piano lessons", math: "➗ Maths only", write: "✍️ Writing only", colour: "🎨 Colouring only" }[appMode.startMode()] + " (tap to change)";
+      $("qMode").textContent = "Opens with: " + { choose: "he chooses", piano: "Piano lessons", math: "Maths only", write: "Writing only", colour: "Colouring only" }[appMode.startMode()];
+      [["hPiano", "piano", "Piano lessons"], ["hMath", "math", "Maths"], ["hWrite", "write", "Writing"], ["hColour", "colour", "Colouring"]].forEach(function (x) {
+        $(x[0]).textContent = x[2] + ": " + (appMode.shown(x[1]) ? "ON" : "OFF");
+      });
       $("qTry").disabled = appMode.math();
     }
     function elabel() {
@@ -3722,7 +3941,19 @@
     $("vRead").onclick = function () { voice.setRead(!voice.cfg.read); vlabel(); };
     $("vFb").onclick = function () { voice.setFb(!voice.cfg.fb); vlabel(); };
     $("vLang").onclick = function () { voice.setLang(voice.cfg.lang === "es" ? "en" : "es"); relabelAll(); vlabel(); };
-    $("qMode").onclick = function () { appMode.setStart({ choose: "piano", piano: "math", math: "write", write: "colour", colour: "choose" }[appMode.startMode()]); mlabel(); closeGate(); };
+    $("qMode").onclick = function () {
+      var order = ["choose", "piano", "math", "write", "colour"].filter(function (k) { return k === "choose" || appMode.shown(k); });
+      appMode.setStart(order[(order.indexOf(appMode.startMode()) + 1) % order.length]); mlabel();
+    };
+    $("hPiano").onclick = function () { appMode.toggleShown("piano"); mlabel(); };
+    $("hMath").onclick = function () { appMode.toggleShown("math"); mlabel(); };
+    $("hWrite").onclick = function () { appMode.toggleShown("write"); mlabel(); };
+    $("hColour").onclick = function () { appMode.toggleShown("colour"); mlabel(); };
+    $("pVol").onclick = function () { window.pianoLoud(true); label(); };
+    $("pSnd").onclick = function () { window.pianoSndFix(true); label(); };
+    $("wTol").onclick = function () { writing.strictness(true); label(); };
+    $("cShake").onclick = function () { colouring.opt("quiet"); label(); };
+    $("cAll").onclick = function () { colouring.opt("all"); label(); };
     function cycle(list, v) { return list[(list.indexOf(v) + 1) % list.length]; }
     $("qOn").onclick = function () { quiz.cfg.on = !quiz.cfg.on; quiz.save(); label(); };
     $("qEvery").onclick = function () { quiz.cfg.every = cycle([1, 2, 3, 4], quiz.cfg.every); quiz.save(); label(); };
@@ -3730,7 +3961,7 @@
     $("qLevel").onclick = function () { quiz.cfg.level = cycle([1, 2, 3, 4, 5, 6, 7], quiz.cfg.level); label(); };
     $("wLevel").onclick = function () { writing.setLevel(writing.level() % WRITE_LEVELS.length + 1); label(); };
     $("cAdd").onclick = function () { $("cFile").value = ""; $("cFile").click(); };
-    $("cFile").onchange = function () { var f = $("cFile").files[0]; if (f) colouring.addOwn(f, function () { $("cAdd").textContent = "🎨 Added! Add another colouring picture"; label(); }); };
+    $("cFile").onchange = function () { var f = $("cFile").files[0]; if (f) colouring.addOwn(f, function () { $("cAdd").textContent = "Added! Add another picture"; label(); }); };
     $("cClear").onclick = function () { colouring.clearOwn(label); };
 
     // Results panel: today / all time, level, streak, and the last 20 mistakes
@@ -3777,7 +4008,7 @@
       return h + '<div class="miss">' + (st.win ? "Winner so far: " + N[st.win] + ". Pick it in the Menu (Hint style) to use only that one."
         : "A winner is named when every style has " + st.need + " \"next one alone\" answers.") + "</div>";
     }
-    function sensLabel() { $("qSens").textContent = "Key sensitivity: " + window.pianoSens(); }
+    function sensLabel() { $("qSens").textContent = "Piano key sensitivity: " + window.pianoSens(); }
     $("qSens").onclick = function () { window.pianoSens(true); sensLabel(); };
     sensLabel();
     // Activity panel: tabs Today / 7 days / Lessons / Quiz, read from act.data() and quiz.results()
@@ -3854,8 +4085,9 @@
       $("hintOn").textContent = "\ud83d\udca1 Hints: " + (quiz.cfg.hint ? "after " + quiz.cfg.hint + " s (column sums: nudge, full hint at " + 2 * quiz.cfg.hint + " s)" : "OFF");
       $("hintSty").textContent = "\ud83c\udfa8 Hint style: " + { test: "test all 3 (A, B, C take turns)", A: "\u2728 Magic numbers", B: "\ud83e\uddf1 Blocks", C: "\ud83d\ude4b Do it with me" }[quiz.cfg.style];
       $("gLim").textContent = "\u23f0 Daily screen time: " + (c.limit ? c.limit + " min" : "Off");
+      $("gBed").textContent = "Bedtime: " + (c.bed ? Math.floor(c.bed / 60) + ":" + (c.bed % 60 ? "30" : "00") + " (locked until 07:00)" : "Off");
       $("gEarn").textContent = "\u2797 Earn minutes with maths: " + (c.earn ? "ON" : "OFF");
-      $("gNeed").textContent = "Streak needed: " + c.need; $("gMin").textContent = "Minutes per streak: " + c.min; $("gCap").textContent = "Max earned per day: " + c.cap;
+      $("gNeed").textContent = "Streak needed: " + c.need; $("gMin").textContent = "Minutes per streak: " + c.min + " min"; $("gCap").textContent = "Max earned per day: " + c.cap + " min";
       $("gNeed").disabled = $("gMin").disabled = $("gCap").disabled = !c.earn;
       $("gLock").textContent = "\ud83d\uded1 Mistake lock: " + (c.lockOn ? "ON" : "OFF");
       $("gMax").textContent = "❤️ Hearts: " + c.max + " (a mistake breaks one, 5 right in a row win one back)"; $("gWin").textContent = "Within: " + c.win + " min";
@@ -3871,6 +4103,7 @@
     $("hintOn").onclick = function () { quiz.cfg.hint = cycle([20, 30, 45, 0], quiz.cfg.hint); quiz.save(); glabel(); };
     $("hintSty").onclick = function () { quiz.cfg.style = cycle(["test", "A", "B", "C"], quiz.cfg.style); quiz.save(); glabel(); };
     $("gLim").onclick = function () { gset("limit", [0, 30, 45, 60, 90, 120]); };
+    $("gBed").onclick = function () { gset("bed", [0, 1140, 1170, 1200, 1230, 1260]); };
     $("gEarn").onclick = function () { gset("earn"); };
     $("gNeed").onclick = function () { gset("need", [3, 5, 10]); };
     $("gMin").onclick = function () { gset("min", [2, 5, 10]); };
