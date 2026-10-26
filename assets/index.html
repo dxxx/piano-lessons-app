@@ -63,7 +63,11 @@
   .piano { display: none; height: 36vh; min-height: 190px; gap: 8px; align-items: stretch; }
   body.play .piano { display: flex; }
   /* short video area: size the 16:9 box by height so the video is letterboxed, not cropped */
-  body.play .player, body.big .player { width: auto; height: 100%; max-width: 100%; }
+  /* Play along + Big video: the video fills the width and sits on the bottom edge, so the top is cut off and the
+     lesson's keyboard (bottom of the video) lines up right above our piano. The iframe stays 120px taller than the
+     16:9 video, so YouTube's edge overlays still fall in the clipped black bars. */
+  body.play .player, body.big .player { width: 100%; height: 100%; max-width: 100%; aspect-ratio: auto; container-type: inline-size; }
+  body.play .player iframe, body.play #player, body.big .player iframe, body.big #player { top: auto; bottom: -60px; height: calc(100cqw * 9 / 16 + 120px); }
   body.play .controls { display: none; }
   body.play .app { grid-template-columns: 1fr 150px; gap: 10px; padding: 8px 10px; }
   body.play .stage { gap: 8px; }
@@ -81,6 +85,12 @@
     border-radius: 0 0 6px 6px; z-index: 2; box-shadow: 0 3px 4px rgba(0,0,0,.5); }
   .wk.on { background: linear-gradient(#f5b841, #ffd77a); color: #1e1b2e; }
   .bk.on { background: linear-gradient(#c98a12, #f5b841); }
+  .bk span { position: absolute; left: 0; right: 0; bottom: 7px; text-align: center; color: #cfc8f0; font-size: 12px; font-weight: 600; line-height: 1; pointer-events: none; }
+  .bk.on span { color: #2a1c00; }
+  #instPop .space { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; margin-top: 4px; padding-top: 12px; border-top: 1px solid #ffffff1a; }
+  #instPop .space > span { color: var(--muted); font-size: 15px; white-space: nowrap; }
+  #instPop .space button { flex: 1; padding: 10px 4px; font-size: 15px; }
+  #instPop .space button b { display: inline; font-size: 20px; }
   .wk .c-oct { position: absolute; top: 8px; font-size: 12px; color: #a39fbd; font-weight: 600; }
   .vol { display: none; align-items: center; gap: 6px; color: var(--muted); font-size: 15px; margin-left: auto; }
   body.play .vol { display: flex; }
@@ -1071,7 +1081,11 @@
       if (!ctx) {
         ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: "interactive" });
         var vol = ctx.createGain(); vol.gain.value = 0.6;        // headroom for chords before the compressor
-        master = ctx.createDynamicsCompressor(); vol.connect(master); master.connect(ctx.destination); master = vol;
+        var comp = ctx.createDynamicsCompressor(); vol.connect(comp); comp.connect(ctx.destination); master = vol;
+        // Surround: a generated room echo (the two channels decorrelated, so it spreads across the tablet's speakers) mixed under the dry sound
+        reverb = ctx.createConvolver(); reverb.buffer = roomImpulse(ctx, 2.6); wet = ctx.createGain();
+        vol.connect(reverb); reverb.connect(wet); wet.connect(comp);
+        applySpace();
         // Harmonic mix that sounds roughly like a struck string
         var real = new Float32Array([0, 1, 0.55, 0.3, 0.2, 0.12, 0.08, 0.05, 0.03]);
         wave = ctx.createPeriodicWave(real, new Float32Array(real.length));
@@ -1279,9 +1293,30 @@
         s = nearest(set, midi);
         if (!set.buffers[s.m]) set = null, kind = "soft";  // not loaded yet: never leave a key silent
       }
-      voices[midi] = set ? sampled(set, ac, midi, ac.currentTime, s, vel || 0.8) : VOICE[kind](ac, midi, ac.currentTime, s, vel || 0.8);
+      var bus = master, pan = ac.createStereoPanner ? ac.createStereoPanner() : null;   // the voice plays into its own panner
+      if (pan) { pan.pan.value = panFor(midi); pan.connect(bus); master = pan; }
+      try { voices[midi] = set ? sampled(set, ac, midi, ac.currentTime, s, vel || 0.8) : VOICE[kind](ac, midi, ac.currentTime, s, vel || 0.8); }
+      finally { master = bus; }
+      voices[midi].pan = pan;
       glideFrom = null;
     }
+
+    // ---- Sound space ("surround"): each note is placed left to right like on a real piano (low notes left, high right) and a room
+    // echo is mixed in. Off / Room / Big hall, remembered in "soundSpace". The tablet's 4 speakers play the stereo spread. ----
+    var SPACES = [["off", "&#128264;", "Off", "Normal"], ["room", "&#127968;", "Room", "Sala"], ["hall", "&#127963;&#65039;", "Big hall", "Auditorio"]];
+    var SPACE = { off: { wet: 0, w: 0 }, room: { wet: 0.22, w: 0.6 }, hall: { wet: 0.42, w: 0.85 } }, space = "room", reverb = null, wet = null;
+    try { var sp0 = localStorage.getItem("soundSpace"); if (SPACE[sp0]) space = sp0; } catch (e) {}
+    function roomImpulse(ac, secs) {
+      var n = Math.floor(ac.sampleRate * secs), buf = ac.createBuffer(2, n, ac.sampleRate);
+      for (var c = 0; c < 2; c++) {
+        var d = buf.getChannelData(c);
+        for (var i = 0; i < n; i++) { var t = i / n; d[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 3.2) * (i < ac.sampleRate * 0.012 ? i / (ac.sampleRate * 0.012) : 1); }
+      }
+      return buf;
+    }
+    function applySpace() { if (wet) wet.gain.setTargetAtTime(SPACE[space].wet, ctx.currentTime, 0.05); }
+    function panFor(midi) { return Math.max(-1, Math.min(1, (midi - 60) / 14)) * SPACE[space].w; }
+    function setSpace(s) { space = s; try { localStorage.setItem("soundSpace", s); } catch (e) {} applySpace(); }
 
     function noteOff(midi, instant) {
       var v = voices[midi]; if (!v || !ctx) return;
@@ -1291,6 +1326,7 @@
       else { gp.cancelScheduledValues(t); gp.setValueAtTime(Math.max(gp.value, 0.0001), t); }
       gp.setTargetAtTime(0, t, rel / 5);
       v.o.forEach(function (o) { try { o.stop(t + rel + 0.05); } catch (e) {} });
+      if (v.pan) setTimeout(function () { try { v.pan.disconnect(); } catch (e) {} }, (rel + 0.6) * 1000);   // free the note's panner after its fade
       delete voices[midi];
     }
 
@@ -1321,7 +1357,7 @@
       whites.forEach(function (m, i) {                       // black key sits on the border after this white key
         if (m === base + 24 || [4, 11].indexOf(m % 12) >= 0) return;
         var b = document.createElement("div");
-        b.className = "bk"; b.dataset.m = m + 1;
+        b.className = "bk"; b.dataset.m = m + 1; b.innerHTML = "<span>" + NAMES[(m + 1) % 12] + "</span>";
         b.style.left = "calc(" + ((i + 1) * w) + "% - " + (w * 0.32) + "%)"; b.style.width = (w * 0.64) + "%";
         keysEl.appendChild(b);
       });
@@ -1407,10 +1443,21 @@
       b.onclick = function (e) { e.stopPropagation(); audio(); setInstrument(x[0], true); instPop.classList.remove("open"); };
       instGrid.appendChild(b);
     });
+    var spaceRow = document.createElement("div"); spaceRow.className = "space"; instGrid.appendChild(spaceRow);
+    function drawSpace() {
+      spaceRow.innerHTML = "<span>&#127911; " + L("Surround", "Sonido envolvente") + "</span>";
+      SPACES.forEach(function (x) {
+        var b = document.createElement("button"); b.innerHTML = "<b>" + x[1] + "</b> " + L(x[2], x[3]);
+        b.classList.toggle("cur", space === x[0]);
+        b.onclick = function (e) { e.stopPropagation(); audio(); setSpace(x[0]); drawSpace(); };
+        spaceRow.appendChild(b);
+      });
+    }
+    drawSpace();
     instPop.onclick = function () { instPop.classList.remove("open"); };   // tap outside = close
     instBtn.onclick = function () {
       audio();
-      Array.prototype.forEach.call(instGrid.children, function (b) { b.classList.toggle("cur", b.dataset.id === instrument); });
+      Array.prototype.forEach.call(instGrid.querySelectorAll("button[data-id]"), function (b) { b.classList.toggle("cur", b.dataset.id === instrument); });
       instPop.classList.add("open");
     };
     var start = false;
@@ -1420,7 +1467,8 @@
     relabels.push(function () {
       btn.innerHTML = document.body.classList.contains("play") ? "&#10005; " + L("Close piano", "Cerrar piano") : "&#127929; " + L("Play along", "Tocar el piano");
       setInstrument(instrument, false);
-      Array.prototype.forEach.call(instGrid.children, function (b, i) { b.innerHTML = "<b>" + INSTR[i][1] + "</b>" + iname(INSTR[i]); });
+      Array.prototype.forEach.call(instGrid.querySelectorAll("button[data-id]"), function (b, i) { b.innerHTML = "<b>" + INSTR[i][1] + "</b>" + iname(INSTR[i]); });
+      drawSpace();
     });
   })();
 

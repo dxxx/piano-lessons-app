@@ -11,6 +11,9 @@ Every version, newest first. Each released version has a download on the
 - **Step-by-step explanations**: after a mistake the explanation is told one step at a time with a short pause between steps; each step lights up while it is spoken and its arc is drawn on the sum at that moment. Speech is a little slower
 - **Right answer**: the **?** turns into the answer in green and stays on screen (at least 1.5 s after the voice), with confetti and "🎉 Yahoo! Correct!"
 - **One language at a time**: everything he sees (buttons, lessons, quiz, PIN screen, sound names) follows Menu → Language; the grown-up menu stays English
+- **Black keys are labelled too** (C#, D#, F#, G#, A#), like the white keys
+- **Wider video**: in Big video and Play along the video fills the whole width and the top is cut off instead of the bottom, so the keyboard in the lesson video sits right above the piano
+- **Surround sound** 🎧: each note comes from its own place, low notes on the left and high notes on the right like a real piano, with a soft room echo that fills the tablet's 4 speakers. Pick 🔈 Off / 🏠 Room / 🏛️ Big hall under the sound button (Room by default)
 - The grown-up's computer can read the quiz and activity log over USB (USB debugging must be on; nothing goes over the network)
 
 ## 1.10 — 2026-10-25
