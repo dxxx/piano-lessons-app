@@ -481,6 +481,14 @@
   .home .opts button:nth-child(4) { animation-delay: -1.6s; }
   .cgal { position: absolute; inset: 0; z-index: 2; overflow-y: auto; padding: 14px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; background: #fffdf5; }
   .cgal[hidden] { display: none; }
+  #cModel { opacity: 0; transition: opacity .6s; pointer-events: none; }
+  #cModel.on { opacity: 1; }
+  .crest { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: #fffdf5f2; text-align: center; padding: 20px; color: #2b2160; }
+  .crest[hidden] { display: none; }
+  .crest svg { width: min(26vh, 170px); height: auto; animation: wshake .6s; }
+  .crest .m { font-size: clamp(20px, 4.4vh, 30px); font-weight: 700; max-width: 640px; }
+  .crest .t { font-size: 22px; color: #6b5fa8; font-variant-numeric: tabular-nums; }
+  .crest button { border: 0; border-radius: 18px; padding: 14px 30px; font: inherit; font-size: 22px; font-weight: 700; background: var(--accent); color: #2b2160; box-shadow: 0 5px 0 #c98a00; }
   .cgal button { position: relative; border: 3px solid #e8dcb8; border-radius: 16px; background: #fff; padding: 6px; aspect-ratio: 4 / 3; }
   .cgal button.cur { border-color: var(--accent); }
   .cgal button img { width: 100%; height: 100%; object-fit: contain; }
@@ -653,6 +661,9 @@
       </section>
       <section data-s="colour"><h3>Colouring</h3>
         <div class="mlist">
+          <button class="set" id="cMem"></button>
+          <button class="set dep" id="cLook"></button>
+          <button class="set" id="cLimit"></button>
           <button class="set" id="cShake"></button>
           <button class="set" id="cAll"></button>
         </div>
@@ -739,8 +750,10 @@
   <button id="wHear" hidden>&#128266;</button><button id="wShow">&#128064; <span></span></button><button id="wClear">&#8634;</button></div>
   <div class="wpad" id="wPad"><canvas id="wBg"></canvas><canvas id="wInk"></canvas></div></div>
 <div class="colour" id="colour"><div class="wbar"><button id="cPics">&#128444;&#65039;</button><button id="cPrev">&#9664;</button><div class="wlv" id="cTitle"></div><div class="cstars" id="cStars"></div><div class="cleft" id="cLeft"></div>
-  <div class="cpal" id="cPal"></div><button id="cUndo">&#8630;</button><button id="cNext">&#9654;</button></div>
-  <div class="wpad" id="cPad"><canvas id="cPaint"></canvas><canvas id="cLive"></canvas><canvas id="cLine"></canvas><div class="cgal" id="cGal" hidden></div></div></div>
+  <div class="cpal" id="cPal"></div><button id="cPeek" hidden>&#128064;</button><button id="cUndo">&#8630;</button><button id="cNext">&#9654;</button></div>
+  <div class="wpad" id="cPad"><canvas id="cPaint"></canvas><canvas id="cModel"></canvas><canvas id="cLive"></canvas><canvas id="cLine"></canvas><div class="cgal" id="cGal" hidden></div>
+    <div class="crest" id="cRest" hidden><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="54" fill="#ffd86b" stroke="#2b2160" stroke-width="5"/><circle cx="42" cy="50" r="7" fill="#2b2160"/><circle cx="78" cy="50" r="7" fill="#2b2160"/><path d="M38 90 q22 -20 44 0" fill="none" stroke="#2b2160" stroke-width="6" stroke-linecap="round"/><path d="M30 40 l16 -7 M90 40 l-16 -7" stroke="#2b2160" stroke-width="5" stroke-linecap="round"/></svg>
+      <div class="m" id="cRestMsg"></div><div class="t" id="cRestT"></div><button id="cRestGo" hidden></button></div></div></div>
 <div class="eyecov" id="eyecov"><div class="big">&#128064;</div><div class="msg" id="eyemsg"></div><div class="sub" id="eyesub"></div></div>
 
 <div class="gate" id="act">
@@ -3178,11 +3191,69 @@
         return { src: "colour/" + (i < 9 ? "0" : "") + (i + 1) + ".png", id: "b" + (i + 1), en: p[0], es: p[1] };
       });
     var PICS = BUILTIN.slice();
+    // What each page should look like, by hand: [x, y (fractions of the page, inside the shape), model crayon or null, sensible crayons or null, part].
+    // The model crayons are the "remember me" colours of the memory round; the sensible ones drive the spoken colour hints.
+    var MODELS = {
+      b1: [[0.6748,0.5812,0,null,"body"],[0.4965,0.1343,5,null,"nose"],[0.4965,0.4289,4,[4,5,2,10],"window"],[0.1224,0.6894,2,null,"fin"],[0.8741,0.6894,2,null,"fin"],[0.3357,0.8036,1,[0,1,2],"flame"],[0.5839,0.8036,1,[0,1,2],"flame"]],
+      b2: [[0.6977,0.487,5,[11,5,4,10],"body"],[0.5038,0.4048,1,[1,2],"beak"],[0.7319,0.9098,1,[1,2,7],"foot"],[0.2795,0.9098,1,[1,2,7],"foot"],[0.8954,0.5451,5,[11,5,4,10],"wing"],[0.0989,0.5471,5,[11,5,4,10],"wing"],[0.6065,0.1804,null,[2,3,4,5,6,8,9,10],"eye"],[0.3688,0.1824,null,[2,3,4,5,6,8,9,10],"eye"]],
+      b3: [[0.3031,0.4609,3,[3,2],"body"],[0.1394,0.4549,3,[3,2],"leg"],[0.8659,0.4429,3,[3,2],"leg"],[0.4408,0.0441,2,[2,3,1,7],"eye"],[0.5836,0.0501,2,[2,3,1,7],"eye"],[0.1638,0.8056,3,[3,2],"foot"],[0.8345,0.8056,3,[3,2],"foot"]],
+      b4: [[0.4739,0.3166,1,[8,1,2,9,10,11],"body"],[0.6674,0.8978,1,[8,1,2,9,10,11],"tail"],[0.163,0.1363,7,[7,9,0],"ear"],[0.8478,0.3226,7,[7,9,0],"ear"],[0.2935,0.9118,7,[7,9,0],"paw"],[0.3761,0.5691,0,[0,7],"mouth"]],
+      b5: [[0.5771,0.1423,6,null,"body"]],
+      b6: [[0.3176,0.2625,9,[9,2,1,8],"face"],[0.449,0.6553,2,[2,9,1,8],"belly"],[0.2765,0.513,8,[8,1,10,11],"body"],[0.7275,0.507,8,[8,1,10,11],"body"],[0.1059,0.5271,1,[8,1,10,11,2],"wing"],[0.8765,0.515,1,[8,1,10,11,2],"wing"],[0.4941,0.0681,8,[8,1,10,11],"head"],[0.4961,0.4248,1,[1,2],"beak"]],
+      b7: [[0.3487,0.3707,6,null,"wing"],[0.5331,0.8036,8,[8,11,10,5,6],"body"],[0.2265,0.6733,2,null,"wing"],[0.0681,0.6192,1,null,"wing"],[0.6854,0.1844,7,null,"wing"],[0.3166,0.5912,0,null,"wing"]],
+      b8: [[0.4078,0.1343,1,null,"frill"],[0.1952,0.6994,3,null,"body"],[0.5792,0.8637,3,null,"foot"],[0.2364,0.8637,3,null,"foot"],[0.9458,0.6132,3,null,"tail"],[0.2798,0.2305,2,[2,9,10,1],"horn"],[0.5336,0.2244,2,[2,9,10,1],"horn"],[0.2234,0.3868,null,[2,3,4,5,6,8,9,10],"eye"],[0.59,0.3727,null,[2,3,4,5,6,8,9,10],"eye"]],
+      b9: [[0.5,0.4429,10,null,"body"],[0.3636,0.2385,4,null,"head"],[0.3916,0.8297,5,null,"leg"],[0.6399,0.8056,5,null,"leg"],[0.1154,0.499,0,null,"arm"],[0.9056,0.3988,0,null,"arm"],[0.3566,0.9579,11,null,"foot"],[0.6573,0.9579,11,null,"foot"]],
+      b10: [[0.513,0.3928,8,[8,1,2,9,10,11],"head"],[0.9457,0.2044,11,[11,8,1,10],"ear"],[0.1326,0.3066,11,[11,8,1,10],"ear"],[0.5,0.7856,9,[9,2,8,1,10],"chest"],[0.4109,0.9519,8,[8,1,2,9,10,11],"paw"],[0.5826,0.9499,8,[8,1,2,9,10,11],"paw"]],
+      b11: [[0.4413,0.6994,0,null,"body"],[0.6797,0.5711,4,null,"wing"]],
+      b12: [[0.2126,0.2986,7,null,"head"],[0.4977,0.6754,4,null,"case"],[0.6495,0.8216,3,null,"case"],[0.3458,0.8136,2,null,"case"],[0.4089,0.1643,0,[0,7],"cherry"],[0.6519,0.1804,6,null,"cream"],[0.1332,0.6774,9,null,"wing"],[0.8598,0.6934,9,null,"wing"]],
+      b13: [[0.4788,0.519,6,null,"body"],[0.4682,0.0782,7,null,"spot"],[0.5813,0.2886,null,[2,3,4,5,6,8,9,10],"eye"],[0.3781,0.2846,null,[2,3,4,5,6,8,9,10],"eye"]],
+      b14: [[0.4906,0.6733,3,null,"body"],[0.4192,0.499,0,[0,7],"mouth"],[0.2914,0.7816,2,null,"belly"],[0.3102,0.8617,1,null,"belly"],[0.1259,0.5271,6,null,"spike"],[0.5094,0.1343,6,null,"spike"]],
+      b15: [[0.5183,0.3848,10,[10,4,5,11],"body"],[0.7309,0.4529,10,[10,4,5,11],"fin"]],
+      b16: [[0.6214,0.7435,3,[3,2,8,1],"flipper"],[0.4827,0.489,8,[8,3,1,2],"shell"],[0.368,0.4128,1,[8,3,1,2],"shell"],[0.1327,0.4649,3,[3,2,8,1],"flipper"],[0.813,0.1463,3,[3,2,8,1],"flipper"],[0.6139,0.4449,8,[8,3,1,2],"shell"],[0.5098,0.2044,1,[8,3,1,2],"shell"]],
+      b17: [[0.4774,0.6032,3,null,"body"],[0.1955,0.1443,2,[2,9,10,1],"horn"],[0.2527,0.7535,3,null,"leg"],[0.5585,0.8277,3,null,"leg"],[0.6875,0.4088,1,null,"spike"]],
+      b18: [[0.1824,0.7655,2,[2,9,1,8],"sand"],[0.3419,0.6493,9,[2,9,1,8,10],"wall"],[0.4946,0.4329,1,[2,9,1,8,10],"tower"],[0.4514,0.2966,2,[2,9,1,8,10],"tower"],[0.4851,0.7094,8,[8,11,1,0],"door"],[0.5243,0.0641,0,null,"flag"],[0.8405,0.8056,5,null,"bucket"]],
+      b19: [[0.5411,0.517,7,null,"body"],[0.4249,0.3747,6,null,"mane"],[0.8499,0.4709,4,null,"tail"],[0.1926,0.3206,7,null,"head"]],
+      b20: [[0.5311,0.1202,4,[4,5,3,2,1],"sky"],[0.2786,0.3647,10,[10,8,4,6],"ear"],[0.8156,0.4309,10,[10,8,4,6],"ear"],[0.4369,0.6212,9,[9,2,10],"tusk"],[0.6313,0.7735,9,[9,2,10],"tusk"]],
+      b21: [[0.2667,0.497,1,[1,2,8],"body"],[0.5708,0.515,1,[1,2,8],"body"],[0.4792,0.7074,1,[1,2,8],"leg"],[0.1938,0.6794,1,[1,2,8],"leg"],[0.2917,0.7415,1,[1,2,8],"leg"],[0.2146,0.8597,9,[1,2,8,9],"paw"],[0.7333,0.8798,9,[1,2,8,9],"paw"]],
+      b22: [[0.4332,0.5571,8,[8,1,2,9,10,11],"body"],[0.4892,0.2485,8,[8,1,2,9,10,11],"head"],[0.8297,0.7856,8,[8,1,2,9,10,11],"tail"],[0.1552,0.3106,0,[0,7],"tongue"],[0.125,0.8617,8,[8,1,2,9,10,11],"paw"]],
+      b23: [[0.554,0.4389,3,null,"body"],[0.8014,0.7395,3,null,"tail"],[0.2144,0.7455,3,null,"leg"],[0.1655,0.2345,10,[10,2,9,8],"horn"],[0.0705,0.2024,10,[10,2,9,8],"horn"],[0.2619,0.5611,2,[2,1,9,3],"belly"],[0.259,0.6513,2,[2,1,9,3],"belly"]],
+      b24: [[0.232,0.5451,1,null,"wing"],[0.8099,0.5291,1,null,"wing"],[0.5434,0.4389,8,[8,11,10,3,6],"body"],[0.524,0.7876,8,[8,11,10,3,6,2],"body"]],
+      b25: [[0.5466,0.3527,3,[3,8,2,1],"shell"],[0.382,0.3126,8,[3,8,2,1],"shell"],[0.8898,0.4289,3,[3,8,2,9,10],"head"],[0.7112,0.2485,3,[3,8,2,1],"shell"],[0.6475,0.7856,3,[3,8,2,9,10],"leg"],[0.2578,0.2806,8,[3,8,2,1],"shell"],[0.573,0.1683,3,[3,8,2,1],"shell"],[0.4472,0.1002,8,[3,8,2,1],"shell"]],
+      b26: [[0.5533,0.4289,2,[2,1,8,9],"body"],[0.2393,0.2605,1,[1,8,2,0],"mane"],[0.0581,0.2986,2,[2,1,8,9],"face"],[0.8396,0.6553,2,[2,1,8,9],"leg"],[0.4232,0.7214,2,[2,1,8,9],"leg"],[0.8921,0.4589,8,[2,1,8,9],"tail"]],
+      b27: [[0.3333,0.4649,0,null,"shirt"],[0.458,0.6253,5,null,"shorts"],[0.2667,0.1804,9,[9,8,1,7],"face"],[0.1449,0.515,9,[9,8,1,7],"arm"],[0.6493,0.3367,9,[9,8,1,7],"arm"],[0.4493,0.7475,9,[9,8,1,7],"leg"],[0.229,0.0561,8,[8,11,2,1],"hair"]],
+      b28: [[0.2983,0.511,4,null,"panel"],[0.6706,0.3447,10,[10,4,5,11,2],"arm"],[0.1337,0.3447,10,[10,4,5,11,2],"arm"],[0.5967,0.7295,10,[10,4,5,11,2],"leg"],[0.2506,0.7134,10,[10,4,5,11,2],"leg"],[0.9236,0.1303,1,null,"glove"],[0.3055,0.8898,5,null,"boot"],[0.6611,0.8898,5,null,"boot"]],
+      b29: [[0.7597,0.5852,3,[3,8,2],"leg"],[0.3136,0.505,3,[3,8,2],"head"],[0.8513,0.3287,3,[3,8,2],"back"],[0.6456,0.3066,2,[2,3,9],"belly"],[0.7454,0.8096,3,[3,8,2],"foot"],[0.2627,0.2265,3,[3,8,2],"tail"],[0.1711,0.2425,3,[3,8,2],"tail"]],
+      b30: [[0.573,0.511,8,[8,1,2,9,10,11],"body"],[0.8796,0.1904,8,[8,1,2,9,10,11],"head"],[0.8587,0.6633,8,[8,1,2,9,10,11],"leg"],[0.3098,0.6373,8,[8,1,2,9,10,11],"leg"],[0.6565,0.3226,11,[11,8,2,10,1],"mane"],[0.7384,0.1743,11,[11,8,2,10,1],"mane"]],
+      b31: [[0.5207,0.7475,7,null,"body"],[0.6106,0.3768,7,null,"head"],[0.5968,0.5671,2,null,"nose"],[0.7258,0.2224,6,null,"mane"],[0.182,0.8116,6,null,"tail"],[0.8733,0.5711,4,null,"mane"],[0.3318,0.8978,6,null,"hoof"],[0.9101,0.9038,6,null,"hoof"]],
+      b32: [[0.5253,0.5631,8,[8,0,11,1],"beard"],[0.6582,0.4489,9,[9,7,0],"nose"],[0.4051,0.2004,11,[11,8,0,5],"hat"],[0.6646,0.2184,11,[11,8,0,5],"hat"],[0.5654,0.7876,0,null,"coat"],[0.3376,0.6293,0,null,"coat"],[0.4768,0.7475,8,[8,11],"belt"]],
+      b33: [[0.5437,0.6052,7,null,"body"],[0.7907,0.2826,4,null,"wing"],[0.4837,0.2244,4,null,"wing"],[0.741,0.7535,6,null,"tail"],[0.6484,0.5531,6,null,"tail"],[0.4494,0.6693,7,null,"leg"],[0.3739,0.3166,6,null,"mane"]],
+      b34: [[0.1717,0.1703,9,[9,8,7,1],"face"],[0.3042,0.4269,9,[9,8,7,1],"body"],[0.5813,0.1503,0,null,"hair"],[0.5241,0.2525,0,null,"hair"],[0.4398,0.2104,0,null,"hair"],[0.6114,0.4469,3,null,"fin"],[0.8042,0.4309,3,null,"fin"],[0.6024,0.6052,3,null,"tail"]],
+      b35: [[0.511,0.497,0,[0,2,1],"fire engine"],[0.2039,0.4248,0,[0,2,1],"fire engine"],[0.2193,0.8637,2,[2,3,10,0],"ambulance"],[0.4561,0.8577,2,[2,3,10,0],"ambulance"],[0.6316,0.9058,2,[2,3,10,0],"ambulance"],[0.4232,0.0701,5,[5,4,11,10],"police car"],[0.2281,0.1343,5,[5,4,11,10],"police car"]],
+      b36: [[0.2519,0.6934,10,[10,4,5,6,7],"dolphin"],[0.8788,0.7655,4,[10,4,5,3],"dolphin"],[0.8239,0.0982,6,null,"hair"],[0.7784,0.3026,3,[3,4,6,7],"tail"],[0.7462,0.6032,3,[3,4,6,7],"tail"]]
+    };
+    var CNAME = [["red", "rojo"], ["orange", "naranja"], ["yellow", "amarillo"], ["green", "verde"], ["light blue", "azul claro"], ["blue", "azul"], ["purple", "morado"],
+      ["pink", "rosa"], ["brown", "marrón"], ["skin colour", "color piel"], ["grey", "gris"], ["black", "negro"]];
+    var PART = { body: "el cuerpo", nose: "la punta", window: "la ventana", fin: "la aleta", flame: "la llama", beak: "el pico", foot: "el pie", wing: "el ala", eye: "el ojo",
+      leg: "la pata", tail: "la cola", ear: "la oreja", paw: "la pata", mouth: "la boca", face: "la cara", belly: "la barriga", head: "la cabeza", frill: "la gorguera",
+      horn: "el cuerno", arm: "el brazo", chest: "el pecho", "case": "el papel", cherry: "la cereza", cream: "la nata", spot: "la mancha", spike: "el pincho",
+      flipper: "la aleta", shell: "el caparazón", sand: "la arena", wall: "el muro", tower: "la torre", door: "la puerta", flag: "la bandera", bucket: "el cubo",
+      mane: "la melena", sky: "el cielo", tusk: "el colmillo", tongue: "la lengua", shirt: "la camiseta", shorts: "el pantalón", hair: "el pelo", panel: "el panel",
+      glove: "el guante", boot: "la bota", back: "la espalda", hoof: "la pezuña", beard: "la barba", hat: "el sombrero", coat: "el abrigo", belt: "el cinturón",
+      "fire engine": "el camión de bomberos", ambulance: "la ambulancia", "police car": "el coche de policía", dolphin: "el delfín" };
+    var FAMILY = [0, 1, 1, 2, 3, 3, 4, 0, 5, 5, 6, 6];   // crayons that are "nearly" the same: red/pink, orange/yellow, the blues, brown/skin, grey/black
+    function cn(i) { return L(CNAME[i][0], CNAME[i][1]); }
+    function an(w) { return (/^[aeiou]/.test(w) ? "an " : "a ") + w; }
+    var lastSaid = {};
+    function pick(key, list) {                        // a different line each time: never one of the last two said
+      var used = lastSaid[key] || [], free = list.filter(function (x, i) { return used.indexOf(i) < 0; }), k = list.indexOf(free[Math.floor(Math.random() * free.length)]);
+      lastSaid[key] = used.concat(k).slice(-Math.min(2, list.length - 1)); return list[k];
+    }
     var CRAYONS = ["#ff4d4d", "#ff9f1c", "#ffd21f", "#2ecc71", "#4cc9ff", "#3d5afe", "#9b5de5", "#ff6fb5", "#a0522d", "#f5d0a0", "#9e9e9e", "#333333"];
     var pad = document.getElementById("cPad"), pc = document.getElementById("cPaint"), lc = document.getElementById("cLive"), oc = document.getElementById("cLine");
     var px = pc.getContext("2d"), lx = lc.getContext("2d"), ox_ = oc.getContext("2d");
     var on = false, W = 0, H = 0, DPR = 1, T = { s: 1, x: 0, y: 0 }, img = null, imgFor = -1, label = null, ink = null, nLab = 0, area = [], req = [], got = null, cellLab = null, painted = null;
     var CELL = 3, gw = 0, gh = 0, inkDark = null, inkRed = null, masks = {}, maskOrder = [];
+    var model = [], byLab = {}, keys = [], colCell = null, looking = false, peeks = 0, hinted = {}, hintAt = 0, lookT = 0, memRes = null, restT = 0, recent = [];
     var strokes = [], curS = null, active = null, penAt = 0, penUsed = false, colour = CRAYONS[0], done = false, saidAt = 0, rect = null, t0 = 0, crossAt = 0, crosses = 0;
     function get(k, d) { try { var v = localStorage.getItem(k); return v === null ? d : v; } catch (e) { return d; } }
     function put(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
@@ -3191,7 +3262,9 @@
     if (!prog || typeof prog.open !== "number" || !prog.stars) prog = { pic: 0, open: 0, stars: {} };
     function save() { put("colourProg", JSON.stringify(prog)); }
     function pic() { return PICS[prog.pic] || PICS[0]; }
-    var opt = { quiet: get("colourQuiet", "0") === "1", all: get("colourAll", "0") === "1" };   // the grown-up's Menu choices
+    var LIMITS = [6, 10, 15, 0], LOOKS = { short: 0.7, normal: 1, long: 1.5 };
+    var opt = { quiet: get("colourQuiet", "0") === "1", all: get("colourAll", "0") === "1", mem: get("colourMem", "1") === "1",
+      look: LOOKS[get("colourLook", "")] ? get("colourLook", "") : "normal", limit: LIMITS.indexOf(+get("colourLimit", "10")) >= 0 ? +get("colourLimit", "10") : 10 };   // the grown-up's Menu choices
     function unlocked(i) { return opt.all || i <= prog.open || (PICS[i] && PICS[i].own); }
     function tell(text) { saidAt = Date.now(); voice.tell(text); }
     function brush() { var lv = Math.min(prog.pic, BUILTIN.length - 1); return pic().own ? 16 : Math.round(30 - lv * 0.45); }   // the crayon thins as the pictures get harder
@@ -3290,6 +3363,8 @@
       gw = Math.ceil(W / CELL); gh = Math.ceil(H / CELL); cellLab = new Int32Array(gw * gh); painted = new Uint8Array(gw * gh); got = new Int32Array(nLab + 1);
       for (y = 0; y < gh; y++) for (x = 0; x < gw; x++) cellLab[y * gw + x] = label[Math.min(H - 1, y * CELL + 1) * W + Math.min(W - 1, x * CELL + 1)];
       inkDark = inkLayer(43, 33, 96); inkRed = inkLayer(235, 40, 40); masks = {}; maskOrder = [];
+      colCell = new Int8Array(gw * gh).fill(-1);
+      resolve();
       return true;
     }
     function dilate(src, r) {                          // square max filter, rows then columns (running counts)
@@ -3312,6 +3387,104 @@
       for (var i = 0; i < W * H; i++) if (ink[i]) { a[i * 4] = r; a[i * 4 + 1] = g; a[i * 4 + 2] = b; a[i * 4 + 3] = 255; }
       cx.putImageData(im, 0, 0); return c;
     }
+    // ---- the picture's own colours: which shape is which part, and the shapes to remember ----
+    function resolve() {
+      model = []; byLab = {};
+      (MODELS[pic().id] || []).forEach(function (m) {
+        var l = targetAt(T.x + m[0] * img.width * T.s, T.y + m[1] * img.height * T.s);
+        if (l < 2 || byLab[l]) return;
+        var e = { lab: l, c: m[2], ok: m[3], part: m[4] }; model.push(e); byLab[l] = e;
+      });
+      var K = Math.max(2, Math.min(8, prog.memK || 3)), list = model.filter(function (e) { return e.c !== null && req[e.lab]; });
+      if (!list.length) {                              // a picture without a hand-made model (his own ones): the biggest shapes, in turn colours
+        var big = []; for (var l = 2; l <= nLab; l++) if (req[l]) big.push(l);
+        big.sort(function (a, b) { return area[b] - area[a]; });
+        list = big.slice(0, K).map(function (l, i) { return { lab: l, c: [0, 5, 2, 3, 1, 6, 7, 4][i % 8], ok: null, part: "" }; });
+      }
+      keys = list.slice(0, K);
+    }
+    function drawModel() {
+      var mc = document.getElementById("cModel"); mc.width = W; mc.height = H;
+      var cx = mc.getContext("2d"), im = cx.createImageData(W, H), a = im.data, col = {};
+      keys.forEach(function (e) { var h = CRAYONS[e.c]; col[e.lab] = [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; });
+      for (var i = 0; i < W * H; i++) { var c = col[label[i]]; if (c) { a[i * 4] = c[0]; a[i * 4 + 1] = c[1]; a[i * 4 + 2] = c[2]; a[i * 4 + 3] = 255; } }
+      cx.putImageData(im, 0, 0);
+    }
+    function showModel(on_) { document.getElementById("cModel").classList.toggle("on", on_); }
+    function memOn() { return opt.mem && keys.length > 0; }
+    function lookRound() {                            // shot 1: the coloured picture for a few seconds, then it fades and he colours it from memory
+      clearInterval(lookT); looking = true; peeks = 0; drawModel(); showModel(true); bar();
+      var left = Math.max(4, Math.round((3 + 1.5 * keys.length) * LOOKS[opt.look]));
+      tell(pick("look", [L("Look carefully and remember the colours!", "¡Mira bien y recuerda los colores!"),
+        L("Remember these colours. Look closely!", "Recuerda estos colores. ¡Mira con atención!"),
+        L("Memory game! Look at the colours, then colour it the same.", "¡Juego de memoria! Mira los colores y luego colorea igual."),
+        L("Try to remember where each colour goes.", "Intenta recordar dónde va cada color.")]));
+      function tick() {
+        document.getElementById("cLeft").textContent = "👀 " + left;
+        if (left-- > 0) return;
+        clearInterval(lookT); looking = false; showModel(false); bar();
+        tell(pick("go", [L("Now colour it from memory!", "¡Ahora colorea de memoria!"), L("Your turn! Which colours do you remember?", "¡Te toca! ¿Qué colores recuerdas?"),
+          L("Off you go! Use the colours you saw.", "¡Adelante! Usa los colores que viste.")]));
+      }
+      tick(); lookT = setInterval(tick, 1000);
+    }
+    function shapeColour(l) {                         // the crayon covering most of shape l now (-1: not coloured yet)
+      var n = new Int32Array(12), best = -1, bn = 0;
+      for (var i = 0; i < cellLab.length; i++) if (cellLab[i] === l && colCell[i] >= 0) n[colCell[i]]++;
+      for (var k = 0; k < 12; k++) if (n[k] > bn) { bn = n[k]; best = k; }
+      return best;
+    }
+    function memCheck() {                              // shot 2 checked: how many of the model colours he remembered (a wrong one is fine, only counted)
+      var ok = 0, near = 0;
+      keys.forEach(function (e) { var c = shapeColour(e.lab); if (c === e.c) ok++; else if (c >= 0 && FAMILY[c] === FAMILY[e.c]) near++; });
+      var r = ok / keys.length;
+      prog.memK = prog.memK || 3; prog.memOk = prog.memOk || 0;
+      if (r >= 0.8) { if (++prog.memOk >= 2) { prog.memK = Math.min(8, prog.memK + 1); prog.memOk = 0; } }   // two good rounds: one more colour to remember
+      else if (r < 0.5) { prog.memK = Math.max(2, prog.memK - 1); prog.memOk = 0; }
+      return { ok: ok, near: near, n: keys.length };
+    }
+    function hintFor(st) {                             // a strange colour for this part: say so, kindly, once per shape
+      var e = byLab[st.target]; if (!e || !e.ok || e.ok.indexOf(st.ci) >= 0 || hinted[st.target] || Date.now() - hintAt < 7000) return;
+      hinted[st.target] = 1; hintAt = Date.now();
+      var good = e.c !== null && e.ok.indexOf(e.c) >= 0 ? [e.c] : e.ok.slice(0, 2), ie = good.map(function (k) { return CNAME[k][0]; }).join(" or "), is = good.map(function (k) { return CNAME[k][1]; }).join(" o ");
+      var pe = e.part, ps = PART[pe] || pe, ce = CNAME[st.ci][0], cs = CNAME[st.ci][1];
+      if (pe === "eye" && st.ci === 11) return tell(pick("eye", [L("Careful! The eye already has its black dot. Try " + ie + " around it.", "¡Cuidado! El ojo ya tiene su punto negro. Prueba " + is + " alrededor."),
+        L("A black eye looks like a hole! Try a light colour, like " + ie + ".", "¡Un ojo negro parece un agujero! Prueba un color claro, como " + is + ".")]));
+      tell(pick("hint", [L("Hmm, " + an(ce + " " + pe) + "? Maybe try " + ie + ".", "Mmm, ¿" + ps + " de color " + cs + "? Prueba con " + is + "."),
+        L(an(ce + " " + pe).replace(/^a/, "A") + "? That's a funny colour! " + an(pe).replace(/^a/, "A") + " is usually " + ie + ".", "¿" + ps + " de color " + cs + "? ¡Qué color tan curioso! Suele ser " + is + "."),
+        L("Ooh, " + ce + "? I think the " + pe + " would look better in " + ie + ".", "Creo que " + ps + " quedaría mejor de color " + is + "."),
+        L("Lovely colouring! But " + an(pe) + " is usually " + ie + ".", "¡Muy bien! Pero " + ps + " suele ser de color " + is + ".")]));
+    }
+
+    // ---- too many times over the line: the picture stops and he rests for a minute ----
+    var REST = 60;
+    function restLeft() { return Math.max(0, Math.ceil((+get("colourRest", "0") - Date.now()) / 1000)); }
+    function showRest() {
+      var box = document.getElementById("cRest"), go = document.getElementById("cRestGo"), tt = document.getElementById("cRestT");
+      box.hidden = false; go.hidden = true; clearInterval(restT);
+      document.getElementById("cRestMsg").textContent = L("Too many times over the lines. Take your time, have a rest and come back more focused.", "Demasiadas veces fuera de las líneas. Tómate tu tiempo, descansa y vuelve con más atención.");
+      function tick() {
+        var n = restLeft();
+        tt.textContent = n ? L("Rest", "Descansa") + " " + Math.floor(n / 60) + ":" + ("0" + n % 60).slice(-2) : "";
+        if (n) return;
+        clearInterval(restT); go.hidden = false; go.textContent = L("Try again, slowly", "Inténtalo otra vez, despacio");
+      }
+      tick(); restT = setInterval(tick, 1000);
+    }
+    function stopPicture() {
+      done = true; active = null; curS = null; clearInterval(lookT); looking = false; showModel(false);
+      put("colourRest", String(Date.now() + REST * 1000));
+      logIt({ stopped: true });
+      showRest(); bar();
+      tell(pick("stop", [L("Oh no! Too many times over the lines. Take your time, have a little rest, and come back more focused.", "¡Oh no! Demasiadas veces fuera de las líneas. Tómate tu tiempo, descansa un poco y vuelve con más atención."),
+        L("Stop! The crayon went over the lines too many times. Rest for a minute, then try again slowly and carefully.", "¡Para! El color se salió demasiadas veces. Descansa un minuto y vuelve a intentarlo despacio y con cuidado.")]));
+    }
+    document.getElementById("cRestGo").onclick = function () { document.getElementById("cRest").hidden = true; load(prog.pic); };
+    document.getElementById("cPeek").onclick = function () {
+      if (looking || done || peeks >= 2 || !memOn()) return;
+      peeks++; showModel(true); bar(); setTimeout(function () { if (!looking) showModel(false); }, 2000);
+    };
+
     function drawLines(red) { ox_.clearRect(0, 0, W, H); ox_.drawImage(red ? inkRed : inkDark, 0, 0, W, H); }
     function mask(t) {                                 // where a stroke meant for shape t may paint: the shape itself and the lines around it
       if (masks[t]) return masks[t];
@@ -3333,7 +3506,8 @@
         y0 = Math.max(0, Math.floor((Y - rad) / CELL)), y1 = Math.min(gh - 1, Math.floor((Y + rad) / CELL));
       for (var cy = y0; cy <= y1; cy++) for (var cx = x0; cx <= x1; cx++) {
         var ddx = cx * CELL + 1 - X, ddy = cy * CELL + 1 - Y; if (ddx * ddx + ddy * ddy > r2) continue;
-        var i = cy * gw + cx; if (painted[i] || cellLab[i] !== st.target) continue;
+        var i = cy * gw + cx; if (cellLab[i] !== st.target) continue;
+        colCell[i] = st.ci; if (painted[i]) continue;
         painted[i] = 1; got[st.target]++;
       }
     }
@@ -3351,8 +3525,8 @@
     }
     function commit() { px.drawImage(lc, 0, 0, W, H); lx.clearRect(0, 0, W, H); }
     function replay(keep) {                            // keep: same picture and size (an undo) - redraw without reading the page again
-      if (keep && label && W === pad.clientWidth && H === pad.clientHeight) { painted = new Uint8Array(gw * gh); got = new Int32Array(nLab + 1); }
-      else if (!measure()) return;
+      if (keep && label && W === pad.clientWidth && H === pad.clientHeight) { painted = new Uint8Array(gw * gh); got = new Int32Array(nLab + 1); colCell = new Int8Array(gw * gh).fill(-1); }
+      else { if (!measure()) return; if (keys.length) drawModel(); }
       px.clearRect(0, 0, W, H); lx.clearRect(0, 0, W, H); drawLines(false);
       strokes.forEach(function (st) { var q = P(st.pts[0]); st.target = targetAt(q[0], q[1]); segment(st, st.pts[0], st.pts[0]);
         for (var i = 1; i < st.pts.length; i++) segment(st, st.pts[i - 1], st.pts[i]); commit(); });
@@ -3381,12 +3555,31 @@
     var redT = 0;
     function crossed() {
       var now = Date.now(); if (now - crossAt < 900) return; crossAt = now; crosses++;
+      recent = recent.filter(function (t) { return now - t < 20000; }).concat(now);
+      if (opt.limit && crosses >= opt.limit) { drawLines(true); setTimeout(function () { drawLines(false); }, 450); bonk(); return stopPicture(); }
+      var warnLimit = opt.limit && crosses === opt.limit - 2;
       if (opt.quiet) { drawLines(true); clearTimeout(redT); redT = setTimeout(function () { drawLines(false); }, 450); bar(); return; }   // quiet: only the red lines
       pad.classList.remove("shake"); void pad.offsetWidth; pad.classList.add("shake");
       drawLines(true); clearTimeout(redT); redT = setTimeout(function () { drawLines(false); }, 450);
       bonk(); try { if (navigator.vibrate) navigator.vibrate(120); } catch (e) {}
-      if (now - saidAt > 6000) tell(L("Oops! Stay inside the lines.", "¡Uy! No te salgas de las líneas."));
+      if (warnLimit || now - saidAt > 6000) tell(crossLine(warnLimit));
       bar();
+    }
+
+    function crossLine(warnLimit) {
+      if (warnLimit) return pick("limit", [L("Careful! Two more times over the line and the picture has to stop.", "¡Cuidado! Dos veces más fuera de la línea y el dibujo se para."),
+        L("Watch out! The crayon is going over the lines a lot. Slow down, or the picture will stop.", "¡Atención! Te sales mucho de las líneas. Ve más despacio o el dibujo se parará.")]);
+      if (crosses === 1) return pick("first", [L("Oops! Stay inside the lines.", "¡Uy! No te salgas de las líneas."), L("Oh! That went over the line.", "¡Oh! Eso se salió de la línea."),
+        L("Careful, the line is a wall. Keep the colour inside.", "Cuidado, la línea es una pared. Deja el color dentro.")]);
+      if (recent.length >= 3) return pick("fast", [L("Slow down a little. Go gently near the lines.", "Ve un poco más despacio cerca de las líneas."),
+        L("Lots of slips! Try smaller strokes near the edges.", "¡Muchos fallos! Haz trazos más pequeños cerca de los bordes."),
+        L("Take your time. Slow and careful wins the stars.", "Tómate tu tiempo. Despacio y con cuidado se ganan las estrellas."),
+        L("Hold the pen gently and go slowly by the lines.", "Coge el lápiz con suavidad y ve despacio junto a las líneas.")]);
+      if (label && score().pct >= 0.7) return pick("near", [L("Nearly done! Careful at the edges.", "¡Casi terminado! Cuidado con los bordes."),
+        L("So close! Keep it neat to the end.", "¡Casi! Hazlo con cuidado hasta el final.")]);
+      return pick("cross", [L("Please stay inside the lines.", "Por favor, no te salgas de las líneas."), L("Don't cross the line!", "¡No cruces la línea!"),
+        L("Oops, outside again. Stop just before the line.", "Uy, fuera otra vez. Para justo antes de la línea."), L("Keep the colour inside the shape.", "Deja el color dentro de la forma."),
+        L("Whoa, careful! The line is the edge.", "¡Ojo! La línea es el borde."), L("Try to stop before you reach the line.", "Intenta parar antes de llegar a la línea.")]);
     }
 
     // ---- input ----
@@ -3396,10 +3589,10 @@
     pad.addEventListener("pointerdown", function (e) {
       e.preventDefault();
       if (e.pointerType === "pen") { penAt = Date.now(); penUsed = true; }
-      if (active !== null || palm(e) || done || !label) return;
+      if (active !== null || palm(e) || done || looking || !label) return;
       active = e.pointerId; rect = pad.getBoundingClientRect(); try { pad.setPointerCapture(e.pointerId); } catch (x) {}
       var p = pt(e), q = P(p);
-      curS = { c: colour, w: brush() * (penUsed ? 0.8 : 1), pts: [p], target: targetAt(q[0], q[1]), was: true };
+      curS = { c: colour, ci: CRAYONS.indexOf(colour), w: brush() * (penUsed ? 0.8 : 1), pts: [p], target: targetAt(q[0], q[1]), was: true };
       strokes.push(curS); segment(curS, p, p);
     });
     pad.addEventListener("pointermove", function (e) {
@@ -3415,8 +3608,9 @@
       });
     });
     function up(e) {
-      if (e.pointerId !== active) return; active = null; curS = null;
+      if (e.pointerId !== active) return; var st = curS; active = null; curS = null;
       commit(); check();
+      if (st && !done) hintFor(st);
     }
     pad.addEventListener("pointerup", up); pad.addEventListener("pointercancel", up);
     pad.addEventListener("contextmenu", function (e) { e.preventDefault(); });
@@ -3428,36 +3622,52 @@
       var n = stars(), id = pic().id;
       prog.stars[id] = Math.max(prog.stars[id] || 0, n);
       if (!pic().own) prog.open = Math.max(prog.open, Math.min(BUILTIN.length - 1, prog.pic + 1));
+      memRes = memOn() ? memCheck() : null;
       save();
-      var log; try { log = JSON.parse(get("colourLog", "[]")); } catch (e) { log = []; }
-      var d = new Date(), two = function (x) { return (x < 10 ? "0" : "") + x; };
-      log.push({ d: d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()) + " " + two(d.getHours()) + ":" + two(d.getMinutes()),
-        pic: pic().en, stars: n, crosses: crosses, strokes: strokes.length, sec: Math.round((Date.now() - t0) / 1000), pen: penUsed });
-      put("colourLog", JSON.stringify(log.slice(-1000)));
+      logIt({ stars: n, mem: memRes ? memRes.ok + "/" + memRes.n : undefined, peeks: memRes ? peeks : undefined });
       confetti(n === 3 ? 140 : 80); bar();
-      tell(n === 3 ? L("Perfect! You stayed inside the lines. Three stars!", "¡Perfecto! No te saliste de las líneas. ¡Tres estrellas!")
-        : n === 2 ? L("Great colouring! Two stars!", "¡Muy bien coloreado! ¡Dos estrellas!")
-        : L("All done! Stay inside the lines next time for more stars.", "¡Terminado! La próxima vez no te salgas de las líneas y ganarás más estrellas."));
+      var say = n === 3 ? pick("s3", [L("Perfect! You stayed inside the lines. Three stars!", "¡Perfecto! No te saliste de las líneas. ¡Tres estrellas!"),
+          L("Amazing! So neat. Three stars!", "¡Increíble! Muy limpio. ¡Tres estrellas!"), L("Wow, a careful artist! Three stars!", "¡Qué artista tan cuidadoso! ¡Tres estrellas!")])
+        : n === 2 ? pick("s2", [L("Great colouring! Two stars!", "¡Muy bien coloreado! ¡Dos estrellas!"), L("Lovely! Two stars. A bit slower at the lines for three.", "¡Precioso! Dos estrellas. Un poco más despacio en las líneas para tres.")])
+        : pick("s1", [L("All done! Stay inside the lines next time for more stars.", "¡Terminado! La próxima vez no te salgas de las líneas y ganarás más estrellas."),
+          L("Finished! Next time, go slowly by the lines.", "¡Terminado! La próxima vez, ve despacio junto a las líneas.")]);
+      if (memRes) {
+        say += " " + (memRes.ok === memRes.n ? pick("m3", [L("And you remembered every colour!", "¡Y recordaste todos los colores!"), L("Super memory! All the colours right!", "¡Súper memoria! ¡Todos los colores bien!")])
+          : memRes.ok ? L("You remembered " + memRes.ok + " of " + memRes.n + " colours. Look, here they are!", "Recordaste " + memRes.ok + " de " + memRes.n + " colores. ¡Mira, aquí están!")
+          : L("Here are the colours to remember. Next time look really carefully!", "Estos eran los colores. ¡La próxima vez mira muy bien!"));
+        showModel(true); setTimeout(function () { showModel(false); }, 3500);   // the model comes back for a moment, so he can compare
+      }
+      tell(say);
+    }
+    function logIt(x) {
+      var log; try { log = JSON.parse(get("colourLog", "[]")); } catch (e) { log = []; }
+      var d = new Date(), two = function (v) { return (v < 10 ? "0" : "") + v; }, o = { d: d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()) + " " + two(d.getHours()) + ":" + two(d.getMinutes()),
+        pic: pic().en, crosses: crosses, strokes: strokes.length, sec: Math.round((Date.now() - t0) / 1000), pen: penUsed };
+      for (var k in x) if (x[k] !== undefined) o[k] = x[k];
+      log.push(o); put("colourLog", JSON.stringify(log.slice(-1000)));
     }
     function starTxt(n) { return "★★★".slice(0, n) + "☆☆☆".slice(n); }
     function bar() {
       var p = pic(), best = prog.stars[p.id] || 0, s = label ? score() : { pct: 0 };
       document.getElementById("cTitle").textContent = "🎨 " + (p.own ? "⭐" : (prog.pic + 1) + "/" + BUILTIN.length) + " · " + L(p.en, p.es.replace(/^(el|la|los|las|tu) /, ""));
       document.getElementById("cStars").textContent = done ? starTxt(stars()) : best ? starTxt(best) : "";
-      document.getElementById("cLeft").textContent = done ? "" : Math.min(100, Math.round(s.pct / 0.85 * 100)) + "%" + (crosses ? "  ·  " + L("over the line: ", "fuera: ") + crosses : "");
+      if (!looking) document.getElementById("cLeft").textContent = done ? (memRes ? "🧠 " + memRes.ok + "/" + memRes.n : "") : Math.min(100, Math.round(s.pct / 0.85 * 100)) + "%" + (crosses ? "  ·  " + L("over the line: ", "fuera: ") + crosses + (opt.limit ? "/" + opt.limit : "") : "");
+      var pk = document.getElementById("cPeek"); pk.hidden = !memOn() || done || looking; pk.disabled = peeks >= 2;
       document.getElementById("cPrev").disabled = prog.pic === 0;
       document.getElementById("cNext").disabled = !unlocked(prog.pic + 1);
-      document.getElementById("cNext").classList.toggle("go", done && prog.pic < PICS.length - 1);
+      document.getElementById("cNext").classList.toggle("go", done && !restLeft() && prog.pic < PICS.length - 1);
     }
     function load(i) {
       if (!PICS[i] || !unlocked(i)) return;
       prog.pic = i; save();
-      strokes = []; done = false; crosses = 0; t0 = Date.now(); label = null;
+      strokes = []; done = false; crosses = 0; t0 = Date.now(); label = null; keys = []; memRes = null; hinted = {}; recent = []; peeks = 0;
+      clearInterval(lookT); looking = false; showModel(false); document.getElementById("cRest").hidden = true;
+      if (restLeft()) { done = true; bar(); showRest(); return; }   // still resting after a stopped picture
       var im = new Image(); imgFor = i;
-      im.onload = function () { if (imgFor !== i) return; img = im; replay(); };
+      im.onload = function () { if (imgFor !== i) return; img = im; replay(); if (memOn()) lookRound(); else tell(pick("intro", [L("Colour the " + PICS[i].en + ". Stay inside the lines!", "Colorea " + PICS[i].es + ". ¡No te salgas de las líneas!"),
+        L("Let's colour the " + PICS[i].en + "! Nice and neat.", "¡Vamos a colorear " + PICS[i].es + "! Con cuidado.")])); };
       im.src = PICS[i].src;
       bar();
-      tell(L("Colour the " + PICS[i].en + ". Stay inside the lines!", "Colorea " + PICS[i].es + ". ¡No te salgas de las líneas!"));
     }
     // ---- the picture gallery ----
     var gal = document.getElementById("cGal");
@@ -3486,13 +3696,19 @@
     function top() { var h = document.querySelector("header"); if (h) document.documentElement.style.setProperty("--wtop", Math.round(h.getBoundingClientRect().bottom + 8) + "px"); }
     window.addEventListener("resize", function () { if (on) top(); });
     return {
-      start: function () { on = true; gal.hidden = true; setTimeout(function () { top(); if (!img || done) load(done && unlocked(prog.pic + 1) ? prog.pic + 1 : prog.pic); else replay(); }, 30); },   // after the panel is laid out
-      stop: function () { on = false; active = null; },
+      start: function () { on = true; gal.hidden = true; setTimeout(function () { top(); if (restLeft()) { done = true; bar(); showRest(); } else if (!img || done) load(done && unlocked(prog.pic + 1) ? prog.pic + 1 : prog.pic); else replay(); }, 30); },   // after the panel is laid out
+      stop: function () { on = false; active = null; clearInterval(restT); if (looking) { clearInterval(lookT); looking = false; showModel(false); img = null; } },
       addOwn: addOwn, clearOwn: clearOwn,
       ownCount: function () { return PICS.length - BUILTIN.length; },
-      opt: function (k) { if (k) { opt[k] = !opt[k]; put(k === "quiet" ? "colourQuiet" : "colourAll", opt[k] ? "1" : "0"); } return opt; },
+      opt: function (k) {
+        if (k === "look") { opt.look = { short: "normal", normal: "long", long: "short" }[opt.look]; put("colourLook", opt.look); }
+        else if (k === "limit") { opt.limit = LIMITS[(LIMITS.indexOf(opt.limit) + 1) % LIMITS.length]; put("colourLimit", String(opt.limit)); }
+        else if (k) { opt[k] = !opt[k]; put({ quiet: "colourQuiet", all: "colourAll", mem: "colourMem" }[k], opt[k] ? "1" : "0"); }
+        return opt;
+      },
       pics: function () { return PICS; },
-      peek: function () { var s = label ? score() : null; return { pic: prog.pic, open: prog.open, done: done, crosses: crosses, shapes: nLab - 1, paper: area[1], score: s, T: T, W: W, H: H }; }   // for the grown-up's computer
+      peek: function () { var s = label ? score() : null; return { pic: prog.pic, open: prog.open, done: done, crosses: crosses, shapes: nLab - 1, paper: area[1], score: s, T: T, W: W, H: H,
+        last: strokes.length ? [strokes[strokes.length - 1].target, strokes[strokes.length - 1].ci] : null, hinted: Object.keys(hinted), byLab: Object.keys(byLab), memK: prog.memK || 3, keys: keys.map(function (e) { return [e.lab, e.c, e.part]; }), looking: looking, rest: restLeft() }; }   // for the grown-up's computer
     };
   })();
 
@@ -3898,6 +4114,9 @@
       var co = colouring.opt();
       $("cShake").textContent = "Shake and buzz over the line: " + (co.quiet ? "OFF" : "ON") + " (off: the lines only flash red)";
       $("cAll").textContent = "All pictures open: " + (co.all ? "ON" : "OFF") + " (off: finish one to open the next)";
+      $("cMem").textContent = "Memory game: " + (co.mem ? "ON" : "OFF") + " (look at the coloured picture, then colour it from memory)";
+      $("cLook").textContent = "Look time: " + { short: "Short", normal: "Normal", long: "Long" }[co.look]; $("cLook").disabled = !co.mem;
+      $("cLimit").textContent = "Stop the picture after: " + (co.limit ? co.limit + " times over the line" : "Never") + " (then a 1 min rest)";
       $("pVol").textContent = "Loudness limit: " + window.pianoLoud() + " %";
       $("pSnd").textContent = "He can change the sound: " + (window.pianoSndFix() ? "OFF" : "ON");
       $("cClear").textContent = "Remove my own pictures: " + colouring.ownCount(); $("cClear").disabled = !colouring.ownCount();
@@ -3954,6 +4173,9 @@
     $("wTol").onclick = function () { writing.strictness(true); label(); };
     $("cShake").onclick = function () { colouring.opt("quiet"); label(); };
     $("cAll").onclick = function () { colouring.opt("all"); label(); };
+    $("cMem").onclick = function () { colouring.opt("mem"); label(); };
+    $("cLook").onclick = function () { colouring.opt("look"); label(); };
+    $("cLimit").onclick = function () { colouring.opt("limit"); label(); };
     function cycle(list, v) { return list[(list.indexOf(v) + 1) % list.length]; }
     $("qOn").onclick = function () { quiz.cfg.on = !quiz.cfg.on; quiz.save(); label(); };
     $("qEvery").onclick = function () { quiz.cfg.every = cycle([1, 2, 3, 4], quiz.cfg.every); quiz.save(); label(); };
