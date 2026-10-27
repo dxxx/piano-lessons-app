@@ -44,19 +44,30 @@ var follow = (function () {
       .catch(function () { index = []; loading = false; done(); });
   }
   function lessonIds() { try { return JSON.parse(localStorage.getItem("lessonIds") || "[]"); } catch (e) { return []; } }
+  // ---- Favourites (operator 2026-10-27): a heart on every card; hearted songs go to the top of whichever tab they are in ----
+  function favs() { try { return JSON.parse(localStorage.getItem("songFav") || "[]"); } catch (e) { return []; } }
+  function toggleFav(id) {
+    var f = favs(), i = f.indexOf(id);
+    if (i >= 0) f.splice(i, 1); else f.push(id);
+    try { localStorage.setItem("songFav", JSON.stringify(f)); } catch (e) {}
+    if (window.diary) diary.ev("song_fav", { id: id, on: i < 0 });
+    list();
+  }
   function list() {
-    var box = $("songList"), ids = lessonIds();
+    var box = $("songList"), ids = lessonIds(), fav = favs();
     stopPreview();
     $("songTip").textContent = L("Tap a song once to listen. Tap it twice to play it yourself.", "Toca una canción una vez para escucharla. Dos veces para tocarla tú.");
-    [].forEach.call($("songTabs").children, function (b) { b.classList.toggle("sel", +b.dataset.lv === tab); });
+    [].forEach.call($("songTabs").children, function (b) { b.classList.toggle("sel", String(b.dataset.lv) === String(tab)); });
     [].forEach.call($("songHand").children, function (b) { b.classList.toggle("sel", b.dataset.h === cfg.hand); });
     if (!index.length) { box.innerHTML = '<p class="songnone">' + L("No songs on this tablet yet. A grown-up adds them from the computer.", "Todavía no hay canciones en esta tableta.") + "</p>"; return; }
-    var mine = index.filter(function (s) { return s.lv === tab; });
-    mine.sort(function (a, b) { return (ids.indexOf(b.yt) >= 0) - (ids.indexOf(a.yt) >= 0) || a.n - b.n; });   // songs from his lessons first
+    var custom = tab === "c";                                     // 4th tab: the modern songs from our playlist (cat "custom"), not Synthesia's
+    var mine = index.filter(function (s) { return custom ? s.cat === "custom" : s.lv === tab && s.cat !== "custom"; });
+    mine.sort(function (a, b) { return (fav.indexOf(b.id) >= 0) - (fav.indexOf(a.id) >= 0) || (ids.indexOf(b.yt) >= 0) - (ids.indexOf(a.yt) >= 0) || (custom ? a.lv - b.lv : 0) || a.n - b.n; });   // hearted first, then songs from his lessons
     box.innerHTML = mine.map(function (s) {
       var p = prog[s.id], stars = p ? LV[p.best] : "", lesson = s.yt && ids.indexOf(s.yt) >= 0;
-      return '<button data-id="' + s.id + '"><b>' + esc(s.t) + "</b><span>" + (lesson ? "🎬 " + L("from your lessons", "de tus lecciones") + " · " : "") +
-        s.n + " " + L("notes", "notas") + (stars ? ' · <i class="st">' + stars + "</i>" : "") + "</span></button>";
+      var hf = fav.indexOf(s.id) >= 0;
+      return '<button data-id="' + s.id + '"' + (hf ? ' class="fav"' : "") + '><i class="heart" role="button" aria-label="' + L("Favourite", "Favorita") + '">' + (hf ? "&#10084;&#65039;" : "&#9825;") + "</i><b>" + esc(s.t) + "</b><span>" + (lesson ? "🎬 " + L("from your lessons", "de tus lecciones") + " · " : "") +
+        (custom ? LV[s.lv] + " · " : "") + s.n + " " + L("notes", "notas") + (stars ? ' · <i class="st">' + stars + "</i>" : "") + "</span></button>";
     }).join("") || '<p class="songnone">—</p>';
   }
   // ---- Listen first: one tap plays the song (all of it; a slow tap again, another song or closing the list stops it); two quick taps (within 0.45 s) pick it ----
@@ -226,9 +237,9 @@ var follow = (function () {
     $("songBtn").onclick = function () { if (song) stop(); openList(); };
     $("songX").onclick = closeList;
     $("songPop").onclick = function (e) { if (e.target === $("songPop")) closeList(); };
-    $("songTabs").onclick = function (e) { var b = e.target.closest("button"); if (b) { tab = +b.dataset.lv; list(); } };
+    $("songTabs").onclick = function (e) { var b = e.target.closest("button"); if (b) { tab = b.dataset.lv === "c" ? "c" : +b.dataset.lv; list(); } };
     $("songHand").onclick = function (e) { var b = e.target.closest("button"); if (b) { cfg.hand = b.dataset.h; saveCfg(); list(); } };
-    $("songList").onclick = function (e) { var b = e.target.closest("button[data-id]"); if (b) tapSong(b); };
+    $("songList").onclick = function (e) { var h = e.target.closest(".heart"), b = e.target.closest("button[data-id]"); if (!b) return; if (h) { stopPreview(); toggleFav(b.dataset.id); } else tapSong(b); };
     $("fwStop").onclick = stop;
     $("fwHint").onclick = hint;
     $("songBtn").innerHTML = "🎵 " + L("Songs", "Canciones");

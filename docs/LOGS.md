@@ -40,6 +40,7 @@ Every line has `k`, `at` (UTC ISO) and `day` (local "YYYY-MM-DD HH:MM").
 | `song_start` | Follow the keys started: `id`, `hand` (RL / R / L), `steps` |
 | `song` | A song played to the end: `id`, `t` (title), `hand`, `steps`, `first` (steps right first time), `miss` (wrong keys), `sec`, `stars` (1–3) |
 | `song_stop` | A song stopped before the end: `id`, `at` (step reached), `steps` |
+| `song_fav` | A heart tapped in the song list: `id`, `on` (true = now a favourite) |
 | `mash` | Slow-down pause after random key mashing: `kind` (slam / scramble, the last burst), `bursts` (3: bursts within 10 s that led to it), `strike` (1, 2, 3… within 10 min), `pause` (seconds) |
 | `beat` | One metronome run in Piano only: `bpm`, `beats` (in a bar), `sec`, `notes` (played while it ran), `hits` (notes within 0.12 s of a click) |
 | `colour` | One colouring result: `d`, `pic`, `crosses`, `strokes`, `sec`, `pen`, plus stars and memory-game fields |

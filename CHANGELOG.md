@@ -4,6 +4,13 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.32 — 2026-10-27
+- **🎧 Custom songs: a 4th tab in Songs** for the modern songs from our YouTube playlist (Linkin Park, Coldplay, Faded, Interstellar, Pirates…), apart from the Synthesia library, which stays in Easy / Medium / Hard. Each card shows its level stars; easier ones first. A song file marked `cat: "custom"` goes there (the private exporter marks the playlist songs).
+- **Playlist songs now come from their audio**: every note is heard by a piano-transcription model from the video's sound track (fast repeated notes included), the hand of each note still comes from the video's bar colours. Cleaner songs for the app and for our own lesson videos (done in the private piano-tutorials folder, never in this repo).
+- **Fix: song cards with a two-line title** spilled their note count out of the card (Hard and Custom tabs); the list rows now grow to fit.
+- **♡ Favourites:** every song card has a heart (top right). Tap the heart to mark a song as a favourite (it turns red and the card gets a pink edge); favourites go to the top of whatever tab they are in (Easy, Medium, Hard or Custom). Tapping the heart only toggles it: the song doesn't play. Saved on the tablet (`songFav`).
+- **Smaller card text** (title 15 px, details 12 px) and long words wrap inside the card, so no text runs over the card's border.
+
 ## 1.31 — 2026-10-27
 - **Songs: long notes stay their full length.** A note he has caught no longer vanishes at once: its bar keeps flowing down into the key until its time is up, so a long note shows as long (it vanished the moment he pressed it).
 
