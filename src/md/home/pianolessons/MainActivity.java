@@ -79,6 +79,7 @@ public class MainActivity extends Activity {
         fileCb = null;
     }
     private EyeGuard eye;
+    private NativePiano piano;   // low-latency grand piano (window.NPiano)
     private boolean eyeOn, eyeMenuOpen, eyeResumed;
 
     @Override
@@ -109,6 +110,11 @@ public class MainActivity extends Activity {
         });
         web.addJavascriptInterface(new Parent(), "Parent");
         web.addJavascriptInterface(new Voice(), "Voice");
+        piano = new NativePiano(this);
+        web.addJavascriptInterface(piano, "NPiano");
+        KeyOverlay keyOverlay = new KeyOverlay(this, web, piano);   // native touch over the page's keys
+        root.addView(keyOverlay, new FrameLayout.LayoutParams(1, 1));
+        web.addJavascriptInterface(keyOverlay, "NKeys");
         eye = new EyeGuard(this, new EyeGuard.Listener() {
             @Override
             public void onEvent(String type, String arg) { jsEye(type, arg); }
@@ -225,10 +231,12 @@ public class MainActivity extends Activity {
         if (tts != null) tts.stop();
         web.evaluateJavascript("window.lockMenu&&window.lockMenu()", null);   // the grown-up menu relocks
         web.onPause();
+        piano.stop();                           // free the low-latency audio stream in the background
     }
 
     @Override
     protected void onDestroy() {
+        piano.stop();
         eye.stop();
         stopListening();
         freeModel();
@@ -505,6 +513,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         web.onResume();
+        piano.start();
         eyeResumed = true; eyeRefresh();
         ensurePinned();
     }

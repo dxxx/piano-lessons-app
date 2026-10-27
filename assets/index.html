@@ -1382,7 +1382,7 @@
     document.body.classList.toggle("sndfix", sndFix);
     window.pianoLoud = function (next) {
       if (next) { loud = LOUD[(LOUD.indexOf(loud) + 1) % LOUD.length]; try { localStorage.setItem("loudMax", loud); } catch (e) {}
-        if (ctx) { out.gain.setTargetAtTime(loud / 100, ctx.currentTime, 0.05); } }
+        if (ctx) { out.gain.setTargetAtTime(loud / 100, ctx.currentTime, 0.05); } natCfg(); }
       return loud;
     };
     window.pianoSndFix = function (next) {
@@ -1603,6 +1603,7 @@
         held_.forEach(function (k) { noteOff(+k); });
         robotLast = midi;
       }
+      if (kind === "grand" && nat()) { NPiano.on(midi, vel || 0.8); voices[midi] = { nat: true }; return; }   // native low-latency engine
       var set = SETS[kind];
       if (set) {
         loadSet(kind);
@@ -1630,12 +1631,39 @@
       }
       return buf;
     }
-    function applySpace() { if (wet) wet.gain.setTargetAtTime(SPACE[space].wet, ctx.currentTime, 0.05); }
+    // Native grand piano (Android NPiano): sound written straight into a low-latency stream, no Web Audio on the way
+    var natOk = false;
+    function nat() { if (!natOk) { try { natOk = !!(window.NPiano && NPiano.ready()); if (natOk) natCfg(); } catch (e) {} } return natOk; }
+    // Native touch: the app lays its own touch view over our keys (window.NKeys) when the grand piano plays natively;
+    // we send it the key rectangles in device pixels and it tells us back which key to light (pianoNat)
+    var natSent = "";
+    function natKeys() {
+      if (!window.NKeys) return;
+      var list = [], dpr = window.devicePixelRatio || 1;
+      if (document.body.classList.contains("play") && instrument === "grand" && nat() && keysEl.offsetWidth) {
+        Array.prototype.forEach.call(keysEl.querySelectorAll("[data-m]"), function (el) {
+          var r = el.getBoundingClientRect();
+          list.push([+el.dataset.m, r.left * dpr, r.top * dpr, r.right * dpr, r.bottom * dpr, el.classList.contains("bk") ? 1 : 0]);
+        });
+      }
+      var j = JSON.stringify(list.map(function (k) { return k.map(function (v) { return Math.round(v * 10) / 10; }); }));
+      if (j !== natSent) { natSent = j; try { NKeys.keys(j); NKeys.sens(SENS_K[sens]); } catch (e) {} }
+    }
+    setInterval(natKeys, 400);                 // the keyboard moves with Big video / Normal view: keep the touch view on it
+    window.addEventListener("resize", natKeys);
+    window.pianoNat = function (m, on) {
+      var el = keysEl.querySelector('[data-m="' + m + '"]'); if (!el) return;
+      if (on) { el.classList.add("on"); act.note(m, instrument); } else el.classList.remove("on");
+    };
+    function natCfg() { try { if (window.NPiano) NPiano.cfg(loud / 100, SPACE[space].wet, SPACE[space].w); } catch (e) {} }
+    function applySpace() { natCfg(); if (wet) wet.gain.setTargetAtTime(SPACE[space].wet, ctx.currentTime, 0.05); }
     function panFor(midi) { return Math.max(-1, Math.min(1, (midi - 60) / 14)) * SPACE[space].w; }
     function setSpace(s) { space = s; try { localStorage.setItem("soundSpace", s); } catch (e) {} applySpace(); }
 
     function noteOff(midi, instant) {
-      var v = voices[midi]; if (!v || !ctx) return;
+      var v = voices[midi]; if (!v) return;
+      if (v.nat) { if (!instant) NPiano.off(midi); delete voices[midi]; return; }   // the native engine handles retrigger itself
+      if (!ctx) return;
       var t = ctx.currentTime, rel = instant ? 0.02 : v.rel, gp = v.g.gain;
       if (v.robot != null) { robotLast = v.robot; robotOffT = t; }
       if (gp.cancelAndHoldAtTime) gp.cancelAndHoldAtTime(t);
@@ -1656,7 +1684,7 @@
       hint();
     }
 
-    function releaseAll() { Object.keys(held).forEach(function (k) { release(k); }); }
+    function releaseAll() { Object.keys(held).forEach(function (k) { release(k); }); try { if (natOk) NPiano.allOff(); } catch (e) {} }
 
     function build() {
       releaseAll();
@@ -1690,7 +1718,7 @@
     var sens = "normal", sizeBase = 0, logged = 0;
     try { var ks = localStorage.getItem("keySens"); if (SENS.indexOf(ks) >= 0) sens = ks; } catch (e) {}
     window.pianoSens = function (next) {
-      if (next) { sens = SENS[(SENS.indexOf(sens) + 1) % SENS.length]; try { localStorage.setItem("keySens", sens); } catch (e) {} }
+      if (next) { sens = SENS[(SENS.indexOf(sens) + 1) % SENS.length]; try { localStorage.setItem("keySens", sens); } catch (e) {} try { if (window.NKeys) NKeys.sens(SENS_K[sens]); } catch (e) {} }
       return SENS_NAME[sens];
     };
     function velocity(e, el, isDown) {
@@ -1729,7 +1757,7 @@
 
     // Touch lag log for the grown-up's computer: ms from the finger touching the glass to our code running (w = waited) and to the sound being started (t = total)
     var lag = window.pianoLag = [];
-    keysEl.addEventListener("pointerdown", function (e) { e.preventDefault(); var t0 = performance.now(); audio(); press(e.pointerId, keyAt(e.clientX, e.clientY), e, true);
+    keysEl.addEventListener("pointerdown", function (e) { e.preventDefault(); var t0 = performance.now(); if (!(instrument === "grand" && nat())) audio(); press(e.pointerId, keyAt(e.clientX, e.clientY), e, true);
       lag.push({ w: Math.round(t0 - e.timeStamp), t: Math.round(performance.now() - e.timeStamp), v: player && player.getPlayerState ? player.getPlayerState() : -9 }); if (lag.length > 60) lag.shift(); });   // sound starts on pointerdown; audio() also wakes a suspended context
     keysEl.addEventListener("pointermove", function (e) { if (e.pointerId in held) press(e.pointerId, keyAt(e.clientX, e.clientY), e, false); });
     ["pointerup", "pointercancel", "pointerleave"].forEach(function (ev) {
