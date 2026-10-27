@@ -127,6 +127,9 @@ Every instrument sound has a drawn SVG icon (48×48 viewBox, flat shapes, wood /
 
 `assets/js/metronome.js`, the 🥁 Beat button in Piano only. A wood-block "tock": a sine falling 1180→820 Hz (beat 1: 1760→1250 Hz, 25 % louder) over 50 ms plus a 10 ms noise click, straight to the audio output (not through the room echo). Clicks are booked on the Web Audio clock every 25 ms for the next 0.12 s, so they never drift; the dots light when the click is heard (`currentTime − outputLatency`). Click loudness 1–3 (0.18 / 0.35 / 0.6). Tempo 40–160 (animals 60 / 80 / 100 / 120, − / + by 4); 2, 3 or 4 beats in a bar. A note within 0.12 s of a click counts as on the beat. It pauses while a concept game is open and stops when Piano only closes or the app goes to the background. Settings: localStorage `beatCfg`; diary event `beat`.
 
+## Which sounds he sees (1.27)
+Menu → Piano → **Sounds he can choose from** opens every sound by group. The first 12 (`BASIC` in `index.html`: grand, soft, epiano, organ, musicbox, robot, lead, 808, chip, warmpad, polysynth, xylo) always stay (🔒); any other sound can be hidden or shown one by one, or all at once (Show all / Only the first 12). `localStorage sndHide` = the hidden ids; the 1.26 test switch `sndAll = "0"` is read once as "hide every extra". Hidden buttons get class `off` in the picker; a group row with none left is `off` too. If his current sound is hidden, the grand piano comes back. API `window.pianoSnds(op, id)` (op `toggle` / `all` / `basic`, none = read).
+
 ## Rules
 
 - Nothing from Synthesia or FL Studio goes in this app (licensed content). Only free-licence sound sets, credited here and in the README.

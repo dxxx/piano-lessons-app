@@ -133,6 +133,19 @@ public class MainActivity extends Activity {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
+                if (url.startsWith(PAGE_ORIGIN + "songs/")) {           // Follow the keys: private songs pushed by adb to the app's own storage, never in the APK
+                    String p = request.getUrl().getPath();
+                    if (p == null || p.contains("..") || !p.endsWith(".json")) return null;
+                    try {
+                        java.io.File f = new java.io.File(getExternalFilesDir(null), p.substring(1));
+                        Map<String, String> h = new HashMap<String, String>();
+                        h.put("Access-Control-Allow-Origin", "*");
+                        if (!f.isFile()) return new WebResourceResponse("application/json", "utf-8", 404, "Not found", h, new java.io.ByteArrayInputStream(new byte[0]));
+                        return new WebResourceResponse("application/json", "utf-8", 200, "OK", h, new java.io.FileInputStream(f));
+                    } catch (Exception e) {
+                        return null;
+                    }
+                }
                 boolean font = url.startsWith(PAGE_ORIGIN + "fonts/"), pic = url.startsWith(PAGE_ORIGIN + "colour/"), js = url.startsWith(PAGE_ORIGIN + "js/");
                 if (!font && !pic && !js && !url.startsWith(PAGE_ORIGIN + "sounds/")) return null;
                 String path = request.getUrl().getPath();               // /sounds/grand/C4.mp3

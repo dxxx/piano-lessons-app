@@ -338,7 +338,7 @@ var concepts = (function () {
     if (window.coverOn && coverOn()) return false;          // Menu, sound picker, red screen, eye cover, lock: never on top of them
     return true;
   }
-  function pianoMode() { var b = document.body.classList; return b.contains("play") && !b.contains("athome") && !b.contains("math") && !b.contains("inwrite") && !b.contains("incolour") && !b.contains("incompare"); }
+  function pianoMode() { var b = document.body.classList; return b.contains("play") && !b.contains("athome") && !b.contains("math") && !b.contains("inwrite") && !b.contains("incolour") && !b.contains("incompare") && !b.contains("infollow"); }   // not in the middle of a Follow-the-keys song
   $("ccAgain").onclick = function () { if (q && q.sound && !locked) { enable(false); playSounds(q.sound, function () { enable(true); }); } };
   setInterval(function () {
     // A time lock or the eye cover while a game is open: close it quietly (nothing counted), the lock screen must be the only thing showing

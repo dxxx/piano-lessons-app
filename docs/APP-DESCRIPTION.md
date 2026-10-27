@@ -129,6 +129,8 @@ A modal over everything (`#instPop`, lines 102-108, 1759-1782): a 4-column grid 
 | polysynth | 🎚️ Polysynth | recorded samples, looped, `assets/sounds/polysynth/` |
 | xylo | 🌈 Xylophone | synth with a mallet "tok" |
 
+Since 1.15 there are many more sounds in groups (docs/SOUNDS-AND-ENGINES.md). Since 1.27 the grown-up chooses which ones he sees (Menu → Piano → Sounds he can choose from); the 12 above always stay.
+
 Sample sets: 25 MP3s each, one every 3 semitones (C, D#/Eb, F#/Gb, A over octaves 1-6, plus C7), pitched to the nearest sample (lines 1396-1411). Credits: Salamander Grand Piano (CC-BY 3.0), FluidR3_GM (MIT).
 
 ### 3.3 Maths quiz (between lessons, and Maths only)
@@ -218,6 +220,14 @@ Full-screen sheet (max 1120 px wide) with a top bar ("Grown-ups", "Close the app
 | **General** | Change PIN |
 
 **Activity panel** (`#act`): tabs Today / 7 days / Lessons / Quiz; rows of "label ... value", a 7-day bar chart (accent bars), lists of locks and earned minutes; "Clear activity" (tap twice). **Maths results panel** (`#res`): today and all-time right/wrong/%, level, streak, practising list, last 20 mistakes, hint-test table; "Clear records" (tap twice).
+
+### 3.9b Songs: Follow the keys (1.27)
+
+🎵 Songs in Play along opens a list of known songs (Easy / Medium / Hard); he plays one note by note and the song waits for him (glowing key with a red dot, a row of note tiles, Listen, Stop, 1–3 stars at the end). Songs are copied privately to the tablet, never shipped in the app. See docs/FOLLOW-THE-KEYS.md.
+
+### 3.9c Slow down (1.27)
+
+Random key mashing (6+ keys at once, or many far-apart new keys fast) brings a tortoise over the keys for 5 / 15 / 30 s with "Hey <name>, slow down. If you want to play, play. If you don't, take a little pause." Menu → Piano can turn it off.
 
 ### 3.10 Updates (there is no OTA)
 
