@@ -48,12 +48,53 @@ All Web Audio sounds pass through: per-note pan (low left, high right) → maste
 | 🧚 Harp | `harp` | Samples | MusyngKite `orchestral_harp` | 1.15 |
 | 🎐 Kalimba | `kalimba` | Samples | MusyngKite `kalimba` | 1.15 |
 | 🔔 Bells | `bells` | Samples | MusyngKite `glockenspiel` | 1.15 |
+| 🤠 Honky-tonk | `honkytonk` | Samples | MusyngKite `honkytonk_piano` | 1.17 |
+| 👑 Harpsichord | `harpsichord` | Samples | MusyngKite `harpsichord` | 1.17 |
+| 🕺 Funky clav | `clavinet` | Samples | MusyngKite `clavinet` | 1.17 |
+| ✨ Celesta | `celesta` | Samples | MusyngKite `celesta` | 1.17 |
+| 💎 Vibraphone | `vibes` | Samples | MusyngKite `vibraphone` | 1.17 |
+| 🪗 Accordion | `accordion` | Samples, looped | MusyngKite `accordion` | 1.17 |
+| 🟦 Square lead | `squarelead` | Samples | MusyngKite `lead_1_square` | 1.17 |
+| 🎠 Calliope | `calliope` | Samples | MusyngKite `lead_3_calliope` | 1.17 |
+| ⚡ Charang | `charang` | Samples, looped | MusyngKite `lead_5_charang` | 1.17 |
+| 🌀 Fifths | `fifths` | Samples, looped | MusyngKite `lead_7_fifths` | 1.17 |
+| 📯 Synth brass | `synthbrass` | Samples, looped | MusyngKite `synth_brass_1` | 1.17 |
+| 🌊 Synth strings | `synthstrings` | Samples, looped | MusyngKite `synth_strings_1` | 1.17 |
+| 😇 Halo pad | `halo` | Samples, looped | MusyngKite `pad_7_halo` | 1.17 |
+| 🌬️ Sweep pad | `sweep` | Samples, looped | MusyngKite `pad_8_sweep` | 1.17 |
+| 🔮 Crystal | `crystal` | Samples, looped | MusyngKite `fx_3_crystal` | 1.17 |
+| 🪐 Echoes | `echoes` | Samples, looped | MusyngKite `fx_7_echoes` | 1.17 |
+| 🔌 Electric bass | `ebass` | Samples | MusyngKite `electric_bass_finger` | 1.17 |
+| 👋 Slap bass | `slapbass` | Samples | MusyngKite `slap_bass_1` | 1.17 |
+| 🐘 Double bass | `doublebass` | Samples | MusyngKite `acoustic_bass` | 1.17 |
+| 🐋 Fretless bass | `fretless` | Samples | MusyngKite `fretless_bass` | 1.17 |
+| 🎸 Electric guitar | `eguitar` | Samples | MusyngKite `electric_guitar_clean` | 1.17 |
+| 🔥 Distortion | `distortion` | Samples, looped | MusyngKite `distortion_guitar` | 1.17 |
+| 🐴 Banjo | `banjo` | Samples | MusyngKite `banjo` | 1.17 |
+| 🌵 Harmonica | `harmonica` | Samples, looped | MusyngKite `harmonica` | 1.17 |
+| 🦒 Trombone | `trombone` | Samples, looped | MusyngKite `trombone` | 1.17 |
+| 🦉 Clarinet | `clarinet` | Samples, looped | MusyngKite `clarinet` | 1.17 |
+| 🐻 Cello | `cello` | Samples, looped | MusyngKite `cello` | 1.17 |
+| 💧 Pizzicato | `pizzicato` | Samples | MusyngKite `pizzicato_strings` | 1.17 |
+| 🦢 Oboe | `oboe` | Samples, looped | MusyngKite `oboe` | 1.17 |
+| 🐌 French horn | `horn` | Samples, looped | MusyngKite `french_horn` | 1.17 |
+| 🪘 Timpani | `timpani` | Samples | MusyngKite `timpani` | 1.17 |
+| 💫 Orchestra hit | `orchhit` | Samples | MusyngKite `orchestra_hit` | 1.17 |
+| 🎋 Pan flute | `panflute` | Samples, looped | MusyngKite `pan_flute` | 1.17 |
+| 🥚 Ocarina | `ocarina` | Samples, looped | MusyngKite `ocarina` | 1.17 |
+| 😙 Whistle | `whistle` | Samples, looped | MusyngKite `whistle` | 1.17 |
+| 🐤 Bird | `bird` | Samples (Eb6 and up silent in the source: pitched from C6) | MusyngKite `bird_tweet` | 1.17 |
+| 🪵 Woodblock | `woodblock` | Samples | MusyngKite `woodblock` | 1.17 |
+| 🏯 Taiko drum | `taiko` | Samples | MusyngKite `taiko_drum` | 1.17 |
+| 🌸 Koto | `koto` | Samples | MusyngKite `koto` | 1.17 |
+| 🧞 Sitar | `sitar` | Samples | MusyngKite `sitar` | 1.17 |
+| 🛎️ Tube bells | `tubebells` | Samples | MusyngKite `tubular_bells` | 1.17 |
 
 MusyngKite and FluidR3 renders come from [gleitz/midi-js-soundfonts](https://github.com/gleitz/midi-js-soundfonts); MusyngKite files are CC-BY-SA 3.0 and stay under that licence. Gains in `SETS` were matched by measuring the first 0.6 s RMS of C3/C4/C5 against the grand piano.
 
 ## Silent recordings
 
-Since 1.16 `loadSet()` measures each decoded sample; a peak under 0.001 marks it `silent`, and `nearest()` never picks it, so the closest real note is pitched instead. Known case: MusyngKite `fx_8_scifi` Gb6, A6, C7.
+Since 1.16 `loadSet()` measures each decoded sample; a peak under 0.001 marks it `silent`, and `nearest()` never picks it, so the closest real note is pitched instead. Known cases: MusyngKite `fx_8_scifi` Gb6, A6, C7; `bird_tweet` Eb6, Gb6, A6, C7.
 
 ## Rules
 

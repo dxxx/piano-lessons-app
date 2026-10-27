@@ -123,11 +123,13 @@
   #instPop .grid { display: flex; flex-direction: column; width: 100vw; height: 100vh; max-height: none; border-radius: 0 !important; padding: 10px 14px 12px; gap: 7px; box-sizing: border-box; overflow: hidden; }
   #instPop .ptop { display: flex; align-items: center; justify-content: space-between; flex: none; font-size: 20px; font-weight: 700; padding: 0 4px; }
   #instPop .ptop .pclose { font-size: 22px; padding: 6px 18px; }
-  #instPop .grow { flex: 1; min-height: 0; display: flex; gap: 7px; align-items: stretch; }
-  #instPop .grow .ghead { flex: 0 0 92px; margin: 0; align-self: center; font-size: 13px; }
-  #instPop .grow button { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px; font-size: 13px; }
-  #instPop .grow button b { font-size: clamp(22px, 6vh, 44px); line-height: 1.1; }
-  #instPop .grow button { font-size: clamp(13px, 2.5vh, 18px); }
+  #instPop .grid { justify-content: space-between; }
+  #instPop .grow { flex: none; display: flex; gap: 6px; align-items: center; }
+  #instPop .grow .ghead { flex: 0 0 76px; margin: 0; font-size: 12px; line-height: 1.2; }
+  #instPop .gbtns { flex: 1; display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: 60px; gap: 5px; }
+  #instPop .gbtns button { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px 1px;
+    font-size: 11px; line-height: 1.05; border-width: 2px; border-radius: 12px; box-shadow: 0 3px 0 #1b1540; }
+  #instPop .gbtns button b { font-size: 26px; line-height: 1.1; }
   #instPop { z-index: 60; }
   #instPop .space { flex: none; margin-top: 2px; padding-top: 8px; }
   #instPop .space button { padding: 7px 4px; }
@@ -1447,14 +1449,56 @@
                  ["guitar", "&#129685;", "Guitar", "Guitarra"], ["rockguitar", "&#129304;", "Rock guitar", "Guitarra rock"], ["sax", "&#127927;", "Saxophone", "Saxofón"],
                  ["trumpet", "&#127930;", "Trumpet", "Trompeta"], ["marimba", "&#129345;", "Marimba", "Marimba"], ["steeldrums", "&#127965;&#65039;", "Steel drums", "Tambor metálico"],
                  ["violin", "&#127931;", "Violin", "Violín"], ["strings", "&#127776;", "Strings", "Cuerdas"], ["flute", "&#128038;", "Flute", "Flauta"],
-                 ["harp", "&#129498;", "Harp", "Arpa"], ["kalimba", "&#127888;", "Kalimba", "Kalimba"], ["bells", "&#128276;", "Bells", "Campanitas"]];
+                 ["harp", "&#129498;", "Harp", "Arpa"], ["kalimba", "&#127888;", "Kalimba", "Kalimba"], ["bells", "&#128276;", "Bells", "Campanitas"],
+                 ["honkytonk", "&#129312;", "Honky-tonk", "Piano de saloon"],
+                 ["harpsichord", "&#128081;", "Harpsichord", "Clavecín"],
+                 ["clavinet", "&#128378;", "Funky clav", "Clavinet"],
+                 ["celesta", "&#10024;", "Celesta", "Celesta"],
+                 ["vibes", "&#128142;", "Vibraphone", "Vibráfono"],
+                 ["accordion", "&#129687;", "Accordion", "Acordeón"],
+                 ["squarelead", "&#128998;", "Square lead", "Onda cuadrada"],
+                 ["calliope", "&#127904;", "Calliope", "Calíope"],
+                 ["charang", "&#9889;", "Charang", "Charang"],
+                 ["fifths", "&#127744;", "Fifths", "Quintas"],
+                 ["synthbrass", "&#128239;", "Synth brass", "Metales synth"],
+                 ["synthstrings", "&#127754;", "Synth strings", "Cuerdas synth"],
+                 ["halo", "&#128519;", "Halo pad", "Halo"],
+                 ["sweep", "&#127788;&#65039;", "Sweep pad", "Barrido"],
+                 ["crystal", "&#128302;", "Crystal", "Cristal"],
+                 ["echoes", "&#129680;", "Echoes", "Ecos"],
+                 ["ebass", "&#128268;", "Electric bass", "Bajo eléctrico"],
+                 ["slapbass", "&#128075;", "Slap bass", "Bajo slap"],
+                 ["doublebass", "&#128024;", "Double bass", "Contrabajo"],
+                 ["fretless", "&#128011;", "Fretless bass", "Bajo sin trastes"],
+                 ["eguitar", "&#127928;", "Electric guitar", "Guitarra eléctrica"],
+                 ["distortion", "&#128293;", "Distortion", "Distorsión"],
+                 ["banjo", "&#128052;", "Banjo", "Banjo"],
+                 ["harmonica", "&#127797;", "Harmonica", "Armónica"],
+                 ["trombone", "&#129426;", "Trombone", "Trombón"],
+                 ["clarinet", "&#129417;", "Clarinet", "Clarinete"],
+                 ["cello", "&#128059;", "Cello", "Violonchelo"],
+                 ["pizzicato", "&#128167;", "Pizzicato", "Pizzicato"],
+                 ["oboe", "&#129442;", "Oboe", "Oboe"],
+                 ["horn", "&#128012;", "French horn", "Trompa"],
+                 ["timpani", "&#129688;", "Timpani", "Timbales"],
+                 ["orchhit", "&#128171;", "Orchestra hit", "Golpe orquestal"],
+                 ["panflute", "&#127883;", "Pan flute", "Flauta de Pan"],
+                 ["ocarina", "&#129370;", "Ocarina", "Ocarina"],
+                 ["whistle", "&#128537;", "Whistle", "Silbido"],
+                 ["bird", "&#128036;", "Bird", "Pajarito"],
+                 ["woodblock", "&#129717;", "Woodblock", "Bloque de madera"],
+                 ["taiko", "&#127983;", "Taiko drum", "Tambor taiko"],
+                 ["koto", "&#127800;", "Koto", "Koto"],
+                 ["sitar", "&#129502;", "Sitar", "Sitar"],
+                 ["tubebells", "&#128718;&#65039;", "Tube bells", "Campanas tubulares"]];
     // The picker shows the sounds in groups
-    var IGROUPS = [["Pianos", "Pianos", ["grand", "soft", "epiano", "organ", "musicbox"]],
-                   ["Synths", "Sintetizadores", ["lead", "robot", "voice", "chip", "warmpad", "polysynth", "scifi"]],
-                   ["Bass", "Bajos", ["808", "boom808", "punch808", "growl808", "slide808", "synthbass"]],
-                   ["Band", "Banda", ["guitar", "rockguitar", "sax", "trumpet", "marimba", "steeldrums"]],
-                   ["Orchestra", "Orquesta", ["violin", "strings", "flute", "harp"]],
-                   ["Fun", "Divertidos", ["xylo", "kalimba", "bells"]]];
+    var IGROUPS = [["Keys", "Teclados", ["grand", "soft", "epiano", "organ", "musicbox", "honkytonk", "harpsichord", "clavinet", "celesta", "vibes", "accordion"]],
+                   ["Synths", "Sintetizadores", ["lead", "squarelead", "calliope", "charang", "fifths", "synthbrass", "synthstrings", "robot", "voice", "chip",
+                                                  "warmpad", "polysynth", "halo", "sweep", "crystal", "echoes", "scifi"]],
+                   ["Bass", "Bajos", ["808", "boom808", "punch808", "growl808", "slide808", "synthbass", "ebass", "slapbass", "doublebass", "fretless"]],
+                   ["Band", "Banda", ["guitar", "eguitar", "rockguitar", "distortion", "banjo", "harmonica", "sax", "trumpet", "trombone", "clarinet", "marimba", "steeldrums"]],
+                   ["Orchestra", "Orquesta", ["violin", "cello", "strings", "pizzicato", "flute", "oboe", "horn", "harp", "timpani", "orchhit"]],
+                   ["Fun &amp; world", "Divertidos", ["xylo", "kalimba", "bells", "tubebells", "panflute", "ocarina", "whistle", "bird", "woodblock", "taiko", "koto", "sitar"]]];
     function iname(x) { return L(x[2], x[3]); }
     try { var si = localStorage.getItem("instrument"); if (si === "pad") si = "warmpad";   // the old synth pad is now the sampled warm pad
           if (INSTR.some(function (x) { return x[0] === si; })) instrument = si; } catch (e) {}
@@ -1524,7 +1568,49 @@
       flute:      { dir: "flute",      acc: ["Eb", "Gb"], gain: 1.6, rel: 0.3, loop: true },
       harp:       { dir: "harp",       acc: ["Eb", "Gb"], gain: 3.9, rel: 1.2 },
       kalimba:    { dir: "kalimba",    acc: ["Eb", "Gb"], gain: 6.0, rel: 1.2 },
-      bells:      { dir: "bells",      acc: ["Eb", "Gb"], gain: 4.2, rel: 1.2 }
+      bells:      { dir: "bells",      acc: ["Eb", "Gb"], gain: 4.2, rel: 1.2 },
+      // 1.17: 41 more MusyngKite sets; gain + loop from the same measurement (loop when the level holds within 5 dB)
+      honkytonk:    { dir: "honkytonk", acc: ["Eb", "Gb"], gain: 3.0, rel: 1.0 },
+      harpsichord:  { dir: "harpsichord", acc: ["Eb", "Gb"], gain: 3.4, rel: 1.0 },
+      clavinet:     { dir: "clavinet", acc: ["Eb", "Gb"], gain: 3.2, rel: 1.0 },
+      celesta:      { dir: "celesta", acc: ["Eb", "Gb"], gain: 2.9, rel: 1.0 },
+      vibes:        { dir: "vibes", acc: ["Eb", "Gb"], gain: 3.1, rel: 1.0 },
+      accordion:    { dir: "accordion", acc: ["Eb", "Gb"], gain: 2.3, rel: 0.3, loop: true },
+      squarelead:   { dir: "squarelead", acc: ["Eb", "Gb"], gain: 1.7, rel: 1.0 },
+      calliope:     { dir: "calliope", acc: ["Eb", "Gb"], gain: 3.1, rel: 1.0 },
+      charang:      { dir: "charang", acc: ["Eb", "Gb"], gain: 0.7, rel: 0.3, loop: true },
+      fifths:       { dir: "fifths", acc: ["Eb", "Gb"], gain: 2.5, rel: 0.3, loop: true },
+      synthbrass:   { dir: "synthbrass", acc: ["Eb", "Gb"], gain: 1.6, rel: 0.3, loop: true },
+      synthstrings: { dir: "synthstrings", acc: ["Eb", "Gb"], gain: 1.8, rel: 0.3, loop: true },
+      halo:         { dir: "halo", acc: ["Eb", "Gb"], gain: 2.9, rel: 0.3, loop: true },
+      sweep:        { dir: "sweep", acc: ["Eb", "Gb"], gain: 1.4, rel: 0.3, loop: true },
+      crystal:      { dir: "crystal", acc: ["Eb", "Gb"], gain: 2.8, rel: 0.3, loop: true },
+      echoes:       { dir: "echoes", acc: ["Eb", "Gb"], gain: 2.0, rel: 0.3, loop: true },
+      ebass:        { dir: "ebass", acc: ["Eb", "Gb"], gain: 1.0, rel: 1.0 },
+      slapbass:     { dir: "slapbass", acc: ["Eb", "Gb"], gain: 7, rel: 1.0 },
+      doublebass:   { dir: "doublebass", acc: ["Eb", "Gb"], gain: 2.4, rel: 1.0 },
+      fretless:     { dir: "fretless", acc: ["Eb", "Gb"], gain: 1.7, rel: 1.0 },
+      eguitar:      { dir: "eguitar", acc: ["Eb", "Gb"], gain: 4.5, rel: 1.0 },
+      distortion:   { dir: "distortion", acc: ["Eb", "Gb"], gain: 1.0, rel: 0.3, loop: true },
+      banjo:        { dir: "banjo", acc: ["Eb", "Gb"], gain: 3.8, rel: 1.0 },
+      harmonica:    { dir: "harmonica", acc: ["Eb", "Gb"], gain: 1.5, rel: 0.3, loop: true },
+      trombone:     { dir: "trombone", acc: ["Eb", "Gb"], gain: 1.8, rel: 0.3, loop: true },
+      clarinet:     { dir: "clarinet", acc: ["Eb", "Gb"], gain: 1.2, rel: 0.3, loop: true },
+      cello:        { dir: "cello", acc: ["Eb", "Gb"], gain: 2.1, rel: 0.3, loop: true },
+      pizzicato:    { dir: "pizzicato", acc: ["Eb", "Gb"], gain: 7, rel: 1.0 },
+      oboe:         { dir: "oboe", acc: ["Eb", "Gb"], gain: 1.9, rel: 0.3, loop: true },
+      horn:         { dir: "horn", acc: ["Eb", "Gb"], gain: 1.9, rel: 0.3, loop: true },
+      timpani:      { dir: "timpani", acc: ["Eb", "Gb"], gain: 2.7, rel: 1.0 },
+      orchhit:      { dir: "orchhit", acc: ["Eb", "Gb"], gain: 5.1, rel: 1.0 },
+      panflute:     { dir: "panflute", acc: ["Eb", "Gb"], gain: 1.5, rel: 0.3, loop: true },
+      ocarina:      { dir: "ocarina", acc: ["Eb", "Gb"], gain: 0.9, rel: 0.3, loop: true },
+      whistle:      { dir: "whistle", acc: ["Eb", "Gb"], gain: 1.3, rel: 0.3, loop: true },
+      bird:         { dir: "bird", acc: ["Eb", "Gb"], gain: 7, rel: 1.0 },
+      woodblock:    { dir: "woodblock", acc: ["Eb", "Gb"], gain: 6.0, rel: 1.0 },
+      taiko:        { dir: "taiko", acc: ["Eb", "Gb"], gain: 1.7, rel: 1.0 },
+      koto:         { dir: "koto", acc: ["Eb", "Gb"], gain: 2.1, rel: 1.0 },
+      sitar:        { dir: "sitar", acc: ["Eb", "Gb"], gain: 5.0, rel: 1.0 },
+      tubebells:    { dir: "tubebells", acc: ["Eb", "Gb"], gain: 2.3, rel: 1.0 }
     };
     Object.keys(SETS).forEach(function (id) {
       var set = SETS[id], names = ["C", set.acc[0], set.acc[1], "A"], offs = [0, 3, 6, 9];
@@ -2022,13 +2108,14 @@
     instGrid.onclick = function (e) { if (!e.target.closest(".pclose")) e.stopPropagation(); };   // full screen: only ✕ (or a sound) closes it
     IGROUPS.forEach(function (gr) {                        // the sound picker: a full screen, one row per group
       var row = document.createElement("div"); row.className = "grow"; instGrid.appendChild(row);
-      var h = document.createElement("div"); h.className = "ghead"; h.textContent = L(gr[0], gr[1]); row.appendChild(h);
+      var h = document.createElement("div"); h.className = "ghead"; h.innerHTML = L(gr[0], gr[1]); row.appendChild(h);
+      var bx = document.createElement("div"); bx.className = "gbtns"; row.appendChild(bx);
       gr[2].forEach(function (id) {
       var x = INSTR.filter(function (i) { return i[0] === id; })[0];
       var b = document.createElement("button"); b.dataset.id = x[0];
       b.innerHTML = "<b>" + x[1] + "</b>" + iname(x);
       b.onclick = function (e) { e.stopPropagation(); audio(); setInstrument(x[0], true); instPop.classList.remove("open"); };
-      row.appendChild(b);
+      bx.appendChild(b);
       });
     });
     var spaceRow = document.createElement("div"); spaceRow.className = "space"; instGrid.appendChild(spaceRow);
