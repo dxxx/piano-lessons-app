@@ -542,6 +542,10 @@
   .cmstage .cmpick:active { background: #ffffff22; }
   .cmstage .cmpick.win { background: #5fd38f33; border-color: #5fd38f; } .cmstage .cmpick.tie { border-color: var(--accent); }
   .cmstage .cmpick.no { border-color: #ff6b6b; }
+  .cmpair { display: flex; gap: 6vw; justify-content: center; align-items: stretch; }
+  .cmstage .cmpick.cmnum { width: auto; min-width: 220px; padding: 12px 26px 18px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+  .cmpick.cmnum > b { font-size: 84px; font-weight: 900; line-height: 1; } .cmpick.cmnum.ca > b { color: #ff8fb1; } .cmpick.cmnum.cb > b { color: #8fd3ff; }
+  .cmpick.cmnum .cmblocks { min-height: 100px; } .cmpick.cmnum .cmblocks .stick { height: 100px; }
   .cmrow { display: flex; gap: 0; } .cmrow i { display: inline-block; width: 72px; font-size: 48px; line-height: 1.1; text-align: center; font-style: normal; }
   .cmeq { display: flex; align-items: center; justify-content: center; gap: 28px; font-size: 96px; font-weight: 900; line-height: 1; }
   .cmeq .ca { color: #ff8fb1; } .cmeq .cb { color: #8fd3ff; }
@@ -2165,7 +2169,9 @@
       var list = [], dpr = window.devicePixelRatio || 1;
       if (document.body.classList.contains("play") && instrument === "grand" && nat() && keysEl.offsetWidth) {
         Array.prototype.forEach.call(keysEl.querySelectorAll("[data-m]"), function (el) {
-          var r = el.getBoundingClientRect();
+          var r = el.getBoundingClientRect(), bk = el.classList.contains("bk");
+          var top = document.elementFromPoint((r.left + r.right) / 2, r.top + (r.bottom - r.top) * (bk ? 0.5 : 0.85));
+          if (!top || !keysEl.contains(top)) return;      // covered (Menu, colouring, a lock...): the page keeps that touch
           list.push([+el.dataset.m, r.left * dpr, r.top * dpr, r.right * dpr, r.bottom * dpr, el.classList.contains("bk") ? 1 : 0]);
         });
       }
@@ -2173,6 +2179,10 @@
       if (j !== natSent) { natSent = j; try { NKeys.keys(j); NKeys.sens(SENS_K[sens]); } catch (e) {} }
     }
     setInterval(natKeys, 400);                 // the keyboard moves with Big video / Normal view: keep the touch view on it
+    var natT = 0;                              // and re-check at once when a screen or the Menu opens over it
+    var natMo = new MutationObserver(function () { clearTimeout(natT); natT = setTimeout(natKeys, 30); });
+    natMo.observe(document.body, { attributes: true, attributeFilter: ["class"], childList: true });
+    ["gate", "act", "res"].forEach(function (id) { var el = document.getElementById(id); if (el) natMo.observe(el, { attributes: true, attributeFilter: ["class", "hidden"] }); });
     window.addEventListener("resize", natKeys);
     window.pianoNat = function (m, on) {
       var el = keysEl.querySelector('[data-m="' + m + '"]'); if (!el) return;

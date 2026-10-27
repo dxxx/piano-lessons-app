@@ -116,6 +116,7 @@ public class KeyOverlay extends View {
         int a = e.getActionMasked(), i = e.getActionIndex();
         switch (a) {
             case MotionEvent.ACTION_DOWN:
+                if (keyAt(e.getX(i), e.getY(i)) < 0) return false;   // not on a key (e.g. something covers part of the keyboard): the page gets it
                 requestUnbufferedDispatch(e);          // deliver every touch at once, not batched to the next frame
             case MotionEvent.ACTION_POINTER_DOWN:
                 press(e.getPointerId(i), keyAt(e.getX(i), e.getY(i)), e, i, true);

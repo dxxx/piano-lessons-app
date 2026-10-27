@@ -21,6 +21,16 @@ Written 2026-10-27 for the Compare tile (1.23). Three stages: things first, quic
 
 A wrong answer resets the run, says why with his name ("Hey Sam, not quite. Tens first: …"), and a similar question comes back. A grown-up can set the stage in the Menu.
 
+## Mixed practice (1.24)
+
+Each stage interleaves question types instead of drilling one: the stage's own type is the biggest share, earlier stages come back as review, and the same type never comes three times in a row. Interleaved practice makes children choose *how* to compare each time (match, count, number line, tens first), which is what they need in class, rather than repeating one move.
+
+| Stage | Mix |
+|---|---|
+| 1 | rows 75 %, tap the bigger/smaller number to 10 25 % |
+| 2 | signs to 20 40 %, tap bigger/smaller 25 %, rows 20 %, order three 15 % |
+| 3 | signs to 99 35 %, tap bigger/smaller 20 %, order 15 %, signs to 20 15 %, rows 15 % |
+
 ## Sources
 
 - [NCETM Mastering Number Year 2 overview](https://axis.ncetm.org.uk/media/l1ygv0oz/mastering-number-year-2-overview.pdf); [NCETM curriculum prioritisation Years 1–6](https://www.ncetm.org.uk/media/y2di0nmn/cp-overview-years-1-6_08122021.pdf)

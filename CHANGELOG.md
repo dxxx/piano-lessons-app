@@ -4,6 +4,14 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.24 — 2026-10-27
+- **Fix: piano notes sounding from other screens.** With the grand piano, the app lays a native touch layer over the keys for fast response. It stayed active under the home screen, Colouring, Bigger or smaller and the grown-ups' Menu, so drawing or tapping settings over where the keys sit played notes. Now each key is handed to the native layer only while nothing covers it (checked at the key's own spot, again at once when a screen or the Menu opens), and a touch that lands on no key passes through to the page.
+- **Bigger or smaller is mixed, never blocked**: every stage now interleaves question types and reviews earlier stages, and the same type never comes three times in a row.
+  - Stage 1: rows of things (75 %), plus "tap the bigger/smaller number" to 10 with ten-frames.
+  - Stage 2: signs to 20, tap the bigger/smaller number, rows, put three in order.
+  - Stage 3: signs to 99, tap the bigger/smaller with tens and ones, order, and review of signs to 20 and rows.
+  - New question type "Tap the bigger number" / "Tap the smaller number": two cards with the number and its picture. Diary `compare` events now carry `t` (rows, pick, sign, order).
+
 ## 1.23.1 — 2026-10-27
 - **Home fits all five tiles**: in landscape the five activities sit in one row that fits the screen (they ran off both edges in 1.23); in portrait they wrap to two rows. A screen too narrow for them scrolls sideways instead of cutting tiles off.
 

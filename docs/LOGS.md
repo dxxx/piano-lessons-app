@@ -35,7 +35,7 @@ Every line has `k`, `at` (UTC ISO) and `day` (local "YYYY-MM-DD HH:MM").
 | `quiz` | One maths answer: `q`, `a` (his answer), `c` (correct), `ok`, `lvl`, `ms`, plus `v`/`h` (voice, what was heard), `fast`, `rv`, `hint`, `ex`, `col`, `reg`, `sl`, `hs` (see the quiz code) |
 | `level` | Maths level changed: `l` |
 | `write` | One writing try: `d`, `it` (item), `lv`, `r` (round), `ok`, `why`, `pen` |
-| `compare` | One Bigger-or-smaller answer: `st` (stage 1–3), `q` (question key), `a` (his answer), `c` (correct), `ok`, `ms` |
+| `compare` | One Bigger-or-smaller answer: `st` (picture range: 1 rows, 2 to 20, 3 to 99), `t` (rows, pick, sign, order), `q` (question key), `a` (his answer), `c` (correct), `ok`, `ms` |
 | `colour` | One colouring result: `d`, `pic`, `crosses`, `strokes`, `sec`, `pen`, plus stars and memory-game fields |
 | `lock`, `unlock` | Screen-time or mistake lock: `r` (reason), `how` |
 | `earn` | Time earned with maths: `m` |
