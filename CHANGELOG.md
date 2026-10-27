@@ -4,6 +4,9 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.28 — 2026-10-27
+- **✕ Close next to Menu.** A quick way for a grown-up to close the app: tap ✕ Close in the top bar, type the PIN, and the app closes at once (the same as Menu → Close the app, without opening the Menu). The PIN screen says "Close the app" so it is clear what will happen. Wrong PINs count the same as for the Menu (3 wrong = 1 minute wait).
+
 ## 1.27 — 2026-10-27
 - **🎵 Songs: Follow the keys.** A new way to learn, the reverse of the video lessons: he picks a song he knows and plays it note by note. The next note glows on its key (with a red dot) and sits first in a row of note tiles; **the song waits for him**, with no timer and no penalty for being slow (Synthesia's "Melody practice"). A wrong key just sounds and the right key flashes brighter. The keyboard moves to show the notes he needs and goes back to his own octave at the end. Both hands by default (Synthesia's beginner songs share the tune between the hands), or right / left only, where the other hand plays itself softly when he moves on. **Listen** plays the next few notes for him. At the end: 1–3 stars from how many notes were right first time, "Well done! You played <song>.", progress remembered per song. Songs from his video lessons are listed first; Easy / Medium / Hard tabs. Diary events `song_start`, `song`, `song_stop`. See [docs/FOLLOW-THE-KEYS.md](docs/FOLLOW-THE-KEYS.md).
   - The songs are **not in the app or this repo** (they are pop songs): a grown-up copies them from the computer to the tablet's app storage (`Android/data/md.home.pianolessons/files/songs/`); the app reads them from there. With none copied, the list says so.

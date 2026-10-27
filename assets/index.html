@@ -810,7 +810,8 @@
       <button class="lock" id="songBtn">&#127925; Songs</button>
       <button class="lock" id="mode">&#x26F6; Big video</button>
       <button class="lock" id="homeBtn" aria-label="Start screen">&#127968;</button>
-      <button class="lock" id="lock" aria-label="Menu (grown-ups)">&#128274; Menu</button></header>
+      <button class="lock" id="lock" aria-label="Menu (grown-ups)">&#128274; Menu</button>
+      <button class="lock" id="quitBtn" aria-label="Close the app (grown-ups)">&#10005; Close</button></header>
     <div class="player-wrap"><div class="player"><div id="player"></div><div class="shield" id="shield"></div>
       <div class="cover" id="cover"><button class="big" id="coverBtn">&#9654; Play</button>
         <div class="sub" id="coverSub"></div></div></div></div>
@@ -5115,9 +5116,11 @@
     });
     document.addEventListener("visibilitychange", function () { if (document.hidden) lock(); });
     window.addEventListener("pagehide", lock);
-    function open() {
+    var quitAfter = false;                                // the ✕ Close button next to Menu: the right PIN closes the app at once
+    function open(quit) {
+      quitAfter = quit === true;
       $("ge").textContent = "";
-      $("gFor").textContent = L("For grown-ups", "Para adultos");
+      $("gFor").textContent = quitAfter ? L("Close the app", "Cerrar la app") : L("For grown-ups", "Para adultos");
       if (bridge && !bridge.hasPin()) { mode = "new"; show(L("Create a 4-digit PIN", "Crea un PIN de 4 números")); }
       else { mode = "check"; show(L("Enter the grown-up PIN", "Escribe el PIN de adulto")); }
       gate.classList.add("open"); eye.menu(true);          // the camera rests while the grown-up menu is open
@@ -5129,6 +5132,7 @@
       if (mode === "check") {
         if (Date.now() < lockedUntil) { $("ge").textContent = L("Too many tries, wait a minute", "Demasiados intentos, espera un minuto"); show(L("Enter the grown-up PIN", "Escribe el PIN de adulto")); return; }
         if (bridge && bridge.checkPin(ans)) {
+          if (quitAfter) { quitAfter = false; fails = 0; ans = ""; bridge.unlock(); return; }   // same as Menu → Close the app
           fails = 0; $("ge").textContent = ""; unlock();
           $("gq").textContent = L("Unlocked", "Desbloqueado"); $("ga").textContent = "";
         } else {
@@ -5451,7 +5455,8 @@
     $("doChange").onclick = function () { mode = "new"; $("ge").textContent = ""; show(L("Create a new 4-digit PIN", "Crea un PIN nuevo de 4 números")); };
     $("doCancel").onclick = closeGate;
     }
-    $("lock").onclick = open;
+    $("lock").onclick = function () { open(false); };
+    $("quitBtn").onclick = function () { open(true); };
 
     ["1","2","3","4","5","6","7","8","9","Cancel","0","⌫"].forEach(function (k) {
       var b = document.createElement("button");
