@@ -28,6 +28,10 @@ On the device they sit in `Android/data/md.home.pianolessons/files/songs/`; `Mai
 - Level: onset groups of the tune (all notes for Synthesia songs, right hand for others): steps per second, chords, top-line jumps over 7 semitones, length over 60 / 150 steps, range over 16.
 - Videos with a bad hand split (right hand < 30 % or > 95 %): the top note of each moment becomes the right hand.
 
+## Keyboard (1.34)
+
+`pianoKeys.fit(lo, hi)` at song start: span = the smallest of 12/19/24/31/36/48/60/72/84/96 semitones that covers (highest note − the C below the lowest), base = that C (min C0). `show()` then never needs to move. `pianoKeys.restore()` at the end puts back `keySpan` / `keyBase`.
+
 ## Tabs (1.33)
 
 Easy / Medium / Hard = Synthesia library by level (`lv`, not `cat: custom`). **Modern music** = `cat: "custom"` (our playlist songs, not from Synthesia), level stars on the cards, easier first. **My lessons** = songs whose `yt` is in `localStorage lessonIds` (the YouTube lesson playlist), in lesson order. Hearted songs come first in every tab.

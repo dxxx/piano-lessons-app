@@ -14,7 +14,7 @@
 //     (operator: "single click makes songs play, double click selects it, so I can hear before I commit")
 //   - no lucky hits: a right key pressed in a flurry of wrong ones (3+ wrong keys in the last 1.5 s) does not move the song on,
 //     so banging keys never plays the song for him; one calm press of the right key does
-//   - the keyboard moves to show the notes he needs, and goes back to his own octave at the end
+//   - the keyboard is set once to cover the whole song (all its notes, fewest keys), and goes back to his own zoom at the end
 // Research: answer on the keyboard, notes from his songs, errorless (research/06 R9-R12, 01 R9). Uses L, voice, diary, pianoKeys,
 // pianoPlayNote (index.html). Progress: localStorage songProg { id: { best, plays, last } }; settings: songCfg { hand, acc }.
 var follow = (function () {
@@ -126,6 +126,11 @@ var follow = (function () {
       pos = steps.length ? steps[0].t - LEAD : 0; lastF = 0; arrived = false; pops = []; lis = null; hintLabel();
       closeList(); document.body.classList.add("infollow"); $("follow").hidden = false;
       $("fwTitle").textContent = meta.t;
+      if (window.pianoKeys && pianoKeys.fit && steps.length) {      // the whole song on one keyboard (operator 2026-10-28)
+        var lo = 127, hi = 0;
+        steps.forEach(function (st) { st.m.forEach(function (m) { if (m < lo) lo = m; if (m > hi) hi = m; }); });
+        pianoKeys.fit(lo, hi);
+      }
       show();
       if (window.diary) diary.ev("song_start", { id: id, hand: cfg.hand, steps: steps.length });
     }).catch(function () { $("songList").innerHTML = '<p class="songnone">' + L("That song did not load.", "Esa canción no cargó.") + "</p>"; });

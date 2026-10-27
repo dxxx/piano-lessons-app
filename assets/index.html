@@ -2430,14 +2430,30 @@
     window.pianoKeys = {
       show: function (lo, hi) {
         if (lo >= base && hi <= base + span) return false;
+        // a step wider than the keys on screen (Interstellar: left hand E2 under a right-hand E5) can't fit by moving: zoom out
+        // just enough for this song, so every note has its key (operator 2026-10-28: "lots of fails"); restore() puts his zoom back
+        var need = hi - Math.floor(lo / 12) * 12;              // the keyboard starts on a C
+        var ZS = SPANS.concat([60, 72, 84]);                   // songs only: up to 7 octaves for the rare very wide step
+        if (need > span) { for (var z = 0; z < ZS.length && ZS[z] < need; z++) {} span = ZS[Math.min(z, ZS.length - 1)]; base = -1; }
         var b = Math.floor(lo / 12) * 12;
         if (hi > b + span) b = Math.ceil((hi - span) / 12) * 12;
         b = Math.max(24, Math.min(108 - span, b)); b -= b % 12;
         if (b === base) return false;
         base = b; build(); return true;
       },
+      // operator 2026-10-28: "when a song is selected set the zoom to COVER ALL THE SONG": one keyboard for the whole song,
+      // from the C below its lowest note, with the fewest keys that hold its highest note; it never moves during the song
+      fit: function (lo, hi) {
+        var ZS = SPANS.concat([60, 72, 84, 96]), b = Math.floor(lo / 12) * 12, need = hi - b;
+        for (var z = 0; z < ZS.length && ZS[z] < need; z++) {}
+        span = ZS[Math.min(z, ZS.length - 1)];
+        base = Math.max(12, Math.min(108 - span, b)); base -= base % 12;             // a full piano: down to A0 (C0 keyboard)
+        build();
+      },
       restore: function () {
-        var b = base; try { var bs = parseInt(localStorage.getItem("keyBase"), 10); if (bs >= 24 && bs % 12 === 0 && bs + span <= 108) b = bs; } catch (e) {}
+        var sp0 = span; try { var sv = parseInt(localStorage.getItem("keySpan"), 10); span = SPANS.indexOf(sv) >= 0 ? sv : 24; } catch (e) {}
+        if (span !== sp0) base = -1;
+        var b = base >= 24 && base + span <= 108 ? base : Math.max(24, Math.min(108 - span, 48)); try { var bs = parseInt(localStorage.getItem("keyBase"), 10); if (bs >= 24 && bs % 12 === 0 && bs + span <= 108) b = bs; } catch (e) {}
         if (b !== base) { base = b; build(); }
       },
       name: function (m) { return NAMES[m % 12] + (NAMES2[m % 12] ? " " + NAMES2[m % 12] : ""); },

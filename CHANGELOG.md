@@ -4,6 +4,9 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.34 — 2026-10-28
+- **Songs: one keyboard for the whole song.** When a song starts, the keyboard is set once to cover all of its notes (from the C below the lowest note, with the fewest keys that reach the highest, up to a full 85-key piano), and it never moves during the song: no jumps. His own zoom comes back when the song ends. Before, the keyboard showed 2 octaves and shifted; a song whose hands were further apart (Interstellar: left hand E2 under a right hand up to E5) left notes with no key, so they could not be played ("lots of fails"). Checked on all 250 songs: 0 jumps, every note has its key.
+
 ## 1.33 — 2026-10-27
 - **Songs has 5 tabs:** Easy · Medium · Hard · **🎸 Modern music** (was "Custom songs": songs that are not from Synthesia, e.g. Dr. Dre, Coldplay, Godzilla, Pirates of the Caribbean) · **🎬 My lessons** (the songs of the YouTube lesson videos he watches, in lesson order). Smaller tab labels so all five fit.
 - **Key names: new choice "Both (Do + C)"** in Menu → Piano: Do Re Mi big on every key with the letter small under it (black keys Do# / C#). The octave tag on the C keys moves up so it doesn't cover the name.
