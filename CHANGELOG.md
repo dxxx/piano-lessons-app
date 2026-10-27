@@ -4,6 +4,12 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.16 — 2026-10-27
+- **4 more 808s**, in a new **Bass** row: 💣 808 Boom (long deep sub), 💥 808 Punch (short and hard, with a click), 🦁 808 Growl (distorted), 🏄 808 Slide (trap glide: plays one note at a time and slides from the last note). All made by Web Audio synthesis, like the 808
+- **Sci-fi plays on every key**: its recordings are silent from F#6 up (the sound set has none there), so the app now skips any silent recording and stretches the nearest real note up instead. This applies to every recorded sound
+- **Full-screen sound picker**: "Choose a sound" fills the whole screen, one row per group (Pianos · Synths · Bass · Band · Orchestra · Fun), big buttons that stretch to fill it, ✕ to close; surround choice at the bottom
+- 31 sounds in all
+
 ## 1.15 — 2026-10-27
 - **15 new sounds, 27 in all**, and the sound picker is now grouped: Pianos · Synths · Band · Orchestra · Fun
   - New Synths: 🔉 Synth bass, 🎤 Voice ooh, 🚀 Sci-fi. 🎛️ Synth lead is now a real recording (it was made by Web Audio)

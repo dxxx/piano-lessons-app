@@ -119,6 +119,18 @@
   #instPop button[data-id] b { font-size: 30px; }
   #instPop .ghead { grid-column: 1 / -1; color: var(--muted); font-size: 14px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin: 4px 0 -2px 4px; }
   @media (max-width: 760px) { #instPop .grid { grid-template-columns: repeat(4, 1fr); } }
+  /* full screen: header, one stretching row per group, surround row at the bottom */
+  #instPop .grid { display: flex; flex-direction: column; width: 100vw; height: 100vh; max-height: none; border-radius: 0 !important; padding: 10px 14px 12px; gap: 7px; box-sizing: border-box; overflow: hidden; }
+  #instPop .ptop { display: flex; align-items: center; justify-content: space-between; flex: none; font-size: 20px; font-weight: 700; padding: 0 4px; }
+  #instPop .ptop .pclose { font-size: 22px; padding: 6px 18px; }
+  #instPop .grow { flex: 1; min-height: 0; display: flex; gap: 7px; align-items: stretch; }
+  #instPop .grow .ghead { flex: 0 0 92px; margin: 0; align-self: center; font-size: 13px; }
+  #instPop .grow button { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px; font-size: 13px; }
+  #instPop .grow button b { font-size: clamp(22px, 6vh, 44px); line-height: 1.1; }
+  #instPop .grow button { font-size: clamp(13px, 2.5vh, 18px); }
+  #instPop { z-index: 60; }
+  #instPop .space { flex: none; margin-top: 2px; padding-top: 8px; }
+  #instPop .space button { padding: 7px 4px; }
   .hint { color: var(--muted); font-size: 13px; white-space: nowrap; }
   body:not(.play) .hint { display: none !important; }
   .vol input { width: 130px; accent-color: var(--accent); }
@@ -1429,6 +1441,8 @@
                  ["robot", "&#129302;", "Robot voice", "Voz de robot"], ["lead", "&#127899;&#65039;", "Synth lead", "Sintetizador"], ["808", "&#128266;", "808 bass", "Bajo 808"],
                  ["chip", "&#128126;", "Chiptune", "Videojuego"], ["warmpad", "&#127756;", "Warm pad", "Colchón cálido"], ["polysynth", "&#127898;&#65039;", "Polysynth", "Polisintetizador"],
                  ["xylo", "&#127752;", "Xylophone", "Xilófono"],
+                 ["boom808", "&#128163;", "808 Boom", "808 Bum"], ["punch808", "&#128165;", "808 Punch", "808 Golpe"], ["growl808", "&#129409;", "808 Growl", "808 Rugido"],
+                 ["slide808", "&#127940;", "808 Slide", "808 Desliza"],
                  ["synthbass", "&#128265;", "Synth bass", "Bajo sintetizado"], ["voice", "&#127908;", "Voice ooh", "Voz uuh"], ["scifi", "&#128640;", "Sci-fi", "Ciencia ficción"],
                  ["guitar", "&#129685;", "Guitar", "Guitarra"], ["rockguitar", "&#129304;", "Rock guitar", "Guitarra rock"], ["sax", "&#127927;", "Saxophone", "Saxofón"],
                  ["trumpet", "&#127930;", "Trumpet", "Trompeta"], ["marimba", "&#129345;", "Marimba", "Marimba"], ["steeldrums", "&#127965;&#65039;", "Steel drums", "Tambor metálico"],
@@ -1436,7 +1450,8 @@
                  ["harp", "&#129498;", "Harp", "Arpa"], ["kalimba", "&#127888;", "Kalimba", "Kalimba"], ["bells", "&#128276;", "Bells", "Campanitas"]];
     // The picker shows the sounds in groups
     var IGROUPS = [["Pianos", "Pianos", ["grand", "soft", "epiano", "organ", "musicbox"]],
-                   ["Synths", "Sintetizadores", ["lead", "synthbass", "808", "robot", "voice", "chip", "warmpad", "polysynth", "scifi"]],
+                   ["Synths", "Sintetizadores", ["lead", "robot", "voice", "chip", "warmpad", "polysynth", "scifi"]],
+                   ["Bass", "Bajos", ["808", "boom808", "punch808", "growl808", "slide808", "synthbass"]],
                    ["Band", "Banda", ["guitar", "rockguitar", "sax", "trumpet", "marimba", "steeldrums"]],
                    ["Orchestra", "Orquesta", ["violin", "strings", "flute", "harp"]],
                    ["Fun", "Divertidos", ["xylo", "kalimba", "bells"]]];
@@ -1519,7 +1534,7 @@
     });
     function nearest(set, midi) {
       var best = set.samples[0];
-      set.samples.forEach(function (s) { if (Math.abs(s.m - midi) < Math.abs(best.m - midi)) best = s; });
+      set.samples.forEach(function (s) { if (!s.silent && (best.silent || Math.abs(s.m - midi) < Math.abs(best.m - midi))) best = s; });
       return best;
     }
     function hint() { var set = SETS[instrument]; loadHint.style.display = (set && set.loading) ? "" : "none"; }
@@ -1541,14 +1556,19 @@
       var pending = todo.length;
       function done() {
         if (--pending > 0) return;
-        set.loading = false; set.ready = Object.keys(set.buffers).length === set.samples.length; hint();
+        set.loading = false; set.ready = Object.keys(set.buffers).length === set.samples.filter(function (x) { return !x.silent; }).length; hint();
       }
       todo.forEach(function (s) {
         if (set.buffers[s.m]) { done(); return; }
         fetch("sounds/" + set.dir + "/" + s.n + ".mp3")
           .then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.arrayBuffer(); })
           .then(function (ab) { return new Promise(function (ok, no) { ac.decodeAudioData(ab, ok, no); }); })
-          .then(function (buf) { if (set.loop) buf.loop = loopPoints(buf); buf.onset = onsetOf(buf); set.buffers[s.m] = buf; }, function () {})
+          .then(function (buf) {
+            var d = buf.getChannelData(0), pk = 0;
+            for (var i = 0; i < d.length; i += 16) pk = Math.max(pk, Math.abs(d[i]));
+            if (pk < 0.001) { s.silent = true; return; }       // an empty recording: never pick it
+            if (set.loop) buf.loop = loopPoints(buf); buf.onset = onsetOf(buf); set.buffers[s.m] = buf;
+          }, function () {})
           .then(done);
       });
     }
@@ -1571,6 +1591,35 @@
       if (buf.loop) { src.loop = true; src.loopStart = buf.loop.a; src.loopEnd = buf.loop.b; }   // sustains while held
       g.gain.value = set.gain * vg(v); src.connect(g); g.connect(master); src.start(t, buf.onset || 0);
       return { g: g, o: [src], rel: set.rel };          // piano rings by itself (key release = damper fade); pads fade over rel
+    }
+    // 808 family: sine an octave down whose pitch drops into the note, soft-clipped. o: drop (start pitch x), dropT (s), drive,
+    // dec (decay s), lvl, rel, click (a short tick on top), growl (a square layer + low-pass = distorted), from (MIDI note to glide from)
+    var slideLast = null, slideT = -9;
+    function b808(ac, midi, t, v, o) {
+      var f = hz(midi - 12), gm = vg(v), g = ac.createGain(), osc = ac.createOscillator(), ws = ac.createWaveShaper(), pre = ac.createGain(), srcs = [osc];
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(o.from != null ? hz(o.from - 12) : f * o.drop, t);
+      osc.frequency.exponentialRampToValueAtTime(f, t + (o.from != null ? 0.12 : o.dropT));
+      ws.curve = driveCurve; pre.gain.value = o.drive;
+      osc.connect(pre);
+      if (o.growl) {
+        var sq = ac.createOscillator(), sg = ac.createGain(); sq.type = "square"; sq.frequency.setValueAtTime(f * o.drop, t);
+        sq.frequency.exponentialRampToValueAtTime(f, t + o.dropT); sq.detune.value = 7; sg.gain.value = 0.25;
+        sq.connect(sg); sg.connect(pre); srcs.push(sq);
+      }
+      var tail = ws;
+      if (o.growl) { var lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = Math.min(f * 10, 2500); ws.connect(lp); tail = lp; }
+      pre.connect(ws); tail.connect(g); g.connect(master);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3 * gm * o.lvl, t + 0.004);
+      g.gain.exponentialRampToValueAtTime(0.0008, t + o.dec);
+      if (o.click) {
+        var ck = ac.createOscillator(), cg = ac.createGain(); ck.type = "triangle"; ck.frequency.setValueAtTime(1800, t);
+        ck.frequency.exponentialRampToValueAtTime(400, t + 0.02);
+        cg.gain.setValueAtTime(0.12 * gm, t); cg.gain.exponentialRampToValueAtTime(0.0005, t + 0.025);
+        ck.connect(cg); cg.connect(master); ck.start(t); ck.stop(t + 0.04);
+      }
+      srcs.forEach(function (x) { x.start(t); x.stop(t + o.dec + 0.1); });
+      return { g: g, o: srcs, rel: o.rel };
     }
     var VOICE = {
       soft: function (ac, midi, t, s, v) {
@@ -1694,6 +1743,16 @@
         o.connect(pre); pre.connect(ws); ws.connect(g); g.connect(master);
         o.start(t); o.stop(t + 1.9);
         return { g: g, o: [o], rel: 0.25 };
+      },
+      boom808: function (ac, midi, t, s, v) { return b808(ac, midi, t, v, { drop: 1.5, dropT: 0.09, drive: 1.6, dec: 4.5, lvl: 1.1, rel: 0.5 }); },
+      punch808: function (ac, midi, t, s, v) { return b808(ac, midi, t, v, { drop: 3, dropT: 0.03, drive: 3, dec: 0.7, lvl: 1, rel: 0.12, click: true }); },
+      growl808: function (ac, midi, t, s, v) { return b808(ac, midi, t, v, { drop: 2, dropT: 0.06, drive: 7, dec: 2.6, lvl: 0.8, rel: 0.25, growl: true }); },
+      slide808: function (ac, midi, t, s, v) {               // trap slide: mono, glides from the last note played in the last 0.6 s
+        Object.keys(voices).forEach(function (k) { if (voices[k].slide) noteOff(+k); });
+        var from = slideLast != null && t - slideT < 0.6 ? slideLast : null;
+        slideLast = midi; slideT = t;
+        var r = b808(ac, midi, t, v, { drop: 2, dropT: 0.06, drive: 2, dec: 3, lvl: 1, rel: 0.2, from: from });
+        r.slide = true; return r;
       },
       chip: function (ac, midi, t, s, v) {                   // 25% pulse, instant attack, sustains
         var f = hz(midi), gm = vg(v), g = ac.createGain(), o = ac.createOscillator(), lp = ac.createBiquadFilter();
@@ -1957,14 +2016,19 @@
     build();
     setInstrument(instrument, false);
     var instPop = document.getElementById("instPop"), instGrid = document.getElementById("instGrid");
-    IGROUPS.forEach(function (gr) {                        // the sound picker: a grid of big buttons, in groups
-      var h = document.createElement("div"); h.className = "ghead"; h.textContent = L(gr[0], gr[1]); instGrid.appendChild(h);
+    var pickTop = document.createElement("div"); pickTop.className = "ptop"; instGrid.appendChild(pickTop);
+    function drawTop() { pickTop.innerHTML = "<span>&#127925; " + L("Choose a sound", "Elige un sonido") + '</span><button class="pclose">&#10005;</button>'; }
+    drawTop();
+    instGrid.onclick = function (e) { if (!e.target.closest(".pclose")) e.stopPropagation(); };   // full screen: only ✕ (or a sound) closes it
+    IGROUPS.forEach(function (gr) {                        // the sound picker: a full screen, one row per group
+      var row = document.createElement("div"); row.className = "grow"; instGrid.appendChild(row);
+      var h = document.createElement("div"); h.className = "ghead"; h.textContent = L(gr[0], gr[1]); row.appendChild(h);
       gr[2].forEach(function (id) {
       var x = INSTR.filter(function (i) { return i[0] === id; })[0];
       var b = document.createElement("button"); b.dataset.id = x[0];
       b.innerHTML = "<b>" + x[1] + "</b>" + iname(x);
       b.onclick = function (e) { e.stopPropagation(); audio(); setInstrument(x[0], true); instPop.classList.remove("open"); };
-      instGrid.appendChild(b);
+      row.appendChild(b);
       });
     });
     var spaceRow = document.createElement("div"); spaceRow.className = "space"; instGrid.appendChild(spaceRow);

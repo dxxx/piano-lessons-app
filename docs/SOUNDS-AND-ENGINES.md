@@ -29,9 +29,13 @@ All Web Audio sounds pass through: per-note pan (low left, high right) → maste
 | 🌌 Warm pad | `warmpad` | Samples, looped | FluidR3_GM `pad_2_warm` (MIT / CC-BY) | 1.7.3 |
 | 🎚️ Polysynth | `polysynth` | Samples, looped | FluidR3_GM `pad_3_polysynth` | 1.7.3 |
 | 🌈 Xylophone | `xylo` | Synthesis | own | 1.11 |
+| 💣 808 Boom | `boom808` | Synthesis (`b808()`: long decay) | own | 1.16 |
+| 💥 808 Punch | `punch808` | Synthesis (`b808()`: fast drop, hard drive, click) | own | 1.16 |
+| 🦁 808 Growl | `growl808` | Synthesis (`b808()`: + square layer, heavy drive, low-pass) | own | 1.16 |
+| 🏄 808 Slide | `slide808` | Synthesis (`b808()`: mono, glides from a note played < 0.6 s before) | own | 1.16 |
 | 🔉 Synth bass | `synthbass` | Samples (rings out, no loop) | MusyngKite `synth_bass_1` | 1.15 |
 | 🎤 Voice ooh | `voice` | Samples, looped | MusyngKite `voice_oohs` | 1.15 |
-| 🚀 Sci-fi | `scifi` | Samples, looped | MusyngKite `fx_8_scifi` | 1.15 |
+| 🚀 Sci-fi | `scifi` | Samples, looped (F#6 and up silent in the source: pitched from Eb6) | MusyngKite `fx_8_scifi` | 1.15 (fixed 1.16) |
 | 🪕 Guitar | `guitar` | Samples | MusyngKite `acoustic_guitar_nylon` | 1.15 |
 | 🤘 Rock guitar | `rockguitar` | Samples, looped | MusyngKite `overdriven_guitar` | 1.15 |
 | 🎷 Saxophone | `sax` | Samples, looped | MusyngKite `alto_sax` | 1.15 |
@@ -46,6 +50,10 @@ All Web Audio sounds pass through: per-note pan (low left, high right) → maste
 | 🔔 Bells | `bells` | Samples | MusyngKite `glockenspiel` | 1.15 |
 
 MusyngKite and FluidR3 renders come from [gleitz/midi-js-soundfonts](https://github.com/gleitz/midi-js-soundfonts); MusyngKite files are CC-BY-SA 3.0 and stay under that licence. Gains in `SETS` were matched by measuring the first 0.6 s RMS of C3/C4/C5 against the grand piano.
+
+## Silent recordings
+
+Since 1.16 `loadSet()` measures each decoded sample; a peak under 0.001 marks it `silent`, and `nearest()` never picks it, so the closest real note is pitched instead. Known case: MusyngKite `fx_8_scifi` Gb6, A6, C7.
 
 ## Rules
 
