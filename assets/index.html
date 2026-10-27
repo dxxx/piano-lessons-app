@@ -138,6 +138,8 @@
   #instPop .gbtns button { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px 1px;
     font-size: 11px; line-height: 1.05; border-width: 2px; border-radius: 12px; box-shadow: 0 3px 0 #1b1540; }
   #instPop .gbtns button b { font-size: 26px; line-height: 1.1; }
+  #instPop .gbtns button b svg.ic { display: block; width: 30px; height: 30px; }
+  #instBtn svg.ic { width: 1.3em; height: 1.3em; vertical-align: -0.35em; }
   #instPop { z-index: 60; }
   #instPop .ptop .space { flex: none; margin: 0 14px 0 auto; padding: 0; border-top: 0; gap: 6px; }
   #instPop .ptop .space > span { font-size: 13px; }
@@ -332,6 +334,13 @@
   .qtrick .tname { font-size: 38px; font-weight: 900; color: var(--accent); }
   .qtrick .eq { font-size: 76px; font-weight: 900; }
   .qtrick .tcap { font-size: 32px; font-weight: 800; min-height: 80px; max-width: 90vw; }
+  .qtrick .tvis { display: none; width: min(760px, 92vw); margin: 6px 0 2px; }
+  .qtrick .tvis.on { display: block; }
+  .qtrick .tvis svg { width: 100%; height: auto; display: block; overflow: visible; font-family: inherit; }
+  .qtrick .tvis .tv-f { transition: opacity .45s; }
+  .qtrick .tvis .tv-m { transition: transform .7s cubic-bezier(.3,1.3,.5,1), opacity .5s; }
+  .qtrick.pics .eq { font-size: 58px; } .qtrick.pics .tname { font-size: 32px; } .qtrick.pics .tcap { font-size: 28px; min-height: 64px; }
+  .qtrick.pics .qhost.hint { margin-top: 84px; }
   .qtrick .tskip { position: absolute; right: 22px; bottom: 18px; font-size: 22px; padding: 12px 22px; border: 0; border-radius: 14px; background: #2b2742; color: var(--ink); }
   .qrow { display: flex; align-items: center; justify-content: center; gap: 24px; }
   .qrep { flex: none; width: 84px; height: 84px; border: 0; border-radius: 50%; font-size: 44px; background: #2b2742; color: var(--ink); }
@@ -860,7 +869,7 @@
     <button class="qtbtn" id="qtbtn" hidden>&#129504; Show me the trick</button>
     <div class="qmsg" id="qmsg"></div>
   </div>
-  <div class="qtrick" id="qtrick"><div class="qin" id="tIn"><div class="tname" id="tName"></div><div class="qhost" id="tHost"><div class="eq" id="tEq"></div><svg class="arcs" id="tSvg"></svg></div><div class="tcap" id="tCap"></div></div><button class="tskip" id="tSkip">Skip &#9654;</button></div>
+  <div class="qtrick" id="qtrick"><div class="qin" id="tIn"><div class="tname" id="tName"></div><div class="qhost" id="tHost"><div class="eq" id="tEq"></div><svg class="arcs" id="tSvg"></svg></div><div class="tvis" id="tVis"></div><div class="tcap" id="tCap"></div></div><button class="tskip" id="tSkip">Skip &#9654;</button></div>
   <div class="qred" id="qred"><div class="qin" id="qredIn">
     <div class="stop" id="qredStop">&#9995; Stop and think!</div>
     <div class="hearts" id="qredHearts"></div>
@@ -871,6 +880,7 @@
   </div></div>
 </div>
 
+<script src="icons.js"></script>
 <script>
   var PLAYLIST = "PLDVezc1Pgjccf0cePq-4SB1K6NExfYT6x";
   var KEY = "lastLesson";
@@ -1551,6 +1561,8 @@
                    ["Fun &amp; world", "Divertidos", ["xylo", "kalimba", "bells", "tubebells", "panflute", "ocarina", "whistle", "woodblock", "taiko", "koto", "sitar"]],
                    ["Animals", "Animales", ["whale", "dolphin", "cat", "sheep", "rooster", "owl", "wolf", "bird", "bee", "mosquito", "cricket"]]];
     function iname(x) { return L(x[2], x[3]); }
+    // The picture of a sound: a drawn instrument (icons.js, 2.0) when there is one, else the emoji
+    function icon(x) { return window.ICONS && ICONS[x[0]] ? '<svg class="ic" viewBox="0 0 48 48" aria-hidden="true">' + ICONS[x[0]] + "</svg>" : x[1]; }
     try { var si = localStorage.getItem("instrument"); if (si === "pad") si = "warmpad";   // the old synth pad is now the sampled warm pad
           if (INSTR.some(function (x) { return x[0] === si; })) instrument = si; } catch (e) {}
     var instBtn = document.getElementById("instBtn"), loadHint = document.getElementById("loadHint");
@@ -2115,7 +2127,7 @@
       releaseAll();
       instrument = id;
       var x = INSTR.filter(function (i) { return i[0] === id; })[0];
-      instBtn.innerHTML = x[1] + " " + iname(x);
+      instBtn.innerHTML = icon(x) + " " + iname(x);
       if (save) { try { localStorage.setItem("instrument", id); } catch (e) {} diary.ev("sound", { id: id }); }
       if (SETS[id] && document.body.classList.contains("play")) loadSet(id);
       hint();
@@ -2294,7 +2306,7 @@
       gr[2].forEach(function (id) {
       var x = INSTR.filter(function (i) { return i[0] === id; })[0];
       var b = document.createElement("button"); b.dataset.id = x[0];
-      b.innerHTML = "<b>" + x[1] + "</b>" + iname(x);
+      b.innerHTML = "<b>" + icon(x) + "</b>" + iname(x);
       b.onclick = function (e) { e.stopPropagation(); audio(); setInstrument(x[0], true); instPop.classList.remove("open"); };
       bx.appendChild(b);
       });
@@ -2325,7 +2337,9 @@
       btn.innerHTML = document.body.classList.contains("play") ? "&#10005; " + L("Close piano", "Cerrar piano") : "&#127929; " + L("Play along", "Tocar el piano");
       soloLabel();
       setInstrument(instrument, false);
-      Array.prototype.forEach.call(instGrid.querySelectorAll("button[data-id]"), function (b, i) { b.innerHTML = "<b>" + INSTR[i][1] + "</b>" + iname(INSTR[i]); });
+      Array.prototype.forEach.call(instGrid.querySelectorAll("button[data-id]"), function (b) {     // by id: the picker is in group order, not INSTR order
+        var x = INSTR.filter(function (i) { return i[0] === b.dataset.id; })[0]; b.innerHTML = "<b>" + icon(x) + "</b>" + iname(x);
+      });
       drawSpace();
     });
   })();
@@ -2455,6 +2469,127 @@
 
   // ---- Arcs: curved lines between the digits of an equation (data-r refs), with a label. Used by the hints, the mini-lessons and
   // the red-screen explanation, so they always look and agree the same. Positions come from the real digit boxes and are redrawn on resize. ----
+  // ---- Trick pictures (2.0, from the design prototype): the mini-lesson's worked example drawn as things to count, in 4 steps
+  // that follow the spoken stages (0 the sum, 1 the split, 2 the move, 3 the answer). Count on/back and jumps over a ten: hops on a
+  // number line. Make ten: two ten-frames, and the dots that fill the first ten fly across. Ones first: ten-sticks and ones-cubes.
+  var trickVis = (function () {
+    var NS = "http://www.w3.org/2000/svg", W = 760, H = 190, RED = "#ff7a6b", GRN = "#5ee08a", GOLD = "#ffc83d", LINE = "#e8e4ff",
+        CELL = "#2a2260", DIM = "#6f68a0", PILL = "#3a2f72";
+    function mk(tag, at, parent) { var e = document.createElementNS(NS, tag); for (var k in at) e.setAttribute(k, at[k]); if (parent) parent.appendChild(e); return e; }
+    function txt(x, y, t, size, fill, parent) { var e = mk("text", { x: x, y: y, "text-anchor": "middle", "font-size": size, "font-weight": 900, fill: fill }, parent); e.textContent = t; return e; }
+    function show(e, on) { e.style.opacity = on ? 1 : 0; }
+    function move(e, dx, dy, delay) { e.style.transitionDelay = delay + "s"; e.style.transform = dx || dy ? "translate(" + dx + "px," + dy + "px)" : ""; }
+    // Number line from a with hops [[from, to, label]]. unit: one hop per number (count on/back), shown one after another at step 1;
+    // otherwise the first hop (to the ten) comes at step 1 and the rest at step 2.
+    function line(svg, a, r, hops, unit) {
+      var ends = hops.reduce(function (l, h) { return l.concat(h[0], h[1]); }, [a, r]),
+          lo = Math.max(0, Math.min.apply(null, ends) - 2), hi = Math.max.apply(null, ends) + 2, dx = (W - 80) / (hi - lo), y = 112, dots = {};
+      function X(v) { return 40 + (v - lo) * dx; }
+      mk("line", { x1: 24, y1: y, x2: W - 24, y2: y, stroke: LINE, "stroke-width": 5, "stroke-linecap": "round" }, svg);
+      for (var v = lo; v <= hi; v++) {
+        mk("line", { x1: X(v), y1: y - 9, x2: X(v), y2: y + 9, stroke: v % 10 ? LINE : GOLD, "stroke-width": v % 10 ? 3 : 6 }, svg);
+        dots[v] = mk("circle", { cx: X(v), cy: y + 40, r: 22, fill: "transparent", class: "tv-f" }, svg);
+        txt(X(v), y + 50, v, 27, "#fbf8ff", svg);
+      }
+      var arcs = hops.map(function (h, i) {
+        var g = mk("g", { class: "tv-f" }, svg), x1 = X(h[0]), x2 = X(h[1]), top = y - 30 - Math.min(64, Math.abs(x2 - x1) * .35), c = unit || !i ? GOLD : GRN,
+            my = (y - 6 + top) / 2 - 8;
+        mk("path", { d: "M" + x1 + " " + (y - 6) + " Q" + (x1 + x2) / 2 + " " + top + " " + x2 + " " + (y - 6), fill: "none", stroke: c, "stroke-width": 4, "stroke-linecap": "round" }, g);
+        mk("rect", { x: (x1 + x2) / 2 - 26, y: my - 22, width: 52, height: 28, rx: 14, fill: c }, g);
+        txt((x1 + x2) / 2, my - 1, h[2], 19, "#1e1b2e", g);
+        show(g, 0); return g;
+      });
+      return function (st) {
+        arcs.forEach(function (g, i) {
+          g.style.transitionDelay = unit && st === 1 ? (i * .5) + "s" : (!unit && i && st === 2 ? ".2s" : "0s");
+          show(g, unit ? st >= 1 : st >= (i ? 2 : 1));
+        });
+        for (var v in dots) dots[v].setAttribute("fill", "transparent");
+        dots[a].setAttribute("fill", RED);
+        if (!unit && st >= 1 && hops.length > 1) dots[hops[0][1]].setAttribute("fill", "#a8862a");
+        if (st >= (unit ? 2 : 3) || (!unit && hops.length === 1 && st >= 1)) dots[r].setAttribute("fill", st >= 3 ? "#2fa35a" : "#a8862a");
+      };
+    }
+    // a + b with a < 10 < a + b: two ten-frames; the dots that make ten fly from the second frame into the first.
+    function frames(svg, a, b) {
+      var gap = 10 - a, cs = 54, fw = cs * 5, xs = [(W - 2 * fw - 70) / 2], y0 = 14, moving = [], slots = [], i, c;
+      xs.push(xs[0] + fw + 70);
+      function cell(f, i) { return [xs[f] + (i % 5) * cs + cs / 2, y0 + Math.floor(i / 5) * cs + cs / 2]; }
+      xs.forEach(function (x) {
+        mk("rect", { x: x, y: y0, width: fw, height: cs * 2, rx: 8, fill: CELL, stroke: LINE, "stroke-width": 4 }, svg);
+        for (var k = 1; k < 5; k++) mk("line", { x1: x + k * cs, y1: y0, x2: x + k * cs, y2: y0 + 2 * cs, stroke: DIM, "stroke-width": 2 }, svg);
+        mk("line", { x1: x, y1: y0 + cs, x2: x + fw, y2: y0 + cs, stroke: DIM, "stroke-width": 2 }, svg);
+      });
+      for (i = a; i < 10; i++) { c = cell(0, i); slots.push(mk("circle", { cx: c[0], cy: c[1], r: 20, fill: "none", stroke: GOLD, "stroke-width": 4, "stroke-dasharray": "6 5", class: "tv-f" }, svg)); }
+      for (i = 0; i < a; i++) { c = cell(0, i); mk("circle", { cx: c[0], cy: c[1], r: 20, fill: RED }, svg); }
+      for (i = 0; i < b; i++) {
+        c = cell(1, i); var d = mk("circle", { cx: c[0], cy: c[1], r: 20, fill: GRN, class: "tv-m" }, svg);
+        if (i < gap) { var to = cell(0, a + i); moving.push([d, to[0] - c[0], to[1] - c[1]]); }
+      }
+      function pill(f) { var g = mk("g", {}, svg); mk("rect", { y: y0 + 2 * cs + 14, height: 40, rx: 20, fill: PILL }, g); txt(xs[f] + fw / 2, y0 + 2 * cs + 44, "", 27, "#fbf8ff", g); return g; }
+      var pa = pill(0), pb = pill(1);
+      function set(p, f, t, fill) { var w = Math.max(80, String(t).length * 15 + 34); p.firstChild.setAttribute("x", xs[f] + fw / 2 - w / 2); p.firstChild.setAttribute("width", w); p.firstChild.setAttribute("fill", fill); p.lastChild.textContent = t; }
+      return function (st) {
+        slots.forEach(function (e) { show(e, st === 1); });
+        moving.forEach(function (m, i) { if (st >= 2) move(m[0], m[1], m[2], st === 2 ? i * .25 : 0); else move(m[0], 0, 0, 0); });
+        set(pa, 0, st >= 2 ? 10 : (st === 1 ? a + " needs " + gap : a), st >= 3 ? "#d6453d" : PILL);
+        set(pb, 1, st >= 2 ? b - gap : b, st >= 3 ? "#2fa35a" : PILL);
+      };
+    }
+    // Tens as sticks of 10, ones as cubes. Plus: the new ones join the ones. Minus: that many ones fade away. The tens never change.
+    function blocks(svg, a, b, plus) {
+      var t = Math.floor(a / 10), u = a % 10, cs = 22, st2 = cs + 4, base = 176, x = 60, i, ones = [], bs = [], moving = [], gone = [];
+      function cube(x, k, fill) { return mk("rect", { x: x + (k % 2) * st2, y: base - (Math.floor(k / 2) + 1) * st2, width: cs, height: cs, rx: 4, fill: fill, class: "tv-m" }, svg); }
+      for (i = 0; i < t; i++) {
+        for (var k = 0; k < 10; k++) mk("rect", { x: x, y: base - (k + 1) * 16, width: cs, height: 13, rx: 3, fill: "#5b7cff" }, svg);
+        mk("rect", { x: x - 3, y: base - 163, width: cs + 6, height: 166, rx: 6, fill: "none", stroke: "#a9b8ff", "stroke-width": 2 }, svg);
+        x += cs + 14;
+      }
+      var ox = x + 6, total = plus ? u + b : u;
+      for (i = 0; i < u; i++) ones.push(cube(ox, i, RED));
+      var ring = mk("rect", { x: ox - 8, y: base - Math.ceil(Math.max(total, 1) / 2) * st2 - 8, width: 2 * st2 + 12, height: Math.ceil(Math.max(total, 1) / 2) * st2 + 12,
+                              rx: 10, fill: "none", stroke: GOLD, "stroke-width": 4, "stroke-dasharray": "7 6", class: "tv-f" }, svg);
+      var opx = ox + 2 * st2 + 46, op = txt(opx, 120, plus ? "+" : "−", 52, "#fbf8ff", svg), bx = opx + 46;
+      op.setAttribute("class", "tv-f");
+      for (i = 0; i < b; i++) {
+        var c = cube(bx, i, plus ? GRN : "#c9c3ef"); bs.push(c);
+        if (plus) moving.push([c, ox + ((u + i) % 2) * st2 - (bx + (i % 2) * st2), (Math.floor(i / 2) - Math.floor((u + i) / 2)) * st2]);
+      }
+      if (!plus) for (i = 0; i < b; i++) gone.push(ones[u - 1 - i]);
+      var res = txt(Math.min(W - 70, bx + 2 * st2 + 120), 120, "", 56, GOLD, svg);
+      return function (st) {
+        show(ring, st === 1 || st === 2);
+        show(op, st < 2);
+        moving.forEach(function (m, i) { if (st >= 2) move(m[0], m[1], m[2], st === 2 ? i * .2 : 0); else move(m[0], 0, 0, 0); });
+        bs.forEach(function (c) { if (!plus) show(c, st < 2); });
+        gone.forEach(function (c, i) { c.style.transitionDelay = st === 2 ? (i * .25) + "s" : "0s"; c.style.opacity = st >= 2 ? .12 : 1; });
+        res.textContent = st >= 3 ? "= " + (plus ? a + b : a - b) : "";
+      };
+    }
+    // Build the picture for one sum and its trick into host; returns step(n), or null when the trick has no picture here.
+    function build(host, a, b, plus, trick) {
+      host.innerHTML = ""; host.classList.remove("on");
+      var r = plus ? a + b : a - b, u = a % 10, svg, step, k, hops = [];
+      if (trick === "tens" || b > 9 || a > 59) return null;
+      svg = mk("svg", { viewBox: "0 0 " + W + " " + H, class: "tv" }, host);
+      if (trick === "count") {
+        var big = plus ? Math.max(a, b) : a, n = plus ? Math.min(a, b) : b;
+        for (k = 0; k < n; k++) hops.push([plus ? big + k : big - k, plus ? big + k + 1 : big - k - 1, (plus ? "+" : "−") + 1]);
+        step = line(svg, big, r, hops, true);
+      } else if (trick === "ten" && plus && a < 10) step = frames(svg, a, b);
+      else if (trick === "ten") {
+        var gap = plus ? 10 - u : (u || 10), mid = plus ? a + gap : a - gap;
+        hops.push([a, mid, (plus ? "+" : "−") + gap]);
+        if (b !== gap) hops.push(plus || u ? [mid, r, (plus ? "+" : "−") + (b - gap)] : [mid, r, "+" + (10 - b)]);
+        step = line(svg, a, r, hops, false);
+      } else if (trick === "ones") step = blocks(svg, a, b, plus);
+      else { host.innerHTML = ""; return null; }
+      host.classList.add("on"); step(0);
+      return step;
+    }
+    return { build: build };
+  })();
+
   var anim = (function () {
     var NS = "http://www.w3.org/2000/svg";
     function node(n, at) { var e = document.createElementNS(NS, n); for (var k in at) e.setAttribute(k, at[k]); return e; }
@@ -3008,6 +3143,8 @@
       $("tEq").innerHTML = lv >= 4 ? colHtml(a, plus, b, undefined, true) : rowHtml(a, b, plus);
       $("tEq").style.fontSize = lv >= 4 ? "72px" : "";
       anim.clear(host, $("tSvg")); $("tCap").textContent = "";
+      var vis = trickVis.build($("tVis"), a, b, plus, ex.trick);
+      $("qtrick").classList.toggle("pics", !!vis);
       $("qtrick").classList.add("on");
       stages.push({ cap: es ? "\u00a1Mira qu\u00e9 f\u00e1cil es!" : "Look how EASY this is!" });
       if (sp) stages.push({ cap: sp, say: (es ? "Lo separamos: " : "Split it: ") + sp });
@@ -3020,6 +3157,7 @@
         if (n >= stages.length) { end(); return; }
         var st = stages[n], t = Date.now(), fired = false;
         $("tCap").textContent = st.cap;
+        if (vis) vis(st.end ? 3 : Math.min(3, n));
         if (st.k) { host.classList.add("hint"); anim.draw(host, $("tSvg"), ex.hints, st.k, true); }
         if (st.end) anim.answer(host, plus ? a + b : a - b);
         function adv() { if (fired) return; fired = true; setTimeout(function () { run(n + 1); }, Math.max(0, (st.end ? 2200 : 3200) - (Date.now() - t))); }
@@ -4508,7 +4646,11 @@
         if (!cfg.lockOn) return null;
         return { max: cfg.max, left: Math.max(0, cfg.max - heartState(quiz.log(), Date.now(), cfg.win, g.clr, HEART_BACK).lost) };
       },
-      unlockNow: function () { var now = Date.now(); g.clr = now; if (inBed(now)) g.bedOk = wake(now); unlock("parent"); },   // a grown-up's unlock at bedtime holds until the morning
+      unlockNow: function () {                                     // a grown-up's unlock at bedtime holds until the morning
+        var now = Date.now(); g.clr = now; if (inBed(now)) g.bedOk = wake(now);
+        if (limitLeft(g, cfg.limit) <= 0) { g.x += 15; g.w = false; }   // screen time used up: give 15 more minutes, or the next tick locks again
+        unlock("parent");
+      },
       breakFor: function (m) { lock("break", Date.now() + m * 60000); },
       extend: function (m) { g.x += m; g.w = false; tick(); },
       noLimit: function () { g.none = true; tick(); },
@@ -4863,6 +5005,7 @@
       $("gMax").disabled = $("gWin").disabled = !c.lockOn;
       $("gCalm").textContent = "Mistake screen: " + (c.calm ? "Calm" : "Dramatic");
       $("lkNow").hidden = !lk; $("lkBreak").hidden = lk && guard.reason() === "time";
+      $("lkNow").textContent = lk && guard.reason() === "time" ? "Unlock now (+ 15 min)" : "Unlock now";
       $("tP15").disabled = $("tP30").disabled = $("tNone").disabled = !c.limit;
       $("gNote").textContent = guard.note() + " Earned today: " + guard.earnedText() + ".";
     }

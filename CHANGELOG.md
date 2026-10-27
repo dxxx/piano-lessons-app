@@ -4,6 +4,17 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.21 — 2026-10-27
+- **Trick pictures**: "Show me the trick" now draws the trick while it talks, in 4 steps that follow the words (from the Claude Design prototype saved in `design/`):
+  - Count on / count back: hops on a number line, one per count
+  - Make ten (8 + 5): two ten-frames; the dots that fill the first ten fly across, then "10 + 3"
+  - Over a ten (28 + 5, 12 − 3, 40 − 7): the jump to the ten, then the rest, on a number line
+  - Ones first (14 + 3, 17 − 5): a ten-stick and ones-cubes; the new ones join, or the taken ones fade
+  - Column sums (levels 6–7) keep their animated column hint
+- **Drawn instrument icons**: every instrument sound has its own drawn icon instead of an emoji (73 icons: a grand piano with its lid up, a vibraphone with mallet, a flying-V for Rock guitar, a UFO for Sci-fi …). Animals keep their emoji, which already show the animal. Source: `tools/build-icons.js` → `assets/icons.js`; preview: `tools/icon-preview.html`
+- **Fix: "Unlock now" on a used-up screen-time lock**: it cleared the lock, then a second later the app saw the time still used up and locked again, so the grown-up could not unlock at all. It now adds 15 minutes with the unlock (the button says so). Workaround on older versions: Menu → "+ 15 min today"
+- Fix: after a language change the sound picker relabelled its buttons in the wrong order
+
 ## 1.20 — 2026-10-27
 - **Sound picker scrolls on phones**: on a screen shorter than the tablet (the S20) the picker was cut off and could not scroll. It now scrolls, with wider buttons so the names fit; the tablet still shows everything on one screen
 - **Animals fixed**: the old 🐱 Cat recording sounded like a revving engine, and the 🐮 Cow and 🦆 Duck files turned out to be people saying the word, not animals. The new Cat is a real meow (Wikimedia Commons "Meow of a pleading cat", public domain). Cow, Duck, 🐘 Elephant and 🐸 Frog are removed. Animals now: Whale, Dolphin, Cat, Sheep, Rooster, Owl, Wolf, Bird, Bee, Mosquito, Cricket

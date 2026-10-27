@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Instrument Icons</title>
+<style>
+  :root { --bg: #241d52; --btn: #3a2f72; --ink: #f1eefc; --mute: #a39fbd; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.3 system-ui, sans-serif; }
+  main { padding: 14px 18px; }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  h2 { font-size: 15px; margin: 12px 0 6px; color: #d9d3ff; }
+  p { color: var(--mute); margin: 0 0 6px; }
+  .grid { display: grid; grid-template-columns: repeat(8, 170px); gap: 8px; }
+  .cell { background: #2e2566; border-radius: 12px; padding: 8px; text-align: center; }
+  .cell .row { display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .btn { width: 62px; height: 58px; border-radius: 12px; background: var(--btn); box-shadow: 0 3px 0 #1b1540; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; }
+  .btn svg { width: 30px; height: 30px; }
+  .big svg { width: 72px; height: 72px; }
+  .emo { font-size: 30px; }
+  .name { margin-top: 4px; color: var(--mute); font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Instrument icons</h1>
+  <p>Each sound: the icon at real button size (30 px on the button), then large. Animals keep their emoji.</p>
+  <div id="out"></div>
+</main>
+<script src="instrument-icons.js"></script>
+<script>
+var GROUPS = [
+  ["Keys", [["grand", "Grand piano"], ["soft", "Soft piano"], ["epiano", "Electric piano"], ["organ", "Organ"], ["musicbox", "Music box"], ["honkytonk", "Honky-tonk"], ["harpsichord", "Harpsichord"], ["clavinet", "Funky clav"], ["celesta", "Celesta"], ["vibes", "Vibraphone"], ["accordion", "Accordion"]]],
+  ["Synths", [["lead", "Synth lead"], ["freestyle", "Freestyle"], ["dance", "Dance synth"], ["squarelead", "Square lead"], ["calliope", "Calliope"], ["charang", "Charang"], ["fifths", "Fifths"], ["synthbrass", "Synth brass"], ["synthstrings", "Synth strings"], ["robot", "Robot voice"], ["voice", "Voice ooh"], ["chip", "Chiptune"], ["warmpad", "Warm pad"], ["polysynth", "Polysynth"], ["halo", "Halo pad"], ["sweep", "Sweep pad"], ["crystal", "Crystal"], ["echoes", "Echoes"], ["scifi", "Sci-fi"]]],
+  ["Bass", [["808", "808 bass"], ["boom808", "808 Boom"], ["punch808", "808 Punch"], ["growl808", "808 Growl"], ["slide808", "808 Slide"], ["synthbass", "Synth bass"], ["ebass", "Electric bass"], ["slapbass", "Slap bass"], ["doublebass", "Double bass"], ["fretless", "Fretless bass"]]],
+  ["Band", [["guitar", "Guitar"], ["eguitar", "Electric guitar"], ["rockguitar", "Rock guitar"], ["distortion", "Distortion"], ["banjo", "Banjo"], ["harmonica", "Harmonica"], ["sax", "Saxophone"], ["trumpet", "Trumpet"], ["trombone", "Trombone"], ["clarinet", "Clarinet"], ["marimba", "Marimba"], ["steeldrums", "Steel drums"]]],
+  ["Orchestra", [["violin", "Violin"], ["cello", "Cello"], ["strings", "Strings"], ["pizzicato", "Pizzicato"], ["flute", "Flute"], ["oboe", "Oboe"], ["horn", "French horn"], ["harp", "Harp"], ["timpani", "Timpani"], ["orchhit", "Orchestra hit"]]],
+  ["Fun & world", [["xylo", "Xylophone"], ["kalimba", "Kalimba"], ["bells", "Bells"], ["tubebells", "Tube bells"], ["panflute", "Pan flute"], ["ocarina", "Ocarina"], ["whistle", "Whistle"], ["woodblock", "Woodblock"], ["taiko", "Taiko drum"], ["koto", "Koto"], ["sitar", "Sitar"]]],
+  ["Animals", [["whale", "Whale", "&#128051;"], ["dolphin", "Dolphin", "&#128044;"], ["cat", "Cat", "&#128049;"], ["sheep", "Sheep", "&#128017;"], ["rooster", "Rooster", "&#128019;"], ["owl", "Owl", "&#129417;"], ["wolf", "Wolf", "&#128058;"], ["bird", "Bird", "&#128036;"], ["bee", "Bee", "&#128029;"], ["mosquito", "Mosquito", "&#129439;"], ["cricket", "Cricket", "&#129431;"]]]
+];
+var out = document.getElementById("out"), html = "";
+GROUPS.forEach(function (g) {
+  html += "<h2>" + g[0].replace("&", "&amp;") + "</h2><div class=\"grid\">";
+  g[1].forEach(function (it) {
+    var art = ICONS[it[0]] ? '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">' + ICONS[it[0]] + "</svg>" : '<span class="emo">' + (it[2] || "?") + "</span>";
+    html += '<div class="cell"><div class="row"><div class="btn">' + art + "<span>" + it[1].split(" ")[0] + '</span></div><span class="big">' + art + '</span></div><div class="name">' + it[1] + "</div></div>";
+  });
+  html += "</div>";
+});
+out.innerHTML = html;
+</script>
+</body>
+</html>

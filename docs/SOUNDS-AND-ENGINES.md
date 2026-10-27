@@ -119,6 +119,10 @@ Icons were reviewed in 1.19: each is unique and says what the sound is (see the 
 - 1.20: Cow and Duck (the Commons "... in Vezo" files are word pronunciations, not animals), Elephant and Frog (operator: not good). The 1.19 Cat file ("Maullido de gata hembra joven") sounded like an engine and was replaced.
 - Check before adding a recording: it must come from an animal-sound category (e.g. Category:Audio files of cats meowing), not a pronunciation file, and its spectrogram must show the call.
 
+## Icons (1.21)
+
+Every instrument sound has a drawn SVG icon (48×48 viewBox, flat shapes, wood / brass / silver palette). They are defined in `tools/build-icons.js`; `node tools/build-icons.js` writes `tools/instrument-icons.js` and the copy the app loads, `assets/icons.js` (`var ICONS = { id: "<svg inner markup>" }`). The picker and the sound button use `icon(x)`, which falls back to the emoji in `INSTR` when an id has no drawing. Animals keep their emoji on purpose. Check them in `tools/icon-preview.html`.
+
 ## Rules
 
 - Nothing from Synthesia or FL Studio goes in this app (licensed content). Only free-licence sound sets, credited here and in the README.
