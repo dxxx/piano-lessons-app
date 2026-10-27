@@ -4,6 +4,11 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.20 — 2026-10-27
+- **Sound picker scrolls on phones**: on a screen shorter than the tablet (the S20) the picker was cut off and could not scroll. It now scrolls, with wider buttons so the names fit; the tablet still shows everything on one screen
+- **Animals fixed**: the old 🐱 Cat recording sounded like a revving engine, and the 🐮 Cow and 🦆 Duck files turned out to be people saying the word, not animals. The new Cat is a real meow (Wikimedia Commons "Meow of a pleading cat", public domain). Cow, Duck, 🐘 Elephant and 🐸 Frog are removed. Animals now: Whale, Dolphin, Cat, Sheep, Rooster, Owl, Wolf, Bird, Bee, Mosquito, Cricket
+- 84 sounds in all
+
 ## 1.19 — 2026-10-27
 - **New Animals row (15)**: 🐳 Whale, 🐬 Dolphin, 🐱 Cat, 🐮 Cow, 🐑 Sheep, 🦆 Duck, 🐓 Rooster, 🐘 Elephant, 🐸 Frog, 🦉 Owl, 🐺 Wolf, 🐤 Bird, 🐝 Bee, 🦟 Mosquito, 🦗 Cricket
   - Cat, cow, sheep, duck, rooster and elephant are real recordings (Wikimedia Commons, CC0 / public domain), pitched across the keys: middle C plays the animal as recorded

@@ -127,6 +127,14 @@
   #instPop .grow { flex: none; display: flex; gap: 6px; align-items: center; }
   #instPop .grow .ghead { flex: 0 0 76px; margin: 0; font-size: 12px; line-height: 1.2; }
   #instPop .gbtns { flex: 1; display: grid; grid-template-columns: repeat(15, 1fr); grid-auto-rows: 58px; gap: 5px; }
+  /* phones (or anything shorter than the tablet): fewer, wider buttons and the picker scrolls */
+  #instPop .grid { overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; }
+  @media (max-height: 560px), (max-width: 900px) {
+    #instPop .grid { justify-content: flex-start; }
+    #instPop .gbtns { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); grid-auto-rows: 62px; }
+    #instPop .grow { align-items: flex-start; }
+    #instPop .grow .ghead { flex-basis: 64px; padding-top: 20px; }
+  }
   #instPop .gbtns button { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px 1px;
     font-size: 11px; line-height: 1.05; border-width: 2px; border-radius: 12px; box-shadow: 0 3px 0 #1b1540; }
   #instPop .gbtns button b { font-size: 26px; line-height: 1.1; }
@@ -1529,8 +1537,8 @@
                  ["tubebells", "&#128718;&#65039;", "Tube bells", "Campanas tubulares"],
                  ["freestyle", "&#127911;", "Freestyle", "Freestyle"], ["dance", "&#128131;", "Dance synth", "Synth de baile"],
                  ["whale", "&#128051;", "Whale", "Ballena"], ["dolphin", "&#128044;", "Dolphin", "Delfín"], ["cat", "&#128049;", "Cat", "Gato"],
-                 ["cow", "&#128046;", "Cow", "Vaca"], ["sheep", "&#128017;", "Sheep", "Oveja"], ["duck", "&#129414;", "Duck", "Pato"],
-                 ["rooster", "&#128019;", "Rooster", "Gallo"], ["elephant", "&#128024;", "Elephant", "Elefante"], ["frog", "&#128056;", "Frog", "Rana"],
+                 ["sheep", "&#128017;", "Sheep", "Oveja"],
+                 ["rooster", "&#128019;", "Rooster", "Gallo"],
                  ["owl", "&#129417;", "Owl", "Búho"], ["wolf", "&#128058;", "Wolf", "Lobo"], ["bee", "&#128029;", "Bee", "Abeja"],
                  ["mosquito", "&#129439;", "Mosquito", "Mosquito"], ["cricket", "&#129431;", "Cricket", "Grillo"]];
     // The picker shows the sounds in groups
@@ -1541,7 +1549,7 @@
                    ["Band", "Banda", ["guitar", "eguitar", "rockguitar", "distortion", "banjo", "harmonica", "sax", "trumpet", "trombone", "clarinet", "marimba", "steeldrums"]],
                    ["Orchestra", "Orquesta", ["violin", "cello", "strings", "pizzicato", "flute", "oboe", "horn", "harp", "timpani", "orchhit"]],
                    ["Fun &amp; world", "Divertidos", ["xylo", "kalimba", "bells", "tubebells", "panflute", "ocarina", "whistle", "woodblock", "taiko", "koto", "sitar"]],
-                   ["Animals", "Animales", ["whale", "dolphin", "cat", "cow", "sheep", "duck", "rooster", "elephant", "frog", "owl", "wolf", "bird", "bee", "mosquito", "cricket"]]];
+                   ["Animals", "Animales", ["whale", "dolphin", "cat", "sheep", "rooster", "owl", "wolf", "bird", "bee", "mosquito", "cricket"]]];
     function iname(x) { return L(x[2], x[3]); }
     try { var si = localStorage.getItem("instrument"); if (si === "pad") si = "warmpad";   // the old synth pad is now the sampled warm pad
           if (INSTR.some(function (x) { return x[0] === si; })) instrument = si; } catch (e) {}
@@ -1614,11 +1622,8 @@
       bells:      { dir: "bells",      acc: ["Eb", "Gb"], gain: 4.2, rel: 1.2 },
       // 1.19: real animal recordings (Wikimedia Commons, CC0 / public domain), one file each, loudness-normalised; rel 2 = the call plays out
       cat:      { dir: "cat",      acc: ["Eb", "Gb"], gain: 0.9, rel: 2, one: true },
-      cow:      { dir: "cow",      acc: ["Eb", "Gb"], gain: 0.9, rel: 2, one: true },
-      duck:     { dir: "duck",     acc: ["Eb", "Gb"], gain: 0.9, rel: 2, one: true },
       rooster:  { dir: "rooster",  acc: ["Eb", "Gb"], gain: 0.8, rel: 2, one: true },
       sheep:    { dir: "sheep",    acc: ["Eb", "Gb"], gain: 0.9, rel: 2, one: true },
-      elephant: { dir: "elephant", acc: ["Eb", "Gb"], gain: 0.9, rel: 2, one: true },
       // 1.17: 41 more MusyngKite sets; gain + loop from the same measurement (loop when the level holds within 5 dB)
       honkytonk:    { dir: "honkytonk", acc: ["Eb", "Gb"], gain: 3.0, rel: 1.0 },
       harpsichord:  { dir: "harpsichord", acc: ["Eb", "Gb"], gain: 3.4, rel: 1.0 },
@@ -1963,21 +1968,6 @@
         o.connect(lp); o2.connect(lp); lp.connect(g); g.connect(master);
         [o, o2, w].forEach(function (x) { x.start(t); x.stop(t + 60); });
         return { g: g, o: [o, o2, w], rel: 0.12 };
-      },
-      frog: function (ac, midi, t, s, v) {                   // "rib-bit": two croaky pulse bursts
-        var f = hz(midi - 12), gm = vg(v), g = ac.createGain(), o = ac.createOscillator(), bp = ac.createBiquadFilter(), gate = ac.createGain(), lfo = ac.createOscillator(), lg = ac.createGain();
-        o.type = "square"; o.frequency.value = f;
-        lfo.type = "square"; lfo.frequency.value = 28; lg.gain.value = 0.5; gate.gain.value = 0.5; lfo.connect(lg); lg.connect(gate.gain);
-        bp.type = "bandpass"; bp.frequency.value = Math.min(f * 5, 5000); bp.Q.value = 3;
-        g.gain.setValueAtTime(0.0001, t);
-        [[0, 0.13], [0.2, 0.36]].forEach(function (b) {
-          g.gain.setValueAtTime(0.0001, t + b[0]); g.gain.exponentialRampToValueAtTime(0.4 * gm, t + b[0] + 0.015);
-          g.gain.setValueAtTime(0.4 * gm, t + b[1] - 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + b[1]);
-        });
-        o.frequency.setValueAtTime(f, t + 0.2); o.frequency.exponentialRampToValueAtTime(f * 1.25, t + 0.36);   // "-bit" goes up
-        o.connect(bp); bp.connect(gate); gate.connect(g); g.connect(master);
-        [o, lfo].forEach(function (x) { x.start(t); x.stop(t + 0.45); });
-        return { g: g, o: [o, lfo], rel: 0.4 };
       },
       owl: function (ac, midi, t, s, v) {                    // "hoo... hoooo": soft sine hoots that fall a little
         var f = hz(midi - 12), gm = vg(v), g = ac.createGain(), o = ac.createOscillator(), h = ac.createOscillator(), hg = ac.createGain(), lp = ac.createBiquadFilter();

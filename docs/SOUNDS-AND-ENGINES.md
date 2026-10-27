@@ -94,18 +94,14 @@ All Web Audio sounds pass through: per-note pan (low left, high right) → maste
 | 💃 Dance synth | `dance` | Synthesis (3 detuned saws, snappy filter, pitch blip) | own | 1.19 |
 | 🐳 Whale | `whale` | Synthesis (sine + triangle swoop, slow vibrato, delay echo) | own | 1.19 |
 | 🐬 Dolphin | `dolphin` | Synthesis (3 clicks + swooping whistle) | own | 1.19 |
-| 🐸 Frog | `frog` | Synthesis (gated square "rib-bit") | own | 1.19 |
 | 🦉 Owl | `owl` | Synthesis (two falling sine hoots) | own | 1.19 |
 | 🐺 Wolf | `wolf` | Synthesis (saw through two formants, slides up, vibrato) | own | 1.19 |
 | 🐝 Bee | `bee` | Synthesis (saw + square buzz, low-pass) | own | 1.19 |
 | 🦟 Mosquito | `mosquito` | Synthesis (high saw, 31 Hz wing vibrato, drift) | own | 1.19 |
 | 🦗 Cricket | `cricket` | Synthesis (4-pulse chirps repeating) | own | 1.19 |
-| 🐱 Cat | `cat` | One recording (`one: true`, sounds/cat/C4.mp3, pitched) | Wikimedia Commons "Maullido de gata hembra joven.ogg", CC0 | 1.19 |
-| 🐮 Cow | `cow` | One recording | Commons "Cow in Vezo.ogg", CC0 | 1.19 |
+| 🐱 Cat | `cat` | One recording (first meow, 0.2–1.8 s, high-pass 150 Hz) | Commons "Meow of a pleading cat.oga", public domain | 1.19 (replaced 1.20) |
 | 🐑 Sheep | `sheep` | One recording | Commons "Sheep bleating.ogg" (PDSounds, earthcalling), public domain | 1.19 |
-| 🦆 Duck | `duck` | One recording | Commons "Duck in Vezo.ogg", CC0 | 1.19 |
 | 🐓 Rooster | `rooster` | One recording | Commons "Medium rooster crowing.ogg", public domain | 1.19 |
-| 🐘 Elephant | `elephant` | One recording | Commons "Elephant voice - trumpeting.ogg", CC0 | 1.19 |
 MusyngKite and FluidR3 renders come from [gleitz/midi-js-soundfonts](https://github.com/gleitz/midi-js-soundfonts); MusyngKite files are CC-BY-SA 3.0 and stay under that licence. Gains in `SETS` were matched by measuring the first 0.6 s RMS of C3/C4/C5 against the grand piano.
 
 ## Silent recordings
@@ -117,6 +113,11 @@ Since 1.16 `loadSet()` measures each decoded sample; a peak under 0.001 marks it
 Since 1.19 a `SETS` entry with `one: true` has a single file `sounds/<id>/C4.mp3`, played as recorded on middle C and pitched by `playbackRate` on other keys. Animal recordings were cut to their loudest call and loudness-normalised (ffmpeg `loudnorm`, -16 LUFS). The Commons whale recording (Akhumphi1x.ogg) was rejected: mostly underwater noise.
 
 Icons were reviewed in 1.19: each is unique and says what the sound is (see the table above).
+
+## Removed
+
+- 1.20: Cow and Duck (the Commons "... in Vezo" files are word pronunciations, not animals), Elephant and Frog (operator: not good). The 1.19 Cat file ("Maullido de gata hembra joven") sounded like an engine and was replaced.
+- Check before adding a recording: it must come from an animal-sound category (e.g. Category:Audio files of cats meowing), not a pronunciation file, and its spectrogram must show the call.
 
 ## Rules
 
