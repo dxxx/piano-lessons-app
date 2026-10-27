@@ -139,6 +139,7 @@
     font-size: 11px; line-height: 1.05; border-width: 2px; border-radius: 12px; box-shadow: 0 3px 0 #1b1540; }
   #instPop .gbtns button b { font-size: 26px; line-height: 1.1; }
   #instPop .gbtns button b svg.ic { display: block; width: 30px; height: 30px; }
+  #vName input { font: inherit; width: 9em; margin-left: 6px; padding: 4px 8px; border-radius: 8px; border: 2px solid var(--accent); background: #fff; color: #1e1b2e; }
   #instBtn svg.ic { width: 1.3em; height: 1.3em; vertical-align: -0.35em; }
   #instPop { z-index: 60; }
   #instPop .ptop .space { flex: none; margin: 0 14px 0 auto; padding: 0; border-top: 0; gap: 6px; }
@@ -750,6 +751,7 @@
       <section data-s="voice"><h3>Voice &amp; language</h3>
         <div class="mlist">
           <button class="set" id="vLang"></button>
+          <button class="set" id="vName"></button>
           <button class="set" id="vRead"></button>
           <button class="set" id="vFb"></button>
           <button class="set" id="vOn"></button>
@@ -924,6 +926,7 @@
     out.push({ say: (es ? "Dijiste " : "You said ") + n + ". " + (es ? "Veamos…" : "Let's see…"), step: -1 });
     ex.steps.forEach(function (st, i) { out.push({ say: (st.s.charAt(0).toUpperCase() + st.s.slice(1)).replace(/,$/, "."), step: i }); });
     out.push({ say: (es ? "Así que " : "So ") + eqSay(a, b, plus, lang) + ".", step: -1, fin: true });
+    out[0].say = hey(out[0].say, lang);                      // "Hey Alex, you said 12. Let's see…"
     return out;
   }
   // The four tricks, named the same everywhere (hints, mini-lessons, explanations).
@@ -933,6 +936,17 @@
                  tens: ["🧱", "Tens and ones", "Tens and ones", "Decenas y unidades", "Decenas y unidades"] };
   function trickName(t, plus, lang) { var r = TRICKS[t]; return r[0] + " " + r[(lang === "es" ? 3 : 1) + (plus ? 0 : 1)]; }
   function easyIntro(lang) { return lang === "es" ? "Truco fácil: " : "Easy trick: "; }
+  // The child's name (Menu → Voice & language, stored on the tablet only). hey() puts "Hey Alex," in front of a correction or a tip
+  // so he knows it is for him; KID_PAUSE is invisible in text and tells speak() to pause there. Without a name, the text is unchanged.
+  var KID_PAUSE = "\u2063";
+  function kidName() { try { return (localStorage.getItem("kidName") || "").trim(); } catch (e) { return ""; } }
+  function hey(text, lang) {
+    var n = kidName(), t = text == null ? "" : String(text);
+    if (!n || !t) return t;
+    var c = t.charAt(0), d = t.charAt(1);
+    if (c !== c.toLowerCase() && d && d === d.toLowerCase() && /[a-z\u00e1\u00e9\u00ed\u00f3\u00fa\u00f1']/i.test(d)) t = c.toLowerCase() + t.slice(1);   // "Stay…" → "stay…"; "EASY", "A" and "7 + 5" stay
+    return (lang === "es" ? "Oye " : "Hey ") + n + "," + KID_PAUSE + " " + t;
+  }
   // "15 = 10 + 5" (ones first) or "5 = 2 + 3" (make ten): the split a mini-lesson shows first; "" when the trick has none
   function splitText(a, b, plus, trick) {
     var u = a % 10;
@@ -2406,7 +2420,16 @@
     var cur = null, spokenTimer = null, spokenSeq = 0;
     function can(lg) { return !!(bridge && bridge.speak && tts[lg || cfg.lang]); }
     function spoken(id) { if (!cur || cur.id !== id) return; var d = cur.done; cur = null; clearTimeout(spokenTimer); if (d) d(); }
+    var pauseT = null, pauseSeq = 0;
     function speak(text, done, rate, lg) {
+      var k = text ? text.indexOf(KID_PAUSE) : -1;
+      if (k >= 0) {                                       // "Hey Alex," … a beat … the message
+        var rest = text.slice(k + 1).replace(/^\s+/, ""), tok = ++pauseSeq;
+        return speak(text.slice(0, k), function () {
+          if (tok !== pauseSeq) { if (done) done(); return; }          // hushed meanwhile: do not go on with the rest
+          pauseT = setTimeout(function () { if (tok === pauseSeq && !speak(rest, done, rate, lg) && done) done(); }, 550);
+        }, rate, lg);
+      }
       var prev = cur; cur = null; clearTimeout(spokenTimer);
       if (prev && prev.done) prev.done();
       if (!can(lg)) return false;
@@ -2423,7 +2446,7 @@
     }
     // Silence. Whoever waits is still told (a moment later), so no screen waits forever; `quiet` = the caller has already moved on.
     function hush(quiet) {
-      var c = cur; cur = null; clearTimeout(spokenTimer);
+      var c = cur; cur = null; clearTimeout(spokenTimer); clearTimeout(pauseT); pauseSeq++;
       if (bridge && bridge.speakStop) bridge.speakStop();
       if (c && c.done && !quiet) setTimeout(c.done, 0);
     }
@@ -3107,7 +3130,7 @@
       var back = !!vHandler && !locked && !$("qvoice").hidden;       // the mic stays off while a hint is spoken
       if (back) voice.stop();
       function after() { if (back && my === qid && !locked) voice.listen(vHandler); }
-      if (!voice.tell((hintN === 1 ? easyIntro(voice.cfg.lang) : "") + ex.hints[hintN - 1].say, after)) after();
+      if (!voice.tell(hintN === 1 ? hey(easyIntro(voice.cfg.lang) + ex.hints[0].say, voice.cfg.lang) : ex.hints[hintN - 1].say, after)) after();
       if (hintN < ex.hints.length) armHint(my);
     }
     function nudge(my) {
@@ -3146,7 +3169,7 @@
       var vis = trickVis.build($("tVis"), a, b, plus, ex.trick);
       $("qtrick").classList.toggle("pics", !!vis);
       $("qtrick").classList.add("on");
-      stages.push({ cap: es ? "\u00a1Mira qu\u00e9 f\u00e1cil es!" : "Look how EASY this is!" });
+      stages.push({ cap: es ? "\u00a1Mira qu\u00e9 f\u00e1cil es!" : "Look how EASY this is!", say: hey(es ? "mira qu\u00e9 f\u00e1cil es." : "look how easy this is.", lang) });
       if (sp) stages.push({ cap: sp, say: (es ? "Lo separamos: " : "Split it: ") + sp });
       ex.hints.forEach(function (h, k) { stages.push({ k: k + 1, cap: h.arcs[0].l, say: (k ? "" : easyIntro(lang)) + h.say }); });
       stages.push({ end: true, cap: fin });
@@ -3794,8 +3817,8 @@
       setTimeout(function () { cur.ink = []; drawInk(); }, 450);
       if (prog.r === 3) cur.hint = true;
       kick();
-      if (Date.now() - saidAt > 3500) tell(why === "start" ? L("Start at the green dot.", "Empieza en el punto verde.")
-        : prog.r === 3 ? L("Nearly! Try again.", "¡Casi! Otra vez.") : L("Follow the line. Try again!", "Sigue la línea. ¡Otra vez!"));
+      if (Date.now() - saidAt > 3500) tell(hey(why === "start" ? L("Start at the green dot.", "Empieza en el punto verde.")
+        : prog.r === 3 ? L("Nearly! Try again.", "¡Casi! Otra vez.") : L("Follow the line. Try again!", "Sigue la línea. ¡Otra vez!"), uiLang()));
     }
     var PRAISE_W = [["Brilliant!", "¡Genial!"], ["Super writing!", "¡Qué bien escrito!"], ["Well done!", "¡Bien hecho!"], ["Fantastic!", "¡Fantástico!"], ["Great job!", "¡Buen trabajo!"]];
     function itemDone() {
@@ -4241,7 +4264,7 @@
       pad.classList.remove("shake"); void pad.offsetWidth; pad.classList.add("shake");
       drawLines(true); clearTimeout(redT); redT = setTimeout(function () { drawLines(false); }, 450);
       bonk(); try { if (navigator.vibrate) navigator.vibrate(120); } catch (e) {}
-      if (warnLimit || now - saidAt > 6000) tell(crossLine(warnLimit));
+      if (warnLimit || now - saidAt > 6000) tell(hey(crossLine(warnLimit), voice.cfg.lang));
       bar();
     }
 
@@ -4483,7 +4506,7 @@
       pausedVid = !!(player && player.getPlayerState && player.getPlayerState() === 1);
       if (pausedVid) player.pauseVideo();
       act.tooClose();
-      voice.say(es() ? "\u00a1Al\u00e9jate un poquito!" : "Move back a little!");
+      voice.say(hey(es() ? "\u00a1Al\u00e9jate un poquito!" : "Move back a little!", voice.cfg.lang));
     }
     function uncover() {
       if (!covered) return;
@@ -4594,7 +4617,7 @@
       else if (until) g.lock.until = until;
       if (fresh) { act.lockEv(g.lock.r); earning = false; }
       store(); apply();
-      if (fresh) { var w = words(); voice.say(w[1] + ". " + w[2] + "."); }
+      if (fresh) { var w = words(); voice.say(hey(w[1], voice.cfg.lang) + ". " + w[2] + "."); }
     }
     function unlock(how) {
       if (!g.lock) return;
@@ -4604,7 +4627,7 @@
       var b = $("tbanner");
       b.textContent = es() ? "\u23f0 Quedan 5 minutos" : "\u23f0 5 minutes left"; b.classList.add("on");
       clearTimeout(bannerT); bannerT = setTimeout(function () { b.classList.remove("on"); }, 8000);
-      voice.say(es() ? "Quedan 5 minutos." : "5 minutes left.");
+      voice.say(hey(es() ? "Quedan 5 minutos." : "5 minutes left.", voice.cfg.lang));
     }
     function tick() {
       var now = Date.now(), t = performance.now(), dt = Math.min((t - last) / 1000, 10);
@@ -4814,7 +4837,8 @@
       $("vFb").textContent = "\ud83d\udde3\ufe0f Spoken feedback: " + (voice.cfg.fb ? "ON" : "OFF");
       $("vLang").textContent = "\ud83c\udf10 Language: " + (voice.cfg.lang === "es" ? "Espa\u00f1ol" : "English");
       $("vOn").textContent = "\ud83c\udfa4 Voice quiz (answer by voice): " + (voice.cfg.on ? "ON" : "OFF");
-      $("vNote").textContent = voice.note();
+      if (!$("vName").querySelector("input")) $("vName").textContent = "\ud83d\udc66 Child\u2019s name: " + (kidName() || "not set");
+      $("vNote").textContent = voice.note() + (kidName() ? " Corrections and tips start with \u201cHey " + kidName() + ",\u201d and a short pause." : " Add his name and corrections and tips will start with \u201cHey <name>,\u201d.");
     }
     function mlabel() {
       $("qMode").textContent = "Opens with: " + { choose: "he chooses", piano: "Piano lessons", math: "Maths only", write: "Writing only", colour: "Colouring only" }[appMode.startMode()];
@@ -4846,6 +4870,15 @@
     $("vRead").onclick = function () { voice.setRead(!voice.cfg.read); vlabel(); };
     $("vFb").onclick = function () { voice.setFb(!voice.cfg.fb); vlabel(); };
     $("vLang").onclick = function () { voice.setLang(voice.cfg.lang === "es" ? "en" : "es"); relabelAll(); vlabel(); };
+    $("vName").onclick = function () {                       // type the name in place; Enter or tapping away saves it
+      var b = this; if (b.querySelector("input")) return;
+      b.innerHTML = "\ud83d\udc66 Child\u2019s name: <input type=\"text\" maxlength=\"20\" autocapitalize=\"words\" placeholder=\"Alex\">";
+      b.dataset.done = b.textContent;                       // keep rowify() (the label/value layout) off the row while the input is in it
+      var i = b.querySelector("input"); i.value = kidName(); i.focus();
+      function save() { try { localStorage.setItem("kidName", i.value.trim().slice(0, 20)); } catch (e) {} i.onblur = null; vlabel(); }
+      i.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); save(); } };
+      i.onblur = save; i.onclick = function (e) { e.stopPropagation(); };
+    };
     $("qMode").onclick = function () {
       var order = ["choose", "piano", "math", "write", "colour"].filter(function (k) { return k === "choose" || appMode.shown(k); });
       appMode.setStart(order[(order.indexOf(appMode.startMode()) + 1) % order.length]); mlabel();

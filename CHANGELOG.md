@@ -4,6 +4,14 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.22 — 2026-10-27
+- **Messages with his name**: Menu → Voice & language → **Child's name**. With a name set, corrections and tips start with "Hey Alex," and a short pause, so he knows the message is for him:
+  - maths mistake: "Hey Alex, … you said 9. Let's see…"; the first hint: "Hey Alex, … easy trick: make ten! 8 needs 2."; the mini-lesson: "Hey Alex, … look how easy this is."
+  - writing: "Hey Alex, … follow the line. Try again!"; colouring: "Hey Alex, … stay inside the lines."
+  - screen time, bedtime and mistake locks, the 5-minute warning, and the eye guard's "move back a little"
+  - Spanish says "Oye Alex,". The name is stored on the tablet only (never in the app's files); leave it empty and nothing changes
+- The pause is a real gap in the speech (about half a second), not just a comma
+
 ## 1.21 — 2026-10-27
 - **Trick pictures**: "Show me the trick" now draws the trick while it talks, in 4 steps that follow the words (from the Claude Design prototype saved in `design/`):
   - Count on / count back: hops on a number line, one per count
