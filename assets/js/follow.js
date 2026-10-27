@@ -6,6 +6,10 @@
 //   - hand: both (default: Synthesia's beginner songs share the melody between the hands), right or left; in one-hand mode the other hand plays itself, softly, when he moves on
 //   - a step = the notes that start together; it is done when each of them has been pressed (any order)
 //   - a wrong key just sounds; the right key glows brighter; stars from how many steps were right first time
+//   - in the list: ONE tap plays the song to listen to (the first 20 s, both hands), TWO quick taps pick it and he plays along
+//     (operator: "single click makes songs play, double click selects it, so I can hear before I commit")
+//   - no lucky hits: a right key pressed in a flurry of wrong ones (3+ wrong keys in the last 1.5 s) does not move the song on,
+//     so banging keys never plays the song for him; one calm press of the right key does
 //   - the keyboard moves to show the notes he needs, and goes back to his own octave at the end
 // Research: answer on the keyboard, notes from his songs, errorless (research/06 R9-R12, 01 R9). Uses L, voice, diary, pianoKeys,
 // pianoPlayNote (index.html). Progress: localStorage songProg { id: { best, plays, last } }; settings: songCfg { hand, acc }.
@@ -14,7 +18,8 @@ var follow = (function () {
   var NN = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   var LV = ["", "⭐", "⭐⭐", "⭐⭐⭐"];
   var index = null, loading = false, song = null, steps = [], si = 0, pressed = {}, firstTry = true, okFirst = 0, misses = 0, t0 = 0, tab = 1;
-  var cfg = { hand: "RL", acc: 1 }, prog = {};
+  var cfg = { hand: "RL", acc: 1 }, prog = {}, wrong = [];
+  var LUCKY_N = 3, LUCKY_MS = 1500;
   try { var c = JSON.parse(localStorage.getItem("songCfg") || "{}"); if (/^(R|L|RL)$/.test(c.hand)) cfg.hand = c.hand; if (c.acc === 0) cfg.acc = 0; } catch (e) {}
   try { prog = JSON.parse(localStorage.getItem("songProg") || "{}") || {}; } catch (e) { prog = {}; }
   function saveCfg() { try { localStorage.setItem("songCfg", JSON.stringify(cfg)); } catch (e) {} }
@@ -35,6 +40,8 @@ var follow = (function () {
   function lessonIds() { try { return JSON.parse(localStorage.getItem("lessonIds") || "[]"); } catch (e) { return []; } }
   function list() {
     var box = $("songList"), ids = lessonIds();
+    stopPreview();
+    $("songTip").textContent = L("Tap a song once to listen. Tap it twice to play it yourself.", "Toca una canción una vez para escucharla. Dos veces para tocarla tú.");
     [].forEach.call($("songTabs").children, function (b) { b.classList.toggle("sel", +b.dataset.lv === tab); });
     [].forEach.call($("songHand").children, function (b) { b.classList.toggle("sel", b.dataset.h === cfg.hand); });
     if (!index.length) { box.innerHTML = '<p class="songnone">' + L("No songs on this tablet yet. A grown-up adds them from the computer.", "Todavía no hay canciones en esta tableta.") + "</p>"; return; }
@@ -46,16 +53,46 @@ var follow = (function () {
         s.n + " " + L("notes", "notas") + (stars ? ' · <i class="st">' + stars + "</i>" : "") + "</span></button>";
     }).join("") || '<p class="songnone">—</p>';
   }
+  // ---- Listen first: one tap plays the start of the song; two quick taps (within 0.45 s) pick it ----
+  var PREVIEW_S = 20, DOUBLE_MS = 450, cache = {}, pv = { id: null, timers: [] }, lastTap = { id: null, t: 0 };
+  function getSong(id) {
+    if (cache[id]) return Promise.resolve(cache[id]);
+    return fetch("songs/" + id + ".json").then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) { cache[id] = d; return d; });
+  }
+  function stopPreview() {
+    pv.timers.forEach(clearTimeout); pv.timers = []; pv.id = null;
+    [].forEach.call(document.querySelectorAll("#songList .playing"), function (b) { b.classList.remove("playing"); });
+  }
+  function preview(id, btn) {
+    var again = pv.id === id; stopPreview();
+    if (again) return;                                        // a slow second tap on the song that is playing = stop listening
+    pv.id = id; btn.classList.add("playing");
+    getSong(id).then(function (d) {
+      if (pv.id !== id || !window.pianoPlayNote) return;
+      d.notes.forEach(function (n) {
+        if (n[1] >= PREVIEW_S) return;
+        var ms = Math.max(120, Math.min(2000, (n[2] - n[1]) * 1000));
+        pv.timers.push(setTimeout(function () { if (pv.id === id) pianoPlayNote(n[0], n[3] === "R" ? 0.7 : 0.5, ms); }, 300 + n[1] * 1000));
+      });
+      var end = Math.min(PREVIEW_S, Math.max.apply(null, d.notes.map(function (n) { return n[2]; })));
+      pv.timers.push(setTimeout(function () { if (pv.id === id) stopPreview(); }, 300 + end * 1000 + 600));
+    }).catch(function () { stopPreview(); });
+  }
+  function tapSong(btn) {
+    var id = btn.dataset.id, now = Date.now(), dbl = lastTap.id === id && now - lastTap.t < DOUBLE_MS;
+    lastTap = { id: id, t: now };
+    if (dbl) { lastTap = { id: null, t: 0 }; stopPreview(); start(id); } else preview(id, btn);
+  }
   function openList() {
     $("songPop").classList.add("open");
     $("songList").innerHTML = '<p class="songnone">' + L("Loading songs…", "Cargando canciones…") + "</p>";
     load(list);
   }
-  function closeList() { $("songPop").classList.remove("open"); }
+  function closeList() { stopPreview(); $("songPop").classList.remove("open"); }
 
   // ---- Play one song ----
   function start(id) {
-    fetch("songs/" + id + ".json").then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) {
+    getSong(id).then(function (d) {
       var meta = index.filter(function (s) { return s.id === id; })[0] || { id: id, t: d.t };
       var mine = d.notes.filter(function (n) { return cfg.hand.indexOf(n[3]) >= 0; });
       if (!mine.length) mine = d.notes;
@@ -66,7 +103,7 @@ var follow = (function () {
       });
       var other = cfg.hand === "RL" ? [] : d.notes.filter(function (n) { return cfg.hand.indexOf(n[3]) < 0; });
       song = { id: id, t: meta.t, other: other };
-      si = 0; pressed = {}; firstTry = true; okFirst = 0; misses = 0; t0 = Date.now();
+      si = 0; pressed = {}; firstTry = true; okFirst = 0; misses = 0; wrong = []; t0 = Date.now();
       closeList(); document.body.classList.add("infollow"); $("follow").hidden = false;
       $("fwTitle").textContent = meta.t;
       show();
@@ -92,7 +129,10 @@ var follow = (function () {
   function note(m) {                                             // every key he presses (act.note)
     if (!song || !steps[si] || !solo()) return;
     var st = steps[si];
-    if (st.m.indexOf(m) < 0) {                                   // not this one: no penalty, the right key glows brighter
+    var now = Date.now();
+    while (wrong.length && now - wrong[0] > LUCKY_MS) wrong.shift();
+    if (st.m.indexOf(m) < 0 || wrong.length >= LUCKY_N) {         // not this one (or a lucky hit in a flurry): no penalty, the right key glows brighter
+      if (st.m.indexOf(m) < 0) wrong.push(now);
       firstTry = false; misses++;
       st.m.forEach(function (x) { var k = pianoKeys.el(x); if (k && !pressed[x]) { k.classList.remove("wantx"); void k.offsetWidth; k.classList.add("wantx"); } });
       return;
@@ -145,7 +185,7 @@ var follow = (function () {
     $("songPop").onclick = function (e) { if (e.target === $("songPop")) closeList(); };
     $("songTabs").onclick = function (e) { var b = e.target.closest("button"); if (b) { tab = +b.dataset.lv; list(); } };
     $("songHand").onclick = function (e) { var b = e.target.closest("button"); if (b) { cfg.hand = b.dataset.h; saveCfg(); list(); } };
-    $("songList").onclick = function (e) { var b = e.target.closest("button[data-id]"); if (b) start(b.dataset.id); };
+    $("songList").onclick = function (e) { var b = e.target.closest("button[data-id]"); if (b) tapSong(b); };
     $("fwStop").onclick = stop;
     $("fwHint").onclick = hint;
     $("songBtn").innerHTML = "🎵 " + L("Songs", "Canciones");

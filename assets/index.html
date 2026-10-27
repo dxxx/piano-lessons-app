@@ -197,6 +197,9 @@
   .songlist { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; align-content: start; padding: 2px 2px 8px; }
   .songlist button { text-align: left; display: flex; flex-direction: column; gap: 4px; min-height: 64px; }
   .songlist button b { font-size: 18px; } .songlist button span { font-size: 13px; font-weight: 500; color: #c9bff5; } .songlist .st { font-style: normal; }
+  .songtip { font-size: 15px; color: #c9bff5; margin: -2px 2px 0; }
+  .songlist button.playing { background: #4a3d95; box-shadow: 0 0 0 3px #ffd86b, 0 3px 0 #15102f; animation: songPulse 1.2s ease-in-out infinite; }
+  @keyframes songPulse { 50% { box-shadow: 0 0 0 6px #ffd86b80, 0 3px 0 #15102f; } }
   .songnone { grid-column: 1 / -1; color: #c9bff5; font-size: 18px; text-align: center; margin-top: 40px; }
   .follow { position: absolute; left: 10px; right: 10px; bottom: 8px; z-index: 2; display: flex; flex-direction: column; gap: 6px; }
   .follow[hidden] { display: none; }
@@ -796,6 +799,7 @@
   <div class="songseg" id="songHand"><button data-h="RL">&#128080; Both hands</button><button data-h="R">&#9995; Right</button><button data-h="L">&#129306; Left</button></div>
   <button class="songx" id="songX" aria-label="Close">&#10005;</button></div>
   <div class="songseg tabs" id="songTabs"><button data-lv="1">&#11088; Easy</button><button data-lv="2">&#11088;&#11088; Medium</button><button data-lv="3">&#11088;&#11088;&#11088; Hard</button></div>
+  <div class="songtip" id="songTip"></div>
   <div class="songlist" id="songList"></div></div></div>
 <div id="instPop"><div class="grid" id="instGrid"></div></div>
 <div class="app">

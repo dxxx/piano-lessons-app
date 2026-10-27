@@ -3,6 +3,8 @@
 The second way to learn in the app. The video lessons are "watch, then copy"; Follow the keys is "play a song you know, one note at a time, and the song waits for you". It is Synthesia's *Melody practice* and the Piano tab of the Claude Design prototype (`design/claude-design-2026-10-27`, screen `A-app-07-piano.png`). Code: `assets/js/follow.js`.
 
 ## How it works
+- **In the list (1.29):** one tap = listen (the first 20 s, both hands, the card glows); two quick taps (< 0.45 s) = play along. A slow second tap on the playing song stops listening.
+- **No lucky hits (1.29):** a right key in a flurry of wrong ones (3+ wrong keys in the last 1.5 s) does not move the song on.
 - **🎵 Songs** in Play along / Piano only opens the list: Easy / Medium / Hard tabs, songs from his video lessons first (🎬), stars he got before. Hand: **Both hands** (default), Right, Left.
 - A **step** = the notes of the chosen hand(s) that start within 60 ms of each other. The step's keys glow (`.want`, with a red dot); the tile row shows this step big and the next 7. Blue tile = left hand, orange = right.
 - He presses the keys of the step in any order. When all are down once, the song moves on. A wrong key sounds as normal, the wanted keys flash (`.wantx`), and the step no longer counts as "first time".

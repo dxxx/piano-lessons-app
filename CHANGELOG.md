@@ -4,6 +4,10 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.29 — 2026-10-27
+- **Songs: listen first.** In the song list, **one tap plays the start of the song** (up to 20 s, both hands) so you can hear it before choosing; the card glows while it plays. **Two quick taps** (within 0.45 s) pick the song and he plays along. Tapping another song switches the listening; a slow second tap on the playing song stops it; closing the list, changing tab or hand, or starting a song stops it too. A line under the tabs says "Tap a song once to listen. Tap it twice to play it yourself."
+- **No lucky hits in Songs.** Banging keys no longer plays the song for him: a right key pressed while 3 or more wrong keys went down in the last 1.5 s does not move the song on (it counts as a miss and the right key flashes). One calm press of the right key does; a single slip before the right key is fine.
+
 ## 1.28 — 2026-10-27
 - **✕ Close next to Menu.** A quick way for a grown-up to close the app: tap ✕ Close in the top bar, type the PIN, and the app closes at once (the same as Menu → Close the app, without opening the Menu). The PIN screen says "Close the app" so it is clear what will happen. Wrong PINs count the same as for the Menu (3 wrong = 1 minute wait).
 - **Slow down is 3× more forgiving** ("a little fun is OK"): one burst of mashing or a palm slam is only counted; the tortoise pause comes on the **3rd burst within 10 seconds** (mashing kept up three times as long). The pauses stay 5 / 15 / 30 s. Diary `mash` now logs `bursts`.
