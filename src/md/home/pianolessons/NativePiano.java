@@ -52,6 +52,37 @@ public class NativePiano {
     private final boolean[] vOn = new boolean[MAX_VOICES], vHeld = new boolean[MAX_VOICES];
     private volatile int underruns, bufferFrames;
 
+    // C++ AAudio engine (libpianoengine.so); the Java AudioTrack mixer below is only the fallback
+    private static boolean NATIVE;
+    static { try { System.loadLibrary("pianoengine"); NATIVE = true; } catch (Throwable t) { NATIVE = false; } }
+    private static native void nSample(int i, int midi, int rate, short[] pcm);
+    private static native boolean nStart(boolean exclusive);
+    private static native void nStop();
+    private static native void nEvent(int type, int midi, float vel);
+    private static native void nCfg(float master, float wet, float width);
+    private static native float[] nStats();
+    private volatile boolean aaudio;
+    private volatile String why = "";
+    private volatile String route = "exclusive";   // exclusive (MMAP, raw to the speakers) | shared (through Android's mixer + the device's speaker tuning) | java
+    /** A/B test from the grown-up's PC: NPiano.route("shared") etc. */
+    @JavascriptInterface public String route(String r) { route = r; stop(); start(); return stats(); }
+    /** writes decoded sample i as a WAV into the app's files folder, to compare with the source MP3 */
+    @JavascriptInterface public String dump(int i) {
+        try {
+            java.io.File f = new java.io.File(app.getExternalFilesDir(null), "sample" + i + ".wav");
+            short[] d = pcm[i];
+            java.io.DataOutputStream o = new java.io.DataOutputStream(new java.io.FileOutputStream(f));
+            ByteBuffer h = ByteBuffer.allocate(44).order(ByteOrder.LITTLE_ENDIAN);
+            h.put("RIFF".getBytes()).putInt(36 + d.length * 2).put("WAVEfmt ".getBytes()).putInt(16).putShort((short) 1).putShort((short) 1)
+             .putInt(srcRate).putInt(srcRate * 2).putShort((short) 2).putShort((short) 16).put("data".getBytes()).putInt(d.length * 2);
+            o.write(h.array());
+            ByteBuffer b = ByteBuffer.allocate(d.length * 2).order(ByteOrder.LITTLE_ENDIAN);
+            for (short v : d) b.putShort(v);
+            o.write(b.array()); o.close();
+            return f.getAbsolutePath();
+        } catch (Exception e) { return "error " + e; }
+    }   // the C++ engine is the one playing
+
     public NativePiano(Context c) {
         app = c.getApplicationContext();
         for (int o = 1, i = 0; o <= 6; o++) for (int k = 0; k < 4; k++, i++) sampleMidi[i] = 24 + 12 * (o - 1) + 3 * k;
@@ -61,13 +92,24 @@ public class NativePiano {
 
     // ---------------- page API ----------------
     @JavascriptInterface public boolean ready() { return ready && running; }
-    @JavascriptInterface public void on(int midi, float vel) { events.add(new int[]{1, midi, Math.round(vel * 1000)}); }
-    @JavascriptInterface public void off(int midi) { events.add(new int[]{0, midi, 0}); }
-    @JavascriptInterface public void allOff() { events.add(new int[]{2, 0, 0}); }
+    /** the page opens/closes Play along: the audio stream only runs while the piano is on screen */
+    private volatile boolean wanted, resumed = true;
+    @JavascriptInterface public void active(boolean on) { wanted = on; if (on && resumed) start(); else stop(); }
+    public void resume() { resumed = true; if (wanted) start(); }
+    public void pause() { resumed = false; stop(); }
+    @JavascriptInterface public void on(int midi, float vel) { if (aaudio) nEvent(1, midi, vel); else events.add(new int[]{1, midi, Math.round(vel * 1000)}); }
+    @JavascriptInterface public void off(int midi) { if (aaudio) nEvent(0, midi, 0); else events.add(new int[]{0, midi, 0}); }
+    @JavascriptInterface public void allOff() { if (aaudio) nEvent(2, 0, 0); else events.add(new int[]{2, 0, 0}); }
     /** loud = grown-up limit 0..1, wet = room echo level, w = stereo width (low notes left, high right) */
-    @JavascriptInterface public void cfg(float loud, float wet, float w) { master = 0.6f * loud; wetLevel = wet; width = w; }
+    @JavascriptInterface public void cfg(float loud, float wet, float w) { master = 0.6f * loud; wetLevel = wet; width = w; if (NATIVE) nCfg(master, wet, w); }
     @JavascriptInterface public String stats() {
-        return "{\"ready\":" + ready + ",\"rate\":" + outRate + ",\"burst\":" + burst + ",\"bufferFrames\":" + bufferFrames
+        if (aaudio) {
+            float[] v = nStats();
+            return "{\"ready\":" + ready + ",\"engine\":\"aaudio\",\"rate\":" + (int) v[0] + ",\"burst\":" + (int) v[1] + ",\"bufferFrames\":" + (int) v[2]
+                    + ",\"bufferMs\":" + (v[2] * 1000f / Math.max(1, v[0])) + ",\"underruns\":" + (int) v[3] + ",\"outLatencyMs\":" + v[4]
+                    + ",\"exclusive\":" + (v[5] > 0) + ",\"lowLatency\":" + (v[6] > 0) + "}";
+        }
+        return "{\"why\":\"" + why + "\",\"ready\":" + ready + ",\"rate\":" + outRate + ",\"burst\":" + burst + ",\"bufferFrames\":" + bufferFrames
                 + ",\"bufferMs\":" + (bufferFrames * 1000f / outRate) + ",\"underruns\":" + underruns
                 + ",\"outLatencyMs\":" + outLatencyMs() + "}";
     }
@@ -86,7 +128,10 @@ public class NativePiano {
 
     // ---------------- lifecycle ----------------
     public synchronized void start() {
-        if (running || !ready) return;
+        if (running || !ready || !wanted || !resumed) { why = "skip r=" + running + " ready=" + ready + " w=" + wanted + " res=" + resumed; return; }
+        if (NATIVE && !"java".equals(route) && nStart(!"shared".equals(route))) { aaudio = true; running = true; nCfg(master, wetLevel, width); why = "aaudio"; return; }
+        why = NATIVE ? "aaudio open failed" : "no native lib";
+        aaudio = false;
         AudioManager am = (AudioManager) app.getSystemService(Context.AUDIO_SERVICE);
         try { outRate = Integer.parseInt(am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)); } catch (Exception e) { outRate = 48000; }
         try { burst = Integer.parseInt(am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)); } catch (Exception e) { burst = 192; }
@@ -104,7 +149,7 @@ public class NativePiano {
             } else {
                 track = new AudioTrack(attr, fmt, min, AudioTrack.MODE_STREAM, AudioManager.AUDIO_SESSION_ID_GENERATE);
             }
-        } catch (Exception e) { Log.w(TAG, "no track", e); return; }
+        } catch (Exception e) { why += "; no track " + e; return; }
         if (Build.VERSION.SDK_INT >= 24) bufferFrames = track.setBufferSizeInFrames(burst * 2);   // start small, grow on underrun
         else bufferFrames = track.getBufferSizeInFrames();
         running = true;
@@ -116,6 +161,7 @@ public class NativePiano {
 
     public synchronized void stop() {
         running = false;
+        if (aaudio) { nStop(); aaudio = false; return; }
         if (mixer != null) { try { mixer.join(300); } catch (InterruptedException ignored) {} mixer = null; }
         if (track != null) { try { track.stop(); } catch (Exception ignored) {} track.release(); track = null; }
         for (int i = 0; i < MAX_VOICES; i++) vOn[i] = false;
@@ -128,6 +174,7 @@ public class NativePiano {
         try {
             for (int o = 1, i = 0; o <= 6; o++) for (int k = 0; k < 4; k++, i++) pcm[i] = decode("sounds/grand/" + NAMES[k] + o + ".mp3");
             pcm[24] = decode("sounds/grand/C7.mp3");
+            if (NATIVE) for (int i = 0; i < SAMPLES; i++) nSample(i, sampleMidi[i], srcRate, pcm[i]);
             ready = true;
             Log.i(TAG, "samples decoded in " + (System.currentTimeMillis() - t0) + " ms");
             start();
@@ -242,7 +289,7 @@ public class NativePiano {
         vMidi[v] = midi; vSample[v] = s; vPos[v] = 0;
         vStep[v] = Math.pow(2, (midi - sampleMidi[s]) / 12.0) * srcRate / outRate;
         vGain[v] = 0.9f * (float) Math.pow(vel / 0.8f, 1.3) / 32768f;
-        vL[v] = (float) Math.cos(ang) * 1.414f; vR[v] = (float) Math.sin(ang) * 1.414f;
+        vL[v] = (float) Math.cos(ang); vR[v] = (float) Math.sin(ang);
         vEnv[v] = 1f; vDecay[v] = 1f; vHeld[v] = true; vOn[v] = true;
     }
 

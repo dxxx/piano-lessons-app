@@ -231,7 +231,7 @@ public class MainActivity extends Activity {
         if (tts != null) tts.stop();
         web.evaluateJavascript("window.lockMenu&&window.lockMenu()", null);   // the grown-up menu relocks
         web.onPause();
-        piano.stop();                           // free the low-latency audio stream in the background
+        piano.pause();                          // free the low-latency audio stream in the background
     }
 
     @Override
@@ -513,7 +513,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         web.onResume();
-        piano.start();
+        piano.resume();
         eyeResumed = true; eyeRefresh();
         ensurePinned();
     }

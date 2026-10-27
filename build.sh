@@ -36,6 +36,11 @@ for pair in en:vosk-model-small-en-us-0.15 es:vosk-model-small-es-0.42; do
   [ -f "$D/uuid" ] || echo "$N" > "$D/uuid"   # StorageService.unpack needs it to know when to re-copy
 done
 
+# Low-latency piano engine (C++ / AAudio), arm64 like the rest of the native code
+NDK="$SDK/ndk/27.2.12479018"
+mkdir -p build/lib/arm64-v8a
+"$NDK/toolchains/llvm/prebuilt/windows-x86_64/bin/aarch64-linux-android26-clang++.cmd" -shared -fPIC -O2 -std=c++17   -static-libstdc++ -Wall -D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__ -o build/lib/arm64-v8a/libpianoengine.so src/cpp/piano_engine.cpp -laaudio -llog
+
 "$BT/aapt2.exe" compile --dir res -o build/res.zip
 "$BT/aapt2.exe" link -I "$JAR" --manifest AndroidManifest.xml -A assets \
   --min-sdk-version 24 --target-sdk-version 34 \
@@ -56,6 +61,7 @@ with zipfile.ZipFile("build/unsigned.apk", "a", zipfile.ZIP_DEFLATED) as z:
     z.write("build/dex/classes.dex", "classes.dex")
     for so in ("libvosk.so", "libjnidispatch.so"):        # Vosk + JNA native libraries (arm64 tablets only)
         z.write("third_party/vosk/lib/arm64-v8a/" + so, "lib/arm64-v8a/" + so)
+    z.write("build/lib/arm64-v8a/libpianoengine.so", "lib/arm64-v8a/libpianoengine.so")
 EOF
 
 "$BT/zipalign.exe" -f -p 4 build/unsigned.apk build/aligned.apk

@@ -1776,6 +1776,7 @@
 
     function apply(on) {
       document.body.classList.toggle("play", on);
+      try { if (window.NPiano) { NPiano.active(on); if (!on) natOk = false; } } catch (e) {}
       btn.innerHTML = on ? "&#10005; " + L("Close piano", "Cerrar piano") : "&#127929; " + L("Play along", "Tocar el piano");
       if (!on) { releaseAll(); instPop.classList.remove("open"); }
       else if (SETS[instrument]) loadSet(instrument);
