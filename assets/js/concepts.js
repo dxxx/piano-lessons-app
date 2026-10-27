@@ -335,12 +335,14 @@ var concepts = (function () {
     if (open || b.contains("locked")) return false;
     popTimes = popTimes.filter(function (t) { return now - t < 3600000; }); if (popTimes.length >= HOUR_MAX) return false;
     try { if (window.quiz && quiz.isOpen()) return false; } catch (e) {}
-    var g = $("gate"); if (g && g.classList.contains("open")) return false;
+    if (window.coverOn && coverOn()) return false;          // Menu, sound picker, red screen, eye cover, lock: never on top of them
     return true;
   }
   function pianoMode() { var b = document.body.classList; return b.contains("play") && !b.contains("athome") && !b.contains("math") && !b.contains("inwrite") && !b.contains("incolour") && !b.contains("incompare"); }
   $("ccAgain").onclick = function () { if (q && q.sound && !locked) { enable(false); playSounds(q.sound, function () { enable(true); }); } };
   setInterval(function () {
+    // A time lock or the eye cover while a game is open: close it quietly (nothing counted), the lock screen must be the only thing showing
+    if (open && where !== "test" && (document.body.classList.contains("locked") || ($("eyecov") && $("eyecov").classList.contains("on")))) { finish(); return; }
     if (!cfg.every || !pianoMode() || !free()) return;
     if (playMs >= cfg.every * 60000 && Date.now() - lastNote > 1500) { playMs = 0; show("piano"); }
   }, 400);

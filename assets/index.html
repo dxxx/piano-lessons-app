@@ -51,6 +51,7 @@
   .lesson .num { position: absolute; left: 8px; top: 8px; background: rgba(20,18,31,.85); color: var(--ink);
     font-weight: 700; font-size: 15px; border-radius: 8px; padding: 3px 9px; }
   .lesson.current { border-color: var(--ring); }
+  .nameok { display: inline-block; margin-left: 8px; padding: 6px 14px; border-radius: 10px; background: #5fd38f; color: #06210f; font-weight: 800; }
   .lesson .seen { position: absolute; right: 6px; bottom: 6px; background: rgba(20,18,31,.85); color: #8ff0b4; font-weight: 700; font-size: 12px; border-radius: 8px; padding: 1px 6px; }
   .lesson.current .num { background: var(--accent); color: var(--accent-ink); }
   .msg { text-align: center; color: var(--muted); padding: 24px; font-size: 18px; }
@@ -1046,6 +1047,14 @@
   // Read from storage, not from `voice`, because some screens are drawn before the voice module exists.
   function uiLang() { try { return localStorage.getItem("voiceLang") === "es" ? "es" : "en"; } catch (e) { return "en"; } }
   function L(en, es) { return uiLang() === "es" ? es : en; }
+  // Is a full-screen layer on top right now? (Menu, maths quiz or its red screen, sound picker, eye-guard cover, time lock.)
+  // Pop-ups (concept games) wait while one is up, and the metronome rests.
+  function coverOn() {
+    var b = document.body.classList; if (b.contains("locked")) return true;
+    var on = function (id, c) { var e = document.getElementById(id); return !!e && e.classList.contains(c); };
+    return on("gate", "open") || on("act", "open") || on("res", "open") || on("quiz", "open") || on("qred", "on") || on("instPop", "open") || on("eyecov", "on");
+  }
+  window.coverOn = coverOn;
   var relabels = [];                                   // redrawn when the language changes
   function onLang(fn) { relabels.push(fn); fn(); }
   function relabelAll() { document.documentElement.lang = uiLang(); relabels.forEach(function (fn) { try { fn(); } catch (e) {} }); }
@@ -2297,7 +2306,8 @@
     var natT = 0;                              // and re-check at once when a screen or the Menu opens over it
     var natMo = new MutationObserver(function () { clearTimeout(natT); natT = setTimeout(natKeys, 30); });
     natMo.observe(document.body, { attributes: true, attributeFilter: ["class"], childList: true });
-    ["gate", "act", "res"].forEach(function (id) { var el = document.getElementById(id); if (el) natMo.observe(el, { attributes: true, attributeFilter: ["class", "hidden"] }); });
+    // every layer that can open over the keys: Menu, sound picker, maths quiz and its red screen, concept game, eye-guard cover, lock screen
+    ["gate", "act", "res", "instPop", "quiz", "qred", "concept", "eyecov", "lockscr"].forEach(function (id) { var el = document.getElementById(id); if (el) natMo.observe(el, { attributes: true, attributeFilter: ["class", "hidden", "style"] }); });
     window.addEventListener("resize", natKeys);
     window.pianoNat = function (m, on) {
       var el = keysEl.querySelector('[data-m="' + m + '"]'); if (!el) return;
@@ -2674,7 +2684,8 @@
       read: function (text, done) { return cfg.read && speak(text, done, READ_RATE); },   // the question
       tell: function (text, done) { return (cfg.fb || cfg.read) && speak(text, done, SAY_RATE); },   // hints and mini-lessons: either speech setting
       say: function (text, done) { return cfg.fb && speak(text, done, SAY_RATE); },      // praise, explanations, warnings
-      tellIn: function (text, lg, done) { return (cfg.fb || cfg.read) && speak(text, done, SAY_RATE, lg); }   // a word in another language (school words in English)
+      tellIn: function (text, lg, done) { return (cfg.fb || cfg.read) && speak(text, done, SAY_RATE, lg); },   // a word in another language (school words in English)
+      tryName: function () { return speak(hey(cfg.lang === "es" ? "así diré tu nombre." : "this is how I will say your name.", cfg.lang), null, SAY_RATE); }   // Menu: hear the name once (even with speech off)
     };
     return api;
   })();
@@ -5089,11 +5100,19 @@
     $("vLang").onclick = function () { voice.setLang(voice.cfg.lang === "es" ? "en" : "es"); relabelAll(); vlabel(); };
     $("vName").onclick = function () {                       // type the name in place; Enter or tapping away saves it
       var b = this; if (b.querySelector("input")) return;
-      b.innerHTML = "\ud83d\udc66 Child\u2019s name: <input type=\"text\" maxlength=\"20\" autocapitalize=\"words\" placeholder=\"Sam\">";
+      b.innerHTML = "\ud83d\udc66 Child\u2019s name: <input type=\"text\" maxlength=\"20\" autocapitalize=\"words\" enterkeyhint=\"done\" placeholder=\"Sam\">" +
+        " <span class=\"nameok\" role=\"button\">\u2713 Save</span>";   // a visible Save (the tablet keyboard's Enter is easy to miss)
       b.dataset.done = b.textContent;                       // keep rowify() (the label/value layout) off the row while the input is in it
-      var i = b.querySelector("input"); i.value = kidName(); i.focus();
-      function save() { try { localStorage.setItem("kidName", i.value.trim().slice(0, 20)); } catch (e) {} i.onblur = null; vlabel(); }
-      i.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); save(); } };
+      var i = b.querySelector("input"), ok = b.querySelector(".nameok"), saved = false; i.value = kidName(); i.focus();
+      function save() {
+        if (saved) return; saved = true;
+        try { localStorage.setItem("kidName", i.value.trim().slice(0, 20)); } catch (e) {}
+        i.onblur = null; i.oninput = null; b.textContent = ""; delete b.dataset.done; vlabel();   // the row shows the saved name again
+        if (kidName()) voice.tryName();                     // say it once, so the grown-up hears how it sounds
+      }
+      i.onkeydown = function (e) { if (e.key === "Enter" || e.keyCode === 13) { e.preventDefault(); save(); } };
+      ok.onpointerdown = function (e) { e.preventDefault(); e.stopPropagation(); save(); };
+      i.oninput = function () { try { localStorage.setItem("kidName", i.value.trim().slice(0, 20)); } catch (e) {} };   // kept even if the Menu closes before Save
       i.onblur = save; i.onclick = function (e) { e.stopPropagation(); };
     };
     $("qMode").onclick = function () {
@@ -5300,12 +5319,15 @@
       var b = document.createElement("button");
       b.textContent = k;
       if (k === "Cancel") onLang(function () { b.textContent = L("Cancel", "Cancelar"); });
-      b.onclick = function () {
+      // Keys react on touch-down (not on the click after the finger lifts) and the 4th digit checks the PIN on the next
+      // frame, once its dot is drawn: no OK button, the menu opens as soon as the right PIN is in.
+      b.onpointerdown = function (e) {
+        e.preventDefault();
         if (k === "Cancel") { closeGate(); return; }
         if (k === "⌫") { ans = ans.slice(0, -1); }
         else if (ans.length < 4) { ans += k; }
         $("ga").textContent = "•".repeat(ans.length);
-        if (ans.length === 4) setTimeout(submit, 150);
+        if (ans.length === 4) requestAnimationFrame(function () { setTimeout(submit, 0); });
       };
       pad.appendChild(b);
     });

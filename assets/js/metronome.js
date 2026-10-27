@@ -5,7 +5,7 @@
 //   - big numbered dots light up on every beat, so he sees the beat as well as hearing it
 //   - a note played on the beat lights the dot green and counts as "on the beat"
 //   - the clicks are scheduled ahead on the audio clock (Web Audio lookahead), so the timer never drifts
-//   - it rests while a quick concept game is open and stops when Piano only closes
+//   - it rests while a quick concept game, the Menu, the sound picker, the eye cover or a lock is up, and stops when Piano only closes
 // Uses L, diary and window.pianoAudio (index.html). Settings: localStorage beatCfg.
 var beat = (function () {
   var $ = function (id) { return document.getElementById(id); };
@@ -21,7 +21,7 @@ var beat = (function () {
   var on = false, timer = null, nextT = 0, count = 0, queue = [], heard = [], ses = null, raf = 0;
   function ac() { return window.pianoAudio ? window.pianoAudio() : null; }
   function solo() { return document.body.classList.contains("solo") && document.body.classList.contains("play"); }
-  function resting() { return document.body.classList.contains("inconcept") || document.hidden; }
+  function resting() { return document.body.classList.contains("inconcept") || document.hidden || (window.coverOn && coverOn()); }   // a game, the Menu, the quiz, the lock...
 
   // ---- Sound: a short wood-block "tock" (a falling sine plus a click of noise); beat 1 is higher ----
   var noise = null;
