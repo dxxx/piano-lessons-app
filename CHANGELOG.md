@@ -4,6 +4,14 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.19 — 2026-10-27
+- **New Animals row (15)**: 🐳 Whale, 🐬 Dolphin, 🐱 Cat, 🐮 Cow, 🐑 Sheep, 🦆 Duck, 🐓 Rooster, 🐘 Elephant, 🐸 Frog, 🦉 Owl, 🐺 Wolf, 🐤 Bird, 🐝 Bee, 🦟 Mosquito, 🦗 Cricket
+  - Cat, cow, sheep, duck, rooster and elephant are real recordings (Wikimedia Commons, CC0 / public domain), pitched across the keys: middle C plays the animal as recorded
+  - Whale, dolphin, frog, owl, wolf, bee, mosquito and cricket are made by Web Audio, so they play nicely on every note (the whale moans with an underwater echo; the frog says "rib-bit"; the cricket keeps chirping while held)
+- **2 new synths**: 🎧 Freestyle (chunky electro lead with glide, in the style of early-2000s electro) and 💃 Dance synth (bright, bouncy stab)
+- **Icons reviewed**: every icon now says what the sound is and none repeats (⚡ Electric piano, 🪶 Soft piano, 🎸 Guitar, 🪕 Banjo, 🪵 Marimba, 🦣 Double bass, 🎼 Strings, 🎋 Flute, 🐐 Pan flute, 🕰️ Woodblock, 🎁 Music box …)
+- Sound picker: 15 per row, the Surround choice moved up next to ✕, so all **88 sounds** fit on one screen
+
 ## 1.18 — 2026-10-27
 - **Permanent logs**: every record is now also saved in files on the tablet (`Android/data/md.home.pianolessons/files/diary/`). The app never trims or deletes them, and the Menu's clear/reset buttons only clear the in-app copy (a snapshot is taken first), so old records stay until a grown-up pulls them with adb
   - `events-YYYY-MM.jsonl`: every event as it happens: maths answers, writing tries, colouring results, lessons started and finished, piano sessions (time, Piano only time, notes, sounds used), sound changes, level changes, locks, earned time, eye guard, resets

@@ -126,13 +126,15 @@
   #instPop .grid { justify-content: space-between; }
   #instPop .grow { flex: none; display: flex; gap: 6px; align-items: center; }
   #instPop .grow .ghead { flex: 0 0 76px; margin: 0; font-size: 12px; line-height: 1.2; }
-  #instPop .gbtns { flex: 1; display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: 60px; gap: 5px; }
+  #instPop .gbtns { flex: 1; display: grid; grid-template-columns: repeat(15, 1fr); grid-auto-rows: 58px; gap: 5px; }
   #instPop .gbtns button { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2px 1px;
     font-size: 11px; line-height: 1.05; border-width: 2px; border-radius: 12px; box-shadow: 0 3px 0 #1b1540; }
   #instPop .gbtns button b { font-size: 26px; line-height: 1.1; }
   #instPop { z-index: 60; }
-  #instPop .space { flex: none; margin-top: 2px; padding-top: 8px; }
-  #instPop .space button { padding: 7px 4px; }
+  #instPop .ptop .space { flex: none; margin: 0 14px 0 auto; padding: 0; border-top: 0; gap: 6px; }
+  #instPop .ptop .space > span { font-size: 13px; }
+  #instPop .ptop .space button { flex: none; padding: 5px 12px; font-size: 13px; }
+  #instPop .ptop .space button b { font-size: 16px; }
   .hint { color: var(--muted); font-size: 13px; white-space: nowrap; }
   body:not(.play) .hint { display: none !important; }
   .vol input { width: 130px; accent-color: var(--accent); }
@@ -1472,17 +1474,17 @@
     var ctx = null, master = null, wave = null, organWave = null, pulseWave = null, driveCurve = null, voices = {}, held = {};
     var robotLast = null, robotOffT = -9, glideFrom = null;   // robot voice: previous note, for the portamento
     var instrument = "grand";
-    var INSTR = [["grand", "&#127929;", "Grand piano", "Piano de cola"], ["soft", "&#127932;", "Soft piano", "Piano suave"], ["musicbox", "&#127925;", "Music box", "Caja de música"],
-                 ["epiano", "&#127928;", "Electric piano", "Piano eléctrico"], ["organ", "&#127926;", "Organ", "Órgano"],
+    var INSTR = [["grand", "&#127929;", "Grand piano", "Piano de cola"], ["soft", "&#129718;", "Soft piano", "Piano suave"], ["musicbox", "&#127873;", "Music box", "Caja de música"],
+                 ["epiano", "&#9889;", "Electric piano", "Piano eléctrico"], ["organ", "&#127905;", "Organ", "Órgano"],
                  ["robot", "&#129302;", "Robot voice", "Voz de robot"], ["lead", "&#127899;&#65039;", "Synth lead", "Sintetizador"], ["808", "&#128266;", "808 bass", "Bajo 808"],
                  ["chip", "&#128126;", "Chiptune", "Videojuego"], ["warmpad", "&#127756;", "Warm pad", "Colchón cálido"], ["polysynth", "&#127898;&#65039;", "Polysynth", "Polisintetizador"],
                  ["xylo", "&#127752;", "Xylophone", "Xilófono"],
                  ["boom808", "&#128163;", "808 Boom", "808 Bum"], ["punch808", "&#128165;", "808 Punch", "808 Golpe"], ["growl808", "&#129409;", "808 Growl", "808 Rugido"],
                  ["slide808", "&#127940;", "808 Slide", "808 Desliza"],
                  ["synthbass", "&#128265;", "Synth bass", "Bajo sintetizado"], ["voice", "&#127908;", "Voice ooh", "Voz uuh"], ["scifi", "&#128640;", "Sci-fi", "Ciencia ficción"],
-                 ["guitar", "&#129685;", "Guitar", "Guitarra"], ["rockguitar", "&#129304;", "Rock guitar", "Guitarra rock"], ["sax", "&#127927;", "Saxophone", "Saxofón"],
-                 ["trumpet", "&#127930;", "Trumpet", "Trompeta"], ["marimba", "&#129345;", "Marimba", "Marimba"], ["steeldrums", "&#127965;&#65039;", "Steel drums", "Tambor metálico"],
-                 ["violin", "&#127931;", "Violin", "Violín"], ["strings", "&#127776;", "Strings", "Cuerdas"], ["flute", "&#128038;", "Flute", "Flauta"],
+                 ["guitar", "&#127928;", "Guitar", "Guitarra"], ["rockguitar", "&#129304;", "Rock guitar", "Guitarra rock"], ["sax", "&#127927;", "Saxophone", "Saxofón"],
+                 ["trumpet", "&#127930;", "Trumpet", "Trompeta"], ["marimba", "&#129717;", "Marimba", "Marimba"], ["steeldrums", "&#127965;&#65039;", "Steel drums", "Tambor metálico"],
+                 ["violin", "&#127931;", "Violin", "Violín"], ["strings", "&#127932;", "Strings", "Cuerdas"], ["flute", "&#127883;", "Flute", "Flauta"],
                  ["harp", "&#129498;", "Harp", "Arpa"], ["kalimba", "&#127888;", "Kalimba", "Kalimba"], ["bells", "&#128276;", "Bells", "Campanitas"],
                  ["honkytonk", "&#129312;", "Honky-tonk", "Piano de saloon"],
                  ["harpsichord", "&#128081;", "Harpsichord", "Clavecín"],
@@ -1492,47 +1494,54 @@
                  ["accordion", "&#129687;", "Accordion", "Acordeón"],
                  ["squarelead", "&#128998;", "Square lead", "Onda cuadrada"],
                  ["calliope", "&#127904;", "Calliope", "Calíope"],
-                 ["charang", "&#9889;", "Charang", "Charang"],
+                 ["charang", "&#127785;&#65039;", "Charang", "Charang"],
                  ["fifths", "&#127744;", "Fifths", "Quintas"],
                  ["synthbrass", "&#128239;", "Synth brass", "Metales synth"],
                  ["synthstrings", "&#127754;", "Synth strings", "Cuerdas synth"],
                  ["halo", "&#128519;", "Halo pad", "Halo"],
                  ["sweep", "&#127788;&#65039;", "Sweep pad", "Barrido"],
                  ["crystal", "&#128302;", "Crystal", "Cristal"],
-                 ["echoes", "&#129680;", "Echoes", "Ecos"],
-                 ["ebass", "&#128268;", "Electric bass", "Bajo eléctrico"],
+                 ["echoes", "&#127956;&#65039;", "Echoes", "Ecos"],
+                 ["ebass", "&#128264;", "Electric bass", "Bajo eléctrico"],
                  ["slapbass", "&#128075;", "Slap bass", "Bajo slap"],
-                 ["doublebass", "&#128024;", "Double bass", "Contrabajo"],
-                 ["fretless", "&#128011;", "Fretless bass", "Bajo sin trastes"],
-                 ["eguitar", "&#127928;", "Electric guitar", "Guitarra eléctrica"],
+                 ["doublebass", "&#129443;", "Double bass", "Contrabajo"],
+                 ["fretless", "&#128013;", "Fretless bass", "Bajo sin trastes"],
+                 ["eguitar", "&#128268;", "Electric guitar", "Guitarra eléctrica"],
                  ["distortion", "&#128293;", "Distortion", "Distorsión"],
-                 ["banjo", "&#128052;", "Banjo", "Banjo"],
+                 ["banjo", "&#129685;", "Banjo", "Banjo"],
                  ["harmonica", "&#127797;", "Harmonica", "Armónica"],
                  ["trombone", "&#129426;", "Trombone", "Trombón"],
-                 ["clarinet", "&#129417;", "Clarinet", "Clarinete"],
+                 ["clarinet", "&#127926;", "Clarinet", "Clarinete"],
                  ["cello", "&#128059;", "Cello", "Violonchelo"],
                  ["pizzicato", "&#128167;", "Pizzicato", "Pizzicato"],
                  ["oboe", "&#129442;", "Oboe", "Oboe"],
                  ["horn", "&#128012;", "French horn", "Trompa"],
                  ["timpani", "&#129688;", "Timpani", "Timbales"],
                  ["orchhit", "&#128171;", "Orchestra hit", "Golpe orquestal"],
-                 ["panflute", "&#127883;", "Pan flute", "Flauta de Pan"],
+                 ["panflute", "&#128016;", "Pan flute", "Flauta de Pan"],
                  ["ocarina", "&#129370;", "Ocarina", "Ocarina"],
                  ["whistle", "&#128537;", "Whistle", "Silbido"],
                  ["bird", "&#128036;", "Bird", "Pajarito"],
-                 ["woodblock", "&#129717;", "Woodblock", "Bloque de madera"],
+                 ["woodblock", "&#128368;&#65039;", "Woodblock", "Bloque de madera"],
                  ["taiko", "&#127983;", "Taiko drum", "Tambor taiko"],
                  ["koto", "&#127800;", "Koto", "Koto"],
                  ["sitar", "&#129502;", "Sitar", "Sitar"],
-                 ["tubebells", "&#128718;&#65039;", "Tube bells", "Campanas tubulares"]];
+                 ["tubebells", "&#128718;&#65039;", "Tube bells", "Campanas tubulares"],
+                 ["freestyle", "&#127911;", "Freestyle", "Freestyle"], ["dance", "&#128131;", "Dance synth", "Synth de baile"],
+                 ["whale", "&#128051;", "Whale", "Ballena"], ["dolphin", "&#128044;", "Dolphin", "Delfín"], ["cat", "&#128049;", "Cat", "Gato"],
+                 ["cow", "&#128046;", "Cow", "Vaca"], ["sheep", "&#128017;", "Sheep", "Oveja"], ["duck", "&#129414;", "Duck", "Pato"],
+                 ["rooster", "&#128019;", "Rooster", "Gallo"], ["elephant", "&#128024;", "Elephant", "Elefante"], ["frog", "&#128056;", "Frog", "Rana"],
+                 ["owl", "&#129417;", "Owl", "Búho"], ["wolf", "&#128058;", "Wolf", "Lobo"], ["bee", "&#128029;", "Bee", "Abeja"],
+                 ["mosquito", "&#129439;", "Mosquito", "Mosquito"], ["cricket", "&#129431;", "Cricket", "Grillo"]];
     // The picker shows the sounds in groups
     var IGROUPS = [["Keys", "Teclados", ["grand", "soft", "epiano", "organ", "musicbox", "honkytonk", "harpsichord", "clavinet", "celesta", "vibes", "accordion"]],
-                   ["Synths", "Sintetizadores", ["lead", "squarelead", "calliope", "charang", "fifths", "synthbrass", "synthstrings", "robot", "voice", "chip",
+                   ["Synths", "Sintetizadores", ["lead", "freestyle", "dance", "squarelead", "calliope", "charang", "fifths", "synthbrass", "synthstrings", "robot", "voice", "chip",
                                                   "warmpad", "polysynth", "halo", "sweep", "crystal", "echoes", "scifi"]],
                    ["Bass", "Bajos", ["808", "boom808", "punch808", "growl808", "slide808", "synthbass", "ebass", "slapbass", "doublebass", "fretless"]],
                    ["Band", "Banda", ["guitar", "eguitar", "rockguitar", "distortion", "banjo", "harmonica", "sax", "trumpet", "trombone", "clarinet", "marimba", "steeldrums"]],
                    ["Orchestra", "Orquesta", ["violin", "cello", "strings", "pizzicato", "flute", "oboe", "horn", "harp", "timpani", "orchhit"]],
-                   ["Fun &amp; world", "Divertidos", ["xylo", "kalimba", "bells", "tubebells", "panflute", "ocarina", "whistle", "bird", "woodblock", "taiko", "koto", "sitar"]]];
+                   ["Fun &amp; world", "Divertidos", ["xylo", "kalimba", "bells", "tubebells", "panflute", "ocarina", "whistle", "woodblock", "taiko", "koto", "sitar"]],
+                   ["Animals", "Animales", ["whale", "dolphin", "cat", "cow", "sheep", "duck", "rooster", "elephant", "frog", "owl", "wolf", "bird", "bee", "mosquito", "cricket"]]];
     function iname(x) { return L(x[2], x[3]); }
     try { var si = localStorage.getItem("instrument"); if (si === "pad") si = "warmpad";   // the old synth pad is now the sampled warm pad
           if (INSTR.some(function (x) { return x[0] === si; })) instrument = si; } catch (e) {}
@@ -1603,6 +1612,13 @@
       harp:       { dir: "harp",       acc: ["Eb", "Gb"], gain: 3.9, rel: 1.2 },
       kalimba:    { dir: "kalimba",    acc: ["Eb", "Gb"], gain: 6.0, rel: 1.2 },
       bells:      { dir: "bells",      acc: ["Eb", "Gb"], gain: 4.2, rel: 1.2 },
+      // 1.19: real animal recordings (Wikimedia Commons, CC0 / public domain), one file each, loudness-normalised; rel 2 = the call plays out
+      cat:      { dir: "cat",      acc: ["Eb", "Gb"], gain: 0.9, rel: 2, one: true },
+      cow:      { dir: "cow",      acc: ["Eb", "Gb"], gain: 0.9, rel: 2, one: true },
+      duck:     { dir: "duck",     acc: ["Eb", "Gb"], gain: 0.9, rel: 2, one: true },
+      rooster:  { dir: "rooster",  acc: ["Eb", "Gb"], gain: 0.8, rel: 2, one: true },
+      sheep:    { dir: "sheep",    acc: ["Eb", "Gb"], gain: 0.9, rel: 2, one: true },
+      elephant: { dir: "elephant", acc: ["Eb", "Gb"], gain: 0.9, rel: 2, one: true },
       // 1.17: 41 more MusyngKite sets; gain + loop from the same measurement (loop when the level holds within 5 dB)
       honkytonk:    { dir: "honkytonk", acc: ["Eb", "Gb"], gain: 3.0, rel: 1.0 },
       harpsichord:  { dir: "harpsichord", acc: ["Eb", "Gb"], gain: 3.4, rel: 1.0 },
@@ -1649,6 +1665,7 @@
     Object.keys(SETS).forEach(function (id) {
       var set = SETS[id], names = ["C", set.acc[0], set.acc[1], "A"], offs = [0, 3, 6, 9];
       set.samples = []; set.buffers = {}; set.loading = false; set.tries = 0; set.ready = false;
+      if (set.one) { set.samples.push({ n: "C4", m: 60 }); return; }   // one recording: middle C plays it as recorded
       for (var o = 1; o <= 6; o++) for (var i = 0; i < 4; i++) set.samples.push({ n: names[i] + o, m: 24 + 12 * (o - 1) + offs[i] });
       set.samples.push({ n: "C7", m: 96 });
     });
@@ -1714,7 +1731,7 @@
     }
     // 808 family: sine an octave down whose pitch drops into the note, soft-clipped. o: drop (start pitch x), dropT (s), drive,
     // dec (decay s), lvl, rel, click (a short tick on top), growl (a square layer + low-pass = distorted), from (MIDI note to glide from)
-    var slideLast = null, slideT = -9;
+    var slideLast = null, slideT = -9, fsLast = null, fsT = -9;
     function b808(ac, midi, t, v, o) {
       var f = hz(midi - 12), gm = vg(v), g = ac.createGain(), osc = ac.createOscillator(), ws = ac.createWaveShaper(), pre = ac.createGain(), srcs = [osc];
       osc.type = "sine";
@@ -1873,6 +1890,144 @@
         slideLast = midi; slideT = t;
         var r = b808(ac, midi, t, v, { drop: 2, dropT: 0.06, drive: 2, dec: 3, lvl: 1, rel: 0.2, from: from });
         r.slide = true; return r;
+      },
+      whale: function (ac, midi, t, s, v) {                  // deep moan that swoops up and settles, with an underwater echo
+        var f = hz(midi - 12), gm = vg(v), g = ac.createGain(), o = ac.createOscillator(), h = ac.createOscillator(), hg = ac.createGain(), lp = ac.createBiquadFilter();
+        var dl = ac.createDelay(1), fb = ac.createGain(), wet_ = ac.createGain(), vib = ac.createOscillator(), vbg = ac.createGain();
+        o.type = "sine"; h.type = "triangle"; hg.gain.value = 0.25;
+        [o, h].forEach(function (x, i) {
+          var m = i ? 2 : 1;
+          x.frequency.setValueAtTime(f * 0.75 * m, t); x.frequency.exponentialRampToValueAtTime(f * 1.12 * m, t + 0.7);
+          x.frequency.exponentialRampToValueAtTime(f * m, t + 1.6);
+        });
+        vib.frequency.value = 0.8; vbg.gain.value = f * 0.015; vib.connect(vbg); vbg.connect(o.frequency);
+        lp.type = "lowpass"; lp.frequency.value = 1200;
+        dl.delayTime.value = 0.32; fb.gain.value = 0.38; wet_.gain.value = 0.45;
+        o.connect(lp); h.connect(hg); hg.connect(lp); lp.connect(g);
+        g.connect(master); g.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(wet_); wet_.connect(master);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.45 * gm, t + 0.4);
+        [o, h, vib].forEach(function (x) { x.start(t); x.stop(t + 60); });
+        return { g: g, o: [o, h, vib], rel: 1.5 };
+      },
+      freestyle: function (ac, midi, t, s, v) {              // chunky electro lead: detuned saws + square, resonant filter, glides between quick notes
+        var f = hz(midi), gm = vg(v), g = ac.createGain(), lp = ac.createBiquadFilter(), os = [];
+        var from = fsLast != null && t - fsT < 0.25 ? hz(fsLast) : null; fsLast = midi; fsT = t;
+        [["sawtooth", -14], ["sawtooth", 14], ["square", 0]].forEach(function (d) {
+          var o = ac.createOscillator(); o.type = d[0]; o.detune.value = d[1];
+          if (from) { o.frequency.setValueAtTime(from, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.06); } else o.frequency.value = f;
+          o.connect(lp); os.push(o);
+        });
+        lp.type = "lowpass"; lp.Q.value = 9;
+        lp.frequency.setValueAtTime(Math.min(f * 14, 12000), t); lp.frequency.exponentialRampToValueAtTime(Math.min(f * 3.5, 8000), t + 0.25);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.11 * gm, t + 0.005);
+        g.gain.exponentialRampToValueAtTime(0.075 * gm, t + 0.2);
+        lp.connect(g); g.connect(master);
+        os.forEach(function (x) { x.start(t); x.stop(t + 60); });
+        return { g: g, o: os, rel: 0.08 };
+      },
+      dance: function (ac, midi, t, s, v) {                  // bright bouncy stab ("bee bee beee"): 3 detuned saws, snappy filter
+        var f = hz(midi), gm = vg(v), g = ac.createGain(), lp = ac.createBiquadFilter(), os = [];
+        [-18, 0, 18].forEach(function (dt) {
+          var o = ac.createOscillator(); o.type = "sawtooth"; o.detune.value = dt;
+          o.frequency.setValueAtTime(f * 1.03, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.03);   // a tiny blip into the note
+          o.connect(lp); os.push(o);
+        });
+        lp.type = "lowpass"; lp.Q.value = 5;
+        lp.frequency.setValueAtTime(Math.min(f * 18, 14000), t); lp.frequency.exponentialRampToValueAtTime(Math.min(f * 4, 9000), t + 0.14);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.1 * gm, t + 0.004);
+        g.gain.exponentialRampToValueAtTime(0.05 * gm, t + 0.18);
+        lp.connect(g); g.connect(master);
+        os.forEach(function (x) { x.start(t); x.stop(t + 60); });
+        return { g: g, o: os, rel: 0.1 };
+      },
+      // ---- Synthesized animals (playable on every key; the key sets the pitch) ----
+      mosquito: function (ac, midi, t, s, v) {               // thin buzz an octave up, wobbling wings and a slow drift
+        var f = hz(midi) * 2, gm = vg(v), g = ac.createGain(), o = ac.createOscillator(), bp = ac.createBiquadFilter();
+        var w = ac.createOscillator(), wg = ac.createGain(), d = ac.createOscillator(), dg = ac.createGain(), am = ac.createOscillator(), ag = ac.createGain(), amp = ac.createGain();
+        o.type = "sawtooth"; o.frequency.value = f;
+        w.frequency.value = 31; wg.gain.value = f * 0.02; w.connect(wg); wg.connect(o.frequency);       // wing vibrato
+        d.frequency.value = 0.7; dg.gain.value = f * 0.04; d.connect(dg); dg.connect(o.frequency);      // flies closer / further
+        am.frequency.value = 0.9; ag.gain.value = 0.35; amp.gain.value = 0.65; am.connect(ag); ag.connect(amp.gain);
+        bp.type = "bandpass"; bp.frequency.value = Math.min(f * 2, 9000); bp.Q.value = 2;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.1 * gm, t + 0.08);
+        o.connect(bp); bp.connect(amp); amp.connect(g); g.connect(master);
+        [o, w, d, am].forEach(function (x) { x.start(t); x.stop(t + 60); });
+        return { g: g, o: [o, w, d, am], rel: 0.15 };
+      },
+      bee: function (ac, midi, t, s, v) {                    // fat low buzz
+        var f = hz(midi), gm = vg(v), g = ac.createGain(), o = ac.createOscillator(), o2 = ac.createOscillator(), lp = ac.createBiquadFilter(), w = ac.createOscillator(), wg = ac.createGain();
+        o.type = "sawtooth"; o2.type = "square"; o.frequency.value = f; o2.frequency.value = f * 1.01;
+        w.frequency.value = 9; wg.gain.value = f * 0.015; w.connect(wg); wg.connect(o.frequency); wg.connect(o2.frequency);
+        lp.type = "lowpass"; lp.frequency.value = Math.min(f * 6, 4000); lp.Q.value = 4;
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.09 * gm, t + 0.05);
+        o.connect(lp); o2.connect(lp); lp.connect(g); g.connect(master);
+        [o, o2, w].forEach(function (x) { x.start(t); x.stop(t + 60); });
+        return { g: g, o: [o, o2, w], rel: 0.12 };
+      },
+      frog: function (ac, midi, t, s, v) {                   // "rib-bit": two croaky pulse bursts
+        var f = hz(midi - 12), gm = vg(v), g = ac.createGain(), o = ac.createOscillator(), bp = ac.createBiquadFilter(), gate = ac.createGain(), lfo = ac.createOscillator(), lg = ac.createGain();
+        o.type = "square"; o.frequency.value = f;
+        lfo.type = "square"; lfo.frequency.value = 28; lg.gain.value = 0.5; gate.gain.value = 0.5; lfo.connect(lg); lg.connect(gate.gain);
+        bp.type = "bandpass"; bp.frequency.value = Math.min(f * 5, 5000); bp.Q.value = 3;
+        g.gain.setValueAtTime(0.0001, t);
+        [[0, 0.13], [0.2, 0.36]].forEach(function (b) {
+          g.gain.setValueAtTime(0.0001, t + b[0]); g.gain.exponentialRampToValueAtTime(0.4 * gm, t + b[0] + 0.015);
+          g.gain.setValueAtTime(0.4 * gm, t + b[1] - 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + b[1]);
+        });
+        o.frequency.setValueAtTime(f, t + 0.2); o.frequency.exponentialRampToValueAtTime(f * 1.25, t + 0.36);   // "-bit" goes up
+        o.connect(bp); bp.connect(gate); gate.connect(g); g.connect(master);
+        [o, lfo].forEach(function (x) { x.start(t); x.stop(t + 0.45); });
+        return { g: g, o: [o, lfo], rel: 0.4 };
+      },
+      owl: function (ac, midi, t, s, v) {                    // "hoo... hoooo": soft sine hoots that fall a little
+        var f = hz(midi - 12), gm = vg(v), g = ac.createGain(), o = ac.createOscillator(), h = ac.createOscillator(), hg = ac.createGain(), lp = ac.createBiquadFilter();
+        o.type = "sine"; h.type = "sine"; hg.gain.value = 0.15; h.connect(hg); hg.connect(g);
+        lp.type = "lowpass"; lp.frequency.value = 1500;
+        [[0, 0.32], [0.48, 1.15]].forEach(function (b) {
+          o.frequency.setValueAtTime(f * 1.06, t + b[0]); o.frequency.exponentialRampToValueAtTime(f * 0.94, t + b[1]);
+          h.frequency.setValueAtTime(f * 2.12, t + b[0]); h.frequency.exponentialRampToValueAtTime(f * 1.88, t + b[1]);
+          g.gain.setValueAtTime(0.0001, t + b[0]); g.gain.exponentialRampToValueAtTime(0.45 * gm, t + b[0] + 0.07);
+          g.gain.exponentialRampToValueAtTime(0.0001, t + b[1]);
+        });
+        o.connect(lp); lp.connect(g); g.connect(master);
+        [o, h].forEach(function (x) { x.start(t); x.stop(t + 1.25); });
+        return { g: g, o: [o, h], rel: 1.2 };
+      },
+      wolf: function (ac, midi, t, s, v) {                   // howl: slides up into the note, "ooo" vowel, vibrato while held
+        var f = hz(midi), gm = vg(v), g = ac.createGain(), o = ac.createOscillator(), f1 = ac.createBiquadFilter(), f2 = ac.createBiquadFilter(), mix = ac.createGain();
+        var vb_ = ac.createOscillator(), vg_ = ac.createGain();
+        o.type = "sawtooth"; o.frequency.setValueAtTime(f * 0.72, t); o.frequency.exponentialRampToValueAtTime(f, t + 0.55);
+        vb_.frequency.value = 5; vg_.gain.setValueAtTime(0, t); vg_.gain.linearRampToValueAtTime(f * 0.02, t + 0.9); vb_.connect(vg_); vg_.connect(o.frequency);
+        f1.type = "bandpass"; f1.frequency.value = 400; f1.Q.value = 5; f2.type = "bandpass"; f2.frequency.value = 900; f2.Q.value = 6;
+        o.connect(f1); o.connect(f2); f1.connect(mix); f2.connect(mix); mix.connect(g); g.connect(master);
+        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.5 * gm, t + 0.35);
+        [o, vb_].forEach(function (x) { x.start(t); x.stop(t + 60); });
+        return { g: g, o: [o, vb_], rel: 0.7 };
+      },
+      dolphin: function (ac, midi, t, s, v) {                // clicks, then a whistle that swoops up and down
+        var f = hz(midi) * 2, gm = vg(v), g = ac.createGain(), o = ac.createOscillator();
+        o.type = "sine";
+        o.frequency.setValueAtTime(f, t + 0.12); o.frequency.exponentialRampToValueAtTime(f * 1.7, t + 0.3);
+        o.frequency.exponentialRampToValueAtTime(f * 0.9, t + 0.62); o.frequency.exponentialRampToValueAtTime(f * 1.4, t + 0.8);
+        g.gain.setValueAtTime(0.0001, t + 0.12); g.gain.exponentialRampToValueAtTime(0.22 * gm, t + 0.16);
+        g.gain.setValueAtTime(0.22 * gm, t + 0.75); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.85);
+        o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.9);
+        var ck = ac.createOscillator(), cg = ac.createGain(); ck.type = "square"; ck.frequency.value = Math.min(f * 2, 8000);   // three clicks
+        cg.gain.setValueAtTime(0, t);
+        for (var i = 0; i < 3; i++) { cg.gain.setValueAtTime(0.12 * gm, t + i * 0.035); cg.gain.setValueAtTime(0, t + i * 0.035 + 0.004); }
+        ck.connect(cg); cg.connect(master); ck.start(t); ck.stop(t + 0.12);
+        return { g: g, o: [o, ck], rel: 0.4 };
+      },
+      cricket: function (ac, midi, t, s, v) {                // chirp-chirp-chirp, repeating while held
+        var f = Math.min(hz(midi + 24), 9000), gm = vg(v), g = ac.createGain(), o = ac.createOscillator();
+        o.type = "sine"; o.frequency.value = f;
+        g.gain.setValueAtTime(0, t);
+        for (var r = 0; r < 20; r++) for (var i = 0; i < 4; i++) {
+          var at = t + r * 0.55 + i * 0.045;
+          g.gain.setValueAtTime(0, at); g.gain.linearRampToValueAtTime(0.18 * gm, at + 0.008); g.gain.linearRampToValueAtTime(0, at + 0.03);
+        }
+        o.connect(g); g.connect(master); o.start(t); o.stop(t + 11);
+        return { g: g, o: [o], rel: 0.05 };
       },
       chip: function (ac, midi, t, s, v) {                   // 25% pulse, instant attack, sustains
         var f = hz(midi), gm = vg(v), g = ac.createGain(), o = ac.createOscillator(), lp = ac.createBiquadFilter();
@@ -2154,7 +2309,7 @@
       bx.appendChild(b);
       });
     });
-    var spaceRow = document.createElement("div"); spaceRow.className = "space"; instGrid.appendChild(spaceRow);
+    var spaceRow = document.createElement("div"); spaceRow.className = "space"; pickTop.insertBefore(spaceRow, pickTop.querySelector(".pclose"));
     function drawSpace() {
       spaceRow.innerHTML = "<span>&#127911; " + L("Surround", "Sonido envolvente") + "</span>";
       SPACES.forEach(function (x) {
