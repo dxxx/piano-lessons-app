@@ -926,7 +926,7 @@
     out.push({ say: (es ? "Dijiste " : "You said ") + n + ". " + (es ? "Veamos…" : "Let's see…"), step: -1 });
     ex.steps.forEach(function (st, i) { out.push({ say: (st.s.charAt(0).toUpperCase() + st.s.slice(1)).replace(/,$/, "."), step: i }); });
     out.push({ say: (es ? "Así que " : "So ") + eqSay(a, b, plus, lang) + ".", step: -1, fin: true });
-    out[0].say = hey(out[0].say, lang);                      // "Hey Alex, you said 12. Let's see…"
+    out[0].say = hey(out[0].say, lang);                      // "Hey Sam, you said 12. Let's see…"
     return out;
   }
   // The four tricks, named the same everywhere (hints, mini-lessons, explanations).
@@ -936,7 +936,7 @@
                  tens: ["🧱", "Tens and ones", "Tens and ones", "Decenas y unidades", "Decenas y unidades"] };
   function trickName(t, plus, lang) { var r = TRICKS[t]; return r[0] + " " + r[(lang === "es" ? 3 : 1) + (plus ? 0 : 1)]; }
   function easyIntro(lang) { return lang === "es" ? "Truco fácil: " : "Easy trick: "; }
-  // The child's name (Menu → Voice & language, stored on the tablet only). hey() puts "Hey Alex," in front of a correction or a tip
+  // The child's name (Menu → Voice & language, stored on the tablet only). hey() puts "Hey Sam," in front of a correction or a tip
   // so he knows it is for him; KID_PAUSE is invisible in text and tells speak() to pause there. Without a name, the text is unchanged.
   var KID_PAUSE = "\u2063";
   function kidName() { try { return (localStorage.getItem("kidName") || "").trim(); } catch (e) { return ""; } }
@@ -2423,7 +2423,7 @@
     var pauseT = null, pauseSeq = 0;
     function speak(text, done, rate, lg) {
       var k = text ? text.indexOf(KID_PAUSE) : -1;
-      if (k >= 0) {                                       // "Hey Alex," … a beat … the message
+      if (k >= 0) {                                       // "Hey Sam," … a beat … the message
         var rest = text.slice(k + 1).replace(/^\s+/, ""), tok = ++pauseSeq;
         return speak(text.slice(0, k), function () {
           if (tok !== pauseSeq) { if (done) done(); return; }          // hushed meanwhile: do not go on with the rest
@@ -4872,7 +4872,7 @@
     $("vLang").onclick = function () { voice.setLang(voice.cfg.lang === "es" ? "en" : "es"); relabelAll(); vlabel(); };
     $("vName").onclick = function () {                       // type the name in place; Enter or tapping away saves it
       var b = this; if (b.querySelector("input")) return;
-      b.innerHTML = "\ud83d\udc66 Child\u2019s name: <input type=\"text\" maxlength=\"20\" autocapitalize=\"words\" placeholder=\"Alex\">";
+      b.innerHTML = "\ud83d\udc66 Child\u2019s name: <input type=\"text\" maxlength=\"20\" autocapitalize=\"words\" placeholder=\"Sam\">";
       b.dataset.done = b.textContent;                       // keep rowify() (the label/value layout) off the row while the input is in it
       var i = b.querySelector("input"); i.value = kidName(); i.focus();
       function save() { try { localStorage.setItem("kidName", i.value.trim().slice(0, 20)); } catch (e) {} i.onblur = null; vlabel(); }

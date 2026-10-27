@@ -5,11 +5,11 @@ Every version, newest first. Each released version has a download on the
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
 ## 1.22 — 2026-10-27
-- **Messages with his name**: Menu → Voice & language → **Child's name**. With a name set, corrections and tips start with "Hey Alex," and a short pause, so he knows the message is for him:
-  - maths mistake: "Hey Alex, … you said 9. Let's see…"; the first hint: "Hey Alex, … easy trick: make ten! 8 needs 2."; the mini-lesson: "Hey Alex, … look how easy this is."
-  - writing: "Hey Alex, … follow the line. Try again!"; colouring: "Hey Alex, … stay inside the lines."
+- **Messages with his name**: Menu → Voice & language → **Child's name**. With a name set, corrections and tips start with "Hey Sam," and a short pause, so he knows the message is for him:
+  - maths mistake: "Hey Sam, … you said 9. Let's see…"; the first hint: "Hey Sam, … easy trick: make ten! 8 needs 2."; the mini-lesson: "Hey Sam, … look how easy this is."
+  - writing: "Hey Sam, … follow the line. Try again!"; colouring: "Hey Sam, … stay inside the lines."
   - screen time, bedtime and mistake locks, the 5-minute warning, and the eye guard's "move back a little"
-  - Spanish says "Oye Alex,". The name is stored on the tablet only (never in the app's files); leave it empty and nothing changes
+  - Spanish says "Oye Sam,". The name is stored on the tablet only (never in the app's files); leave it empty and nothing changes
 - The pause is a real gap in the speech (about half a second), not just a comma
 
 ## 1.21 — 2026-10-27
