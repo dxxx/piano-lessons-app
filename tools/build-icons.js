@@ -277,6 +277,6 @@ ids.forEach(function (id, i) {
 });
 out += "};\n";
 fs.writeFileSync(path.join(__dirname, "instrument-icons.js"), out);
-fs.writeFileSync(path.join(__dirname, "..", "assets", "icons.js"), out);   // the copy the app loads
+fs.writeFileSync(path.join(__dirname, "..", "assets", "js", "icons.js"), out);   // the copy the app loads
 var big = ids.filter(function (id) { return ICONS[id].length > 1500; }).map(function (id) { return id + "=" + ICONS[id].length; });
 console.log(ids.length + " icons written" + (big.length ? "; over 1.5 KB: " + big.join(", ") : ""));

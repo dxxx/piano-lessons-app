@@ -11,7 +11,7 @@ Every version, newest first. Each released version has a download on the
   - Over a ten (28 + 5, 12 − 3, 40 − 7): the jump to the ten, then the rest, on a number line
   - Ones first (14 + 3, 17 − 5): a ten-stick and ones-cubes; the new ones join, or the taken ones fade
   - Column sums (levels 6–7) keep their animated column hint
-- **Drawn instrument icons**: every instrument sound has its own drawn icon instead of an emoji (73 icons: a grand piano with its lid up, a vibraphone with mallet, a flying-V for Rock guitar, a UFO for Sci-fi …). Animals keep their emoji, which already show the animal. Source: `tools/build-icons.js` → `assets/icons.js`; preview: `tools/icon-preview.html`
+- **Drawn instrument icons**: every instrument sound has its own drawn icon instead of an emoji (73 icons: a grand piano with its lid up, a vibraphone with mallet, a flying-V for Rock guitar, a UFO for Sci-fi …). Animals keep their emoji, which already show the animal. Source: `tools/build-icons.js` → `assets/js/icons.js`; preview: `tools/icon-preview.html`
 - **Fix: "Unlock now" on a used-up screen-time lock**: it cleared the lock, then a second later the app saw the time still used up and locked again, so the grown-up could not unlock at all. It now adds 15 minutes with the unlock (the button says so). Workaround on older versions: Menu → "+ 15 min today"
 - Fix: after a language change the sound picker relabelled its buttons in the wrong order
 

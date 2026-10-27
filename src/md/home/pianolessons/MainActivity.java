@@ -129,19 +129,20 @@ public class MainActivity extends Activity {
                 return true; // never navigate away from the lesson page
             }
 
-            /** Serve the bundled piano samples (assets/sounds/...) and fonts (assets/fonts/...) to the page; everything else is untouched. */
+            /** Serve the bundled piano samples (assets/sounds/...), fonts (assets/fonts/...), colouring pages and scripts (assets/js/...) to the page; everything else is untouched. */
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 String url = request.getUrl().toString();
-                boolean font = url.startsWith(PAGE_ORIGIN + "fonts/"), pic = url.startsWith(PAGE_ORIGIN + "colour/");
-                if (!font && !pic && !url.startsWith(PAGE_ORIGIN + "sounds/")) return null;
+                boolean font = url.startsWith(PAGE_ORIGIN + "fonts/"), pic = url.startsWith(PAGE_ORIGIN + "colour/"), js = url.startsWith(PAGE_ORIGIN + "js/");
+                if (!font && !pic && !js && !url.startsWith(PAGE_ORIGIN + "sounds/")) return null;
                 String path = request.getUrl().getPath();               // /sounds/grand/C4.mp3
                 if (path == null || path.length() < 2 || path.contains("..")) return null;
                 try {
                     InputStream in = getAssets().open(path.substring(1));
                     Map<String, String> headers = new HashMap<String, String>();
                     headers.put("Access-Control-Allow-Origin", "*");
-                    return new WebResourceResponse(font ? "font/woff2" : pic ? (path.endsWith(".json") ? "application/json" : "image/png") : "audio/mpeg", null, 200, "OK", headers, in);
+                    String mime = font ? "font/woff2" : js ? "application/javascript" : pic ? (path.endsWith(".json") ? "application/json" : "image/png") : "audio/mpeg";
+                    return new WebResourceResponse(mime, js ? "utf-8" : null, 200, "OK", headers, in);
                 } catch (Exception e) {
                     return null;
                 }
