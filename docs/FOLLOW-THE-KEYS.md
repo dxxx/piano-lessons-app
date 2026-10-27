@@ -28,6 +28,10 @@ On the device they sit in `Android/data/md.home.pianolessons/files/songs/`; `Mai
 - Level: onset groups of the tune (all notes for Synthesia songs, right hand for others): steps per second, chords, top-line jumps over 7 semitones, length over 60 / 150 steps, range over 16.
 - Videos with a bad hand split (right hand < 30 % or > 95 %): the top note of each moment becomes the right hand.
 
+## Tabs (1.33)
+
+Easy / Medium / Hard = Synthesia library by level (`lv`, not `cat: custom`). **Modern music** = `cat: "custom"` (our playlist songs, not from Synthesia), level stars on the cards, easier first. **My lessons** = songs whose `yt` is in `localStorage lessonIds` (the YouTube lesson playlist), in lesson order. Hearted songs come first in every tab.
+
 ## Favourites (1.32)
 
 Each card has a heart, top right (38 px tap area). Tapping it toggles the song in `localStorage songFav` (a list of song ids) without playing it. In every tab the order is: hearted songs, then songs from his video lessons, then the usual order (Custom: level, then note count; others: note count).

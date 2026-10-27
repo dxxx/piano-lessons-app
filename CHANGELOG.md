@@ -4,6 +4,11 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.33 — 2026-10-27
+- **Songs has 5 tabs:** Easy · Medium · Hard · **🎸 Modern music** (was "Custom songs": songs that are not from Synthesia, e.g. Dr. Dre, Coldplay, Godzilla, Pirates of the Caribbean) · **🎬 My lessons** (the songs of the YouTube lesson videos he watches, in lesson order). Smaller tab labels so all five fit.
+- **Key names: new choice "Both (Do + C)"** in Menu → Piano: Do Re Mi big on every key with the letter small under it (black keys Do# / C#). The octave tag on the C keys moves up so it doesn't cover the name.
+- **Playlist songs are now made from the video AND the audio together** (private tools): the video gives the key, the hand and the length, the audio gives the exact strike and the repeated notes; overtones, echoes and the backing track are dropped, a wrong octave from a cropped keyboard is corrected by the audio. Every song is checked against the original video key by key.
+
 ## 1.32 — 2026-10-27
 - **🎧 Custom songs: a 4th tab in Songs** for the modern songs from our YouTube playlist (Linkin Park, Coldplay, Faded, Interstellar, Pirates…), apart from the Synthesia library, which stays in Easy / Medium / Hard. Each card shows its level stars; easier ones first. A song file marked `cat: "custom"` goes there (the private exporter marks the playlist songs).
 - **Playlist songs now come from their audio**: every note is heard by a piano-transcription model from the video's sound track (fast repeated notes included), the hand of each note still comes from the video's bar colours. Cleaner songs for the app and for our own lesson videos (done in the private piano-tutorials folder, never in this repo).

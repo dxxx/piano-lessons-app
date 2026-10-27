@@ -192,7 +192,7 @@
   .songseg { display: flex; gap: 8px; }
   .songseg button, .songx, .songlist button, .fwtop button { border: 0; border-radius: 12px; background: #3a3170; color: #fbf8ff; font: 700 16px Fredoka, system-ui, sans-serif; box-shadow: 0 3px 0 #15102f; padding: 8px 12px; }
   .songseg button.sel { background: #ffd86b; color: #2a1f00; box-shadow: 0 3px 0 #9a7a12; }
-  .songseg.tabs button { flex: 1; font-size: 18px; min-height: 46px; }
+  .songseg.tabs button { flex: 1; min-width: 0; font-size: 14px; min-height: 42px; padding: 6px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }   /* 5 tabs on one row */
   .songx { margin-left: auto; width: 44px; height: 44px; padding: 0; font-size: 18px; }
   .songlist { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); grid-auto-rows: min-content; gap: 10px; align-content: start; padding: 2px 2px 8px; }
   .songlist button { position: relative; text-align: left; display: block; min-height: 58px; height: auto; min-width: 0; overflow: hidden; padding-right: 46px; }   /* block, not flex: a two-line title grows the card */
@@ -805,7 +805,7 @@
 <div id="songPop"><div class="songcard"><div class="songhead"><b>&#127925; Follow the keys</b>
   <div class="songseg" id="songHand"><button data-h="RL">&#128080; Both hands</button><button data-h="R">&#9995; Right</button><button data-h="L">&#129306; Left</button></div>
   <button class="songx" id="songX" aria-label="Close">&#10005;</button></div>
-  <div class="songseg tabs" id="songTabs"><button data-lv="1">&#11088; Easy</button><button data-lv="2">&#11088;&#11088; Medium</button><button data-lv="3">&#11088;&#11088;&#11088; Hard</button><button data-lv="c">&#127911; Custom songs</button></div>
+  <div class="songseg tabs" id="songTabs"><button data-lv="1">&#11088; Easy</button><button data-lv="2">&#11088;&#11088; Medium</button><button data-lv="3">&#11088;&#11088;&#11088; Hard</button><button data-lv="c">&#127928; Modern music</button><button data-lv="l">&#127916; My lessons</button></div>
   <div class="songtip" id="songTip"></div>
   <div class="songlist" id="songList"></div></div></div>
 <div id="instPop"><div class="grid" id="instGrid"></div></div>
@@ -1729,13 +1729,13 @@
     // Key names, chosen by a grown-up (Menu > Piano): letters or Do Re Mi (or both), and how black keys are written
     var NAMES = [], NAMES2 = [];                 // NAMES = main name per pitch class; NAMES2 = second line ("both" modes) or ""
     var LET = ["C", "D", "E", "F", "G", "A", "B"], SOL = ["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"];
-    var NSYS = ["letters", "solfege", "both"], NSYS_L = { letters: "Letters (C D E)", solfege: "Do Re Mi", both: "Both (C + Do)" };
+    var NSYS = ["letters", "solfege", "both", "dofirst"], NSYS_L = { letters: "Letters (C D E)", solfege: "Do Re Mi", both: "Both (C + Do)", dofirst: "Both (Do + C)" };   // dofirst: operator 2026-10-27
     var BSYS = ["sharp", "flat", "mixed", "both"], BSYS_L = { sharp: "Sharps (C# D#)", flat: "Flats (Db Eb)", mixed: "Like the videos (Db Eb F# Ab Bb)", both: "Both (C# / Db)" };
     var BLACK = [[1, 0, 1], [3, 1, 2], [6, 3, 4], [8, 4, 5], [10, 5, 6]];   // pitch class, white below (sharp of), white above (flat of)
     var nsys = "letters", bsys = "sharp";
     try { var v1 = localStorage.getItem("noteNames"), v2 = localStorage.getItem("blackNames"); if (NSYS.indexOf(v1) >= 0) nsys = v1; if (BSYS.indexOf(v2) >= 0) bsys = v2; } catch (e) {}
     function makeNames() {
-      var A = nsys === "solfege" ? SOL : LET, B = nsys === "both" ? SOL : null;
+      var A = nsys === "solfege" || nsys === "dofirst" ? SOL : LET, B = nsys === "both" ? SOL : nsys === "dofirst" ? LET : null;
       [0, 2, 4, 5, 7, 9, 11].forEach(function (pc, i) { NAMES[pc] = A[i]; NAMES2[pc] = B ? B[i] : ""; });
       BLACK.forEach(function (k, i) {
         var sh = function (X) { return X[k[1]] + "#"; }, fl = function (X) { return X[k[2]] + "b"; };
@@ -2478,7 +2478,7 @@
     function build() {
       releaseAll();
       keysEl.innerHTML = "";
-      keysEl.classList.toggle("two", nsys === "both");
+      keysEl.classList.toggle("two", nsys === "both" || nsys === "dofirst");
       var whites = [];
       for (var m = base; m <= base + span; m++) if (WHITE.indexOf(m % 12) >= 0) whites.push(m);
       var w = 100 / whites.length;
