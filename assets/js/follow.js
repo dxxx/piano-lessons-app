@@ -144,8 +144,8 @@ var follow = (function () {
     if (lis) return listenFrame(now, dt);
     var target = steps[si].t;
     if (pos < target) { pos = Math.min(target, pos + dt * SPEED); if (pos >= target - 0.001 && !arrived) { arrived = true; want(); } }
-    var vis = [];
-    for (var i = si; i < steps.length && steps[i].t - pos < 6; i++) vis.push(steps[i]);
+    var vis = [];                                                // notes he already caught stay until they have flowed into the key (long notes)
+    for (var i = Math.max(0, si - 12); i < steps.length && steps[i].t - pos < 6; i++) if (i >= si || stepEnd(steps[i]) > pos) vis.push(steps[i]);
     return { pos: pos, steps: vis, cur: steps[si], waiting: arrived, pops: pops, now: now };
   }
   function note(m) {                                             // every key he presses (act.note)
@@ -204,6 +204,7 @@ var follow = (function () {
   function endListen() {
     lis = null; pos = steps[si] ? steps[si].t - 1.2 : pos; arrived = false; hintLabel(); show();   // his note falls in again and waits
   }
+  function stepEnd(s) { var e = 0; s.n.forEach(function (n) { e = Math.max(e, n[2]); }); return e; }
   function listenFrame(now, dt) {
     var from = lis.pos; lis.pos += dt;
     song.all.forEach(function (n) {
@@ -214,8 +215,7 @@ var follow = (function () {
     });
     var vis = [];
     for (var i = 0; i < steps.length && steps[i].t - lis.pos < 6; i++) {
-      var end = 0; steps[i].n.forEach(function (n) { end = Math.max(end, n[2]); });
-      if (end > lis.pos) vis.push(steps[i]);
+      if (stepEnd(steps[i]) > lis.pos) vis.push(steps[i]);
     }
     if (!vis.length) { endListen(); return { pos: pos, steps: [], cur: steps[si], waiting: false, pops: pops, now: now }; }
     return { pos: lis.pos, steps: vis, cur: null, waiting: false, pops: pops, now: now };

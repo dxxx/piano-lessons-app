@@ -4,6 +4,9 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.31 — 2026-10-27
+- **Songs: long notes stay their full length.** A note he has caught no longer vanishes at once: its bar keeps flowing down into the key until its time is up, so a long note shows as long (it vanished the moment he pressed it).
+
 ## 1.30 — 2026-10-27
 - **Songs: the notes fall onto the keys** (instead of a row of note tiles). The same glowing bars as Piano only, in the same hand colours with the note name on each, now fall from the top onto their keys, exactly key-wide. When a note reaches its key **the song waits there**: the bar sits on the key line and pulses, the key glows with its red dot, until he presses it; then it bursts and the song falls on (Synthesia's wait mode). Pressing the right key early also counts. Notes fall at 0.8× the song's speed; the first ones start about 2 s above. The keyboard moves to fit the next few notes, so it shifts less often. While a song is on, the notes he plays don't rise (only the glow under his fingers). The song bar (title, Listen, ✕) moved to the top, with a fade under it; the beat dots sit smaller under it.
 - **Listen plays the whole song**, from the note he is on, with the notes falling in real time and bursting on the keys, **until he presses any key**: that key is the pause signal (it does not count as a note), and the song waits again at the note he was on, which falls back in. The button shows ⏸ Pause while it plays (tap to stop too).
