@@ -82,6 +82,7 @@ A scrolling column of 16:9 thumbnails (YouTube `mqdefault.jpg`), each with a rou
 - **Cover** screen (our own, never YouTube's): on pause or before start, a big "▶ Play" candy pill; on end, "Next lesson ▶" plus "Lesson 4 is next", or after the last one "↻ Start again" plus "You finished all the lessons!" (lines 1255-1266). Background: purple radial glow (line 372).
 - Errors: a video that cannot play is skipped after 1.5 s; after 3 failures in a row the player is replaced by a message "The lessons can't play right now. Check the Wi-Fi and try again." with a "Try again" button (lines 1295-1303). Playlist not loaded after 10 s: "The lessons didn't load. Check the Wi-Fi and try again."
 - The last lesson is remembered (`lastLesson`).
+- **Least-watched first (1.26):** when the app starts, the lesson list is sorted by seconds watched (`actLog.les[id].sec`), least first; ties keep the playlist order. The numbers on the thumbnails, "Lesson N of M", Back / Next, "Lesson N is next" and skipping a broken video all follow this order. A small ✓n on a thumbnail = watched to the end n times. The app opens on the least-watched lesson (playlist ids cached in `lessonIds`). The order is fixed for the session so the list never jumps while he uses it.
 
 ---
 

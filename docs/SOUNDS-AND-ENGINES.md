@@ -123,6 +123,10 @@ Icons were reviewed in 1.19: each is unique and says what the sound is (see the 
 
 Every instrument sound has a drawn SVG icon (48×48 viewBox, flat shapes, wood / brass / silver palette). They are defined in `tools/build-icons.js`; `node tools/build-icons.js` writes `tools/instrument-icons.js` and the copy the app loads, `assets/js/icons.js` (`var ICONS = { id: "<svg inner markup>" }`). The picker and the sound button use `icon(x)`, which falls back to the emoji in `INSTR` when an id has no drawing. Animals keep their emoji on purpose. Check them in `tools/icon-preview.html`.
 
+## Metronome (1.26)
+
+`assets/js/metronome.js`, the 🥁 Beat button in Piano only. A wood-block "tock": a sine falling 1180→820 Hz (beat 1: 1760→1250 Hz, 25 % louder) over 50 ms plus a 10 ms noise click, straight to the audio output (not through the room echo). Clicks are booked on the Web Audio clock every 25 ms for the next 0.12 s, so they never drift; the dots light when the click is heard (`currentTime − outputLatency`). Click loudness 1–3 (0.18 / 0.35 / 0.6). Tempo 40–160 (animals 60 / 80 / 100 / 120, − / + by 4); 2, 3 or 4 beats in a bar. A note within 0.12 s of a click counts as on the beat. It pauses while a concept game is open and stops when Piano only closes or the app goes to the background. Settings: localStorage `beatCfg`; diary event `beat`.
+
 ## Rules
 
 - Nothing from Synthesia or FL Studio goes in this app (licensed content). Only free-licence sound sets, credited here and in the README.

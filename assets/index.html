@@ -51,6 +51,7 @@
   .lesson .num { position: absolute; left: 8px; top: 8px; background: rgba(20,18,31,.85); color: var(--ink);
     font-weight: 700; font-size: 15px; border-radius: 8px; padding: 3px 9px; }
   .lesson.current { border-color: var(--ring); }
+  .lesson .seen { position: absolute; right: 6px; bottom: 6px; background: rgba(20,18,31,.85); color: #8ff0b4; font-weight: 700; font-size: 12px; border-radius: 8px; padding: 1px 6px; }
   .lesson.current .num { background: var(--accent); color: var(--accent-ink); }
   .msg { text-align: center; color: var(--muted); padding: 24px; font-size: 18px; }
   .msg button { margin-top: 14px; }
@@ -176,6 +177,44 @@
     background: radial-gradient(ellipse 70% 90% at 50% 100%, #2c2378 0%, #17123f 55%, #100c2a 100%); }
   .fly canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   body.solo .piano { height: 44vh; }
+  /* Beat: the metronome in Piano only (js/metronome.js) */
+  #beatBtn { display: none; }
+  body.solo #beatBtn { display: block; }
+  #beatBtn.on { background: linear-gradient(#ff9d4d, #e9682a); color: #fff; box-shadow: 0 3px 0 #8a3510; }
+  #beatBtn.open { outline: 3px solid #ffd86b; }
+  #beatBtn.pulse { animation: bpulse .18s ease-out; }
+  @keyframes bpulse { 0% { transform: scale(1.14); } 100% { transform: scale(1); } }
+  .beatfly { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); display: none; align-items: center; gap: 16px; z-index: 2; }
+  .beatfly.on { display: flex; }
+  .beatdots { display: flex; gap: 14px; align-items: center; cursor: pointer; }
+  .beatdots i { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font: 800 24px Fredoka, system-ui, sans-serif; font-style: normal;
+    background: #ffffff1a; color: #ffffff80; border: 3px solid #ffffff30; transition: background .12s, transform .12s; }
+  .beatdots i.one { width: 64px; height: 64px; font-size: 30px; border-color: #ffb36b80; }
+  .beatdots i.now { background: #ffd86b; color: #2a1f00; border-color: #fff; transform: scale(1.18); transition: none; }
+  .beatdots i.one.now { background: #ff8a3d; color: #fff; }
+  .beatdots i.hit { box-shadow: 0 0 0 6px #5fd38f, 0 0 26px #5fd38f; }
+  .beathits { font: 800 24px Fredoka, system-ui, sans-serif; color: #8ff0b4; min-width: 1px; }
+  .beatpanel { position: absolute; inset: 8px; z-index: 3; border-radius: 14px; background: #1d1747f2; border: 2px solid #5b4bb0; color: #fbf8ff;
+    display: grid; grid-template-columns: 1.5fr 1fr; grid-template-rows: auto auto; gap: 6px 18px; padding: 8px 52px 8px 16px; align-content: center; }
+  .beatpanel[hidden] { display: none; }
+  .beatpanel h3 { margin: 0 0 4px; font-size: 14px; font-weight: 700; color: #c9bff5; letter-spacing: .02em; }
+  .beatpanel button { border: 0; border-radius: 12px; background: #3a3170; color: #fbf8ff; font: 700 18px Fredoka, system-ui, sans-serif; box-shadow: 0 3px 0 #15102f; }
+  .beatpanel button:active { transform: translateY(2px); box-shadow: 0 1px 0 #15102f; }
+  .beatpanel button.sel { background: #ffd86b; color: #2a1f00; box-shadow: 0 3px 0 #9a7a12; }
+  .beatx { position: absolute; top: 8px; right: 8px; width: 40px; height: 40px; font-size: 18px !important; }
+  .beattempos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .beattempos button { min-height: min(12vh, 78px); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 15px; }
+  .beattempos button span { font-size: clamp(24px, 5vh, 36px); line-height: 1.1; }
+  .bpf { display: flex; align-items: center; gap: 10px; align-self: end; }
+  .bpf button { width: 54px; height: 54px; font-size: 30px; flex: 0 0 auto; }
+  #beatBpm { flex: 1; text-align: center; font-size: 13px; color: #c9bff5; line-height: 1.25; }
+  #beatBpm b { font-size: 30px; color: #fff; } #beatBpm span { color: #ffd86b; font-size: 15px; }
+  .beatseg { display: flex; gap: 8px; }
+  .beatseg button { flex: 1; min-height: 48px; font-size: 22px; }
+  .bpb, .bpv { align-self: end; }
+  .beatgo { grid-column: 1 / -1; min-height: min(8.5vh, 52px); font-size: 22px !important; background: linear-gradient(#5fd38f, #2fa865) !important; color: #06210f !important; box-shadow: 0 4px 0 #17603a !important; }
+  .beatgo.on { background: linear-gradient(#ff8b7a, #e0503c) !important; color: #fff !important; box-shadow: 0 4px 0 #7a2015 !important; }
+  @media (max-height: 520px) { .beatpanel { grid-template-columns: 1.5fr 1fr 1fr; } .beatgo { grid-column: auto; } .beattempos button { min-height: 52px; } }
   header .lock { border: 0; border-radius: 10px; background: #2b2742; color: var(--muted);
     font-size: 15px; padding: 8px 14px; }
   .gate .q { font-size: 22px; font-weight: 700; margin: 8px 0 14px; }
@@ -703,6 +742,7 @@
       <span class="hint" id="loadHint" style="display:none">Loading sound…</span>
       <button class="lock" id="playMode" style="margin-left:auto">&#127929; Play along</button>
       <button class="lock" id="soloBtn">&#127929; Piano only</button>
+      <button class="lock" id="beatBtn">&#129345; Beat</button>
       <button class="lock" id="mode">&#x26F6; Big video</button>
       <button class="lock" id="homeBtn" aria-label="Start screen">&#127968;</button>
       <button class="lock" id="lock" aria-label="Menu (grown-ups)">&#128274; Menu</button></header>
@@ -714,7 +754,14 @@
       <div class="now"><div class="n" id="num">&nbsp;</div><div class="t" id="vt">Loading lessons…</div></div>
       <button class="btn" id="next" disabled>Next &#9654;</button>
     </div>
-    <div class="fly" id="fly"><canvas id="flyCv"></canvas></div>
+    <div class="fly" id="fly"><canvas id="flyCv"></canvas>
+      <div class="beatfly" id="beatFly"><div class="beatdots" id="beatDots"></div><b class="beathits" id="beatHits"></b></div>
+      <div class="beatpanel" id="beatPanel" hidden><button class="beatx" id="beatX" aria-label="Close">&#10005;</button>
+        <div class="bpt"><h3 id="beatL1"></h3><div class="beattempos" id="beatTempos"></div></div>
+        <div class="bpf"><button id="beatMinus" aria-label="Slower">&minus;</button><div id="beatBpm"></div><button id="beatPlus" aria-label="Faster">+</button></div>
+        <div class="bpb"><h3 id="beatL2"></h3><div class="beatseg" id="beatBars"></div></div>
+        <div class="bpv"><h3 id="beatL3"></h3><div class="beatseg" id="beatVol"></div></div>
+        <button class="beatgo" id="beatGo"></button></div></div>
     <div class="piano" id="piano">
       <div class="side"><button class="oct" id="octDown" aria-label="Lower octave">&#9664;</button>
         <button class="oct zoom" id="zoomOut" aria-label="Smaller keys, more of them">&minus;</button></div>
@@ -989,10 +1036,12 @@
 <script src="js/icons.js"></script>
 <script src="js/compare.js"></script>
 <script src="js/concepts.js"></script>
+<script src="js/metronome.js"></script>
 <script>
   var PLAYLIST = "PLDVezc1Pgjccf0cePq-4SB1K6NExfYT6x";
   var KEY = "lastLesson";
   var player, ids = [], current = -1;
+  var order = [];                                      // playlist indexes as shown: least-watched lessons first (set once per app start)
   // One language at a time: everything he sees follows the Language setting (the grown-up menu stays English).
   // Read from storage, not from `voice`, because some screens are drawn before the voice module exists.
   function uiLang() { try { return localStorage.getItem("voiceLang") === "es" ? "es" : "en"; } catch (e) { return "en"; } }
@@ -1415,6 +1464,7 @@
         var d = day(), n = NN[midi % 12] + (Math.floor(midi / 12) - 1);
         d.nn++; d.ins[ins] = (d.ins[ins] || 0) + 1; d.nt[n] = (d.nt[n] || 0) + 1;
         ses.n++; ses.ins[ins] = (ses.ins[ins] || 0) + 1;
+        if (window.beat) beat.note();           // on the beat? (metronome in Piano only)
         if (window.concepts) concepts.note();   // quick concept games pop up after some minutes of playing
       },
       piano: function (on) {                  // Play along opened / closed: one diary line per session
@@ -1444,7 +1494,7 @@
     if (player || document.body.classList.contains("math") || document.body.classList.contains("inwrite") || document.body.classList.contains("incolour") || document.body.classList.contains("incompare") || document.body.classList.contains("athome")) return;   // maths, writing, colouring and the start screen never load the videos
     player = new YT.Player("player", {
       playerVars: {
-        listType: "playlist", list: PLAYLIST, index: saved(),
+        listType: "playlist", list: PLAYLIST, index: firstLesson(),
         rel: 0, iv_load_policy: 3, playsinline: 1, fs: 0, modestbranding: 1, disablekb: 1, controls: 0,
         origin: location.origin
       },
@@ -1456,18 +1506,39 @@
     tries = typeof tries === "number" ? tries : 0;
     if (tries === 0 && window.applyPlayVol) window.applyPlayVol();
     var list = player.getPlaylist && player.getPlaylist();
-    if (list && list.length) { ids = list; buildList(); refresh(); return; }
+    if (list && list.length) { ids = list; try { localStorage.setItem("lessonIds", JSON.stringify(list)); } catch (e) {} buildList(); refresh(); return; }
     if (tries < 40) setTimeout(function () { waitForPlaylist(tries + 1); }, 250);
     else showMsg(L("The lessons didn't load. Check the Wi-Fi and try again.", "Las lecciones no cargaron. Revisa el Wi-Fi e inténtalo otra vez."));
   }
 
+  // The lessons he has watched most go to the end of the list and the least-watched come first, so he meets the
+  // others more often. Score = seconds watched (activity log); ties keep the playlist order. Worked out once when
+  // the app starts, so the list never jumps around while he is using it.
+  function watchOrder(list) {
+    var les = (act.data() || {}).les || {};
+    return list.map(function (id, i) { return i; }).sort(function (a, b) {
+      var sa = les[list[a]] ? les[list[a]].sec : 0, sb = les[list[b]] ? les[list[b]].sec : 0;
+      return sa - sb || a - b;
+    });
+  }
+  function firstLesson() {                              // start on the least-watched lesson (playlist from the last visit)
+    try { var c = JSON.parse(localStorage.getItem("lessonIds") || "null"); if (c && c.length) return watchOrder(c)[0]; } catch (e) {}
+    return saved();
+  }
+  function pos(i) { var k = order.indexOf(i); return k < 0 ? i : k; }
+  function stepLesson(d) {                              // Back / Next follow the list as shown
+    var k = pos(player.getPlaylistIndex()) + d;
+    if (k >= 0 && k < order.length) player.playVideoAt(order[k]);
+  }
   function buildList() {
     var box = document.getElementById("list");
     box.innerHTML = "";
-    ids.forEach(function (id, i) {
-      var b = document.createElement("button");
+    order = watchOrder(ids);
+    order.forEach(function (i, k) {
+      var id = ids[i], b = document.createElement("button"), les = (act.data().les || {})[id], seen = les ? les.fin : 0;
       b.className = "lesson"; b.dataset.i = i;
-      b.innerHTML = '<img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + id + '/mqdefault.jpg"><span class="num">' + (i + 1) + "</span>";
+      b.innerHTML = '<img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + id + '/mqdefault.jpg"><span class="num">' + (k + 1) + "</span>" +
+        (seen ? '<span class="seen" title="watched to the end">&#10003;' + seen + "</span>" : "");
       b.onclick = function () { player.playVideoAt(i); };
       box.appendChild(b);
     });
@@ -1481,14 +1552,14 @@
     if (st === 1 || st === 3) player.pauseVideo(); else player.playVideo();
   };
   function setCover(state) {
-    var i = player.getPlaylistIndex(), last = i >= ids.length - 1;
+    var i = player.getPlaylistIndex(), k = pos(i), last = k >= ids.length - 1;
     if (state === 2 || state === 5 || state === -1) {   // paused, or loaded but not started yet
       coverBtn.innerHTML = "&#9654; " + L("Play", "Ver"); coverSub.textContent = "";
       coverAction = function () { player.playVideo(); };
     } else if (state === 0) {                // ended
       coverBtn.innerHTML = last ? "&#8635; " + L("Start again", "Empezar otra vez") : L("Next lesson", "Siguiente lección") + " &#9654;";
-      coverSub.textContent = last ? L("You finished all the lessons!", "¡Terminaste todas las lecciones!") : L("Lesson " + (i + 2) + " is next", "Ahora viene la lección " + (i + 2));
-      coverAction = function () { last ? player.playVideoAt(0) : player.nextVideo(); };
+      coverSub.textContent = last ? L("You finished all the lessons!", "¡Terminaste todas las lecciones!") : L("Lesson " + (k + 2) + " is next", "Ahora viene la lección " + (k + 2));
+      coverAction = function () { last ? player.playVideoAt(order[0]) : stepLesson(1); };
     } else { cover.classList.remove("on"); return; }
     cover.classList.add("on");
   }
@@ -1512,17 +1583,17 @@
       });
     }
     var d = player.getVideoData ? player.getVideoData() : null;
-    document.getElementById("num").textContent = L("Lesson " + (i + 1) + " of " + ids.length, "Lección " + (i + 1) + " de " + ids.length);
+    document.getElementById("num").textContent = L("Lesson " + (pos(i) + 1) + " of " + ids.length, "Lección " + (pos(i) + 1) + " de " + ids.length);
     document.getElementById("vt").textContent = (d && d.title) || "";
-    document.getElementById("prev").disabled = i <= 0;
-    document.getElementById("next").disabled = i >= ids.length - 1;
+    document.getElementById("prev").disabled = pos(i) <= 0;
+    document.getElementById("next").disabled = pos(i) >= ids.length - 1;
   }
 
   // Skip a video that can't play here, but stop after 3 failures in a row (offline / all blocked).
   var failures = 0;
   function onErr() {
     if (++failures >= 3) { showMsg(L("The lessons can't play right now. Check the Wi-Fi and try again.", "Las lecciones no se pueden ver ahora. Revisa el Wi-Fi e inténtalo otra vez.")); return; }
-    setTimeout(function () { player.nextVideo(); }, 1500);
+    setTimeout(function () { stepLesson(1); }, 1500);
   }
 
   function showMsg(text) {
@@ -4619,8 +4690,8 @@
     };
   })();
 
-  document.getElementById("prev").onclick = function () { player.previousVideo(); };
-  document.getElementById("next").onclick = function () { player.nextVideo(); };
+  document.getElementById("prev").onclick = function () { stepLesson(-1); };
+  document.getElementById("next").onclick = function () { stepLesson(1); };
   setInterval(refresh, 1500); // titles arrive a moment after the video switches
 
   // ---- Eye guard: the front camera (native side, on-device only) tells when his face is too close ----
