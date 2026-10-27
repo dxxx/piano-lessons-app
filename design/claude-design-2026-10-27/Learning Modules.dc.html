@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F2EBDF;--surface:#FBF7F0;--surface2:#EADFCD;--ink:#2F2520;--muted:#6B5A4E;--line:#E0D3C0;--wood:#6E4630;--woodInk:#F7EFE3;--accent:#B4473A;--accentInk:#FFF8F2;--good:#3F7352;--goodBg:#E3EEDF;--bad:#B4473A;--badBg:#F5E0D9;--blue:#3E5C9A;--blueBg:#E3E8F2;--pink:#B5487A;--pinkBg:#F4E1EA;--onApp:#FFF8F2;--shadow:0 2px 0 rgba(60,40,25,.10),0 10px 28px rgba(60,40,25,.08);--dir:row}
+html,body{margin:0;background:#19191B;font-family:Nunito,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}a:hover{color:var(--ink)}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:14px;padding:14px 16px 24px;box-sizing:border-box;color:#E8E6E3">
+  <div ref="{{ barRef }}" style="width:100%;max-width:1320px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:18px">
+      <div style="font-weight:900;font-size:15px">Learning modules · sample screens</div>
+      <a href="Piano Lessons App.dc.html" style="font-size:12px;font-weight:800;color:#CFCCC8;border:1px solid #3A3A3D;border-radius:999px;padding:5px 11px">← Main app prototype</a>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="font-size:12px;color:#9A9895;font-weight:700">Direction</span>
+        <sc-for list="{{ dirOpts }}" as="o" hint-placeholder-count="2">
+          <button onClick="{{ o.pick }}" style="border:1px solid #3A3A3D;background:{{ o.bg }};color:{{ o.color }};border-radius:999px;padding:5px 11px;font-size:12px;font-weight:800">{{ o.label }}</button>
+        </sc-for>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="font-size:12px;color:#9A9895;font-weight:700">Tablet</span>
+        <sc-for list="{{ orientOpts }}" as="o" hint-placeholder-count="2">
+          <button onClick="{{ o.pick }}" style="border:1px solid #3A3A3D;background:{{ o.bg }};color:{{ o.color }};border-radius:999px;padding:5px 11px;font-size:12px;font-weight:800">{{ o.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <sc-for list="{{ nav }}" as="o" hint-placeholder-count="6">
+        <button onClick="{{ o.pick }}" style="border:1px solid #333336;background:{{ o.bg }};color:{{ o.color }};border-radius:8px;padding:4px 9px;font-size:12px;font-weight:700">{{ o.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="position:relative;width:{{ fw }}px;height:{{ fh }}px;flex:none">
+    <div style="position:absolute;left:0;top:0;width:{{ tw }}px;height:{{ th }}px;transform:scale({{ scale }});transform-origin:0 0;box-sizing:border-box;padding:18px;border-radius:40px;background:#0B0B0C;box-shadow:0 0 0 2px #2A2A2C,0 30px 80px rgba(0,0,0,.5)">
+      <div style="position:relative;width:100%;height:100%;border-radius:22px;overflow:hidden;background:var(--bg);color:var(--ink);display:flex;flex-direction:column">
+
+        <div style="height:68px;flex:none;display:flex;align-items:center;gap:12px;padding:0 20px;background:var(--surface);border-bottom:1px solid var(--line)">
+          <a href="Piano Lessons App.dc.html" style="width:44px;height:44px;border-radius:12px;border:1px solid var(--line);display:grid;place-items:center;color:var(--muted)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6.5 8 6.5"></path><path d="M6.5 9.5V19h11V9.5"></path></svg>
+          </a>
+          <div style="width:30px;height:30px;border-radius:9px;background:{{ appColor }}"></div>
+          <div>
+            <div style="font-size:19px;font-weight:900;line-height:1.1">{{ appName }}</div>
+            <div style="font-size:12px;font-weight:800;color:var(--muted)">{{ appSub }}</div>
+          </div>
+          <div style="flex:1"></div>
+          <sc-if value="{{ showHearts }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;gap:3px;padding:7px 12px;border-radius:999px;background:var(--surface2)">
+              <sc-for list="{{ hearts }}" as="h" hint-placeholder-count="5">
+                <svg width="18" height="18" viewBox="0 0 24 24" style="color:{{ h.color }};transform:scale({{ h.sc }});transition:all .3s"><path fill="currentColor" d="M12 20.5s-7.5-4.6-9.3-9.2C1.5 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.8 1.3-1.7 2.9-2.8 4.9-2.8 3.5 0 5.6 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"></path></svg>
+              </sc-for>
+            </div>
+          </sc-if>
+          <div style="display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;background:var(--surface2);font-size:14px;font-weight:800">
+            <svg width="16" height="16" viewBox="0 0 24 24" style="color:var(--accent)"><path fill="currentColor" d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"></path></svg>{{ stars }}</div>
+        </div>
+
+        <sc-if value="{{ isMath }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:none;display:flex;align-items:center;gap:6px;padding:10px 20px;border-bottom:1px solid var(--line);overflow-x:auto">
+            <div style="font-size:11px;font-weight:900;letter-spacing:.6px;color:var(--muted);margin-right:4px;white-space:nowrap">MATHS PATH</div>
+            <sc-for list="{{ levels }}" as="l" hint-placeholder-count="11">
+              <div style="display:flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border-radius:999px;background:{{ l.bg }};color:{{ l.color }};white-space:nowrap;flex:none;box-shadow:{{ l.ring }}">
+                <div style="width:20px;height:20px;border-radius:50%;background:{{ l.dotBg }};color:{{ l.dotColor }};display:grid;place-items:center;font-size:11px;font-weight:900">{{ l.n }}</div>
+                <div style="font-size:12px;font-weight:800">{{ l.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <div style="flex:1;min-height:0;position:relative">
+
+          <sc-if value="{{ isCols }}" hint-placeholder-val="{{ true }}">
+            <div style="height:100%;box-sizing:border-box;padding:18px 22px;display:flex;flex-direction:var(--dir);gap:18px">
+              <div style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <div style="font-size:24px;font-weight:900;flex:1">Column sums</div>
+                  <div style="display:flex;gap:3px;background:var(--surface2);border-radius:11px;padding:3px">
+                    <sc-for list="{{ colProbs }}" as="o" hint-placeholder-count="3">
+                      <button onClick="{{ o.pick }}" style="border:none;background:{{ o.bg }};color:{{ o.color }};border-radius:8px;padding:0 12px;height:38px;font-size:14px;font-weight:800;white-space:nowrap">{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="flex:1;min-height:0;background:var(--surface);border-radius:26px;box-shadow:var(--shadow);display:grid;place-items:center;padding:20px">
+                  <div style="position:relative;display:grid;grid-template-columns:60px 130px 130px;column-gap:10px;justify-items:center;align-items:center">
+                    <div style="position:absolute;left:70px;top:0;bottom:0;width:130px;border-radius:20px;background:var(--blueBg)"></div>
+                    <div style="position:absolute;left:210px;top:0;bottom:0;width:130px;border-radius:20px;background:var(--pinkBg);box-shadow:{{ onesRing }}"></div>
+                    <div></div>
+                    <div style="position:relative;margin-top:12px;font-size:13px;font-weight:900;color:var(--blue)">tens</div>
+                    <div style="position:relative;margin-top:12px;font-size:13px;font-weight:900;color:var(--pink)">ones</div>
+                    <div style="height:40px"></div>
+                    <div style="position:relative;height:40px;display:grid;place-items:center;font-size:30px;font-weight:900;color:{{ smallColor }};opacity:{{ smallOp }};transform:translateY({{ smallY }});transition:all .4s">{{ smallTens }}</div>
+                    <div></div>
+                    <div></div>
+                    <button onClick="{{ doTrade }}" style="position:relative;width:110px;height:92px;border:none;background:transparent;color:{{ tensTopColor }};font-size:80px;font-weight:900;padding:0;font-family:inherit;border-radius:16px;box-shadow:{{ tradeRing }};transition:box-shadow .3s">{{ at }}
+                      <span style="position:absolute;left:14px;right:14px;top:50%;height:6px;border-radius:3px;background:var(--blue);transform:rotate(-24deg) scaleX({{ strikeSc }});transition:transform .35s"></span>
+                    </button>
+                    <div style="position:relative;height:92px;display:flex;align-items:center;font-size:80px;font-weight:900">
+                      <span style="font-size:32px;color:var(--blue);margin-top:-30px;width:{{ supW }};overflow:hidden;opacity:{{ supOp }};transition:all .35s">1</span>{{ au }}</div>
+                    <div style="position:relative;font-size:64px;font-weight:800;color:var(--muted)">{{ op }}</div>
+                    <div style="position:relative;height:92px;display:grid;place-items:center;font-size:80px;font-weight:900">{{ bt }}</div>
+                    <div style="position:relative;height:92px;display:grid;place-items:center;font-size:80px;font-weight:900">{{ bu }}</div>
+                    <div style="position:relative;grid-column:1 / 4;justify-self:stretch;height:6px;border-radius:3px;background:var(--ink);margin:8px 0 14px"></div>
+                    <div></div>
+                    <div style="position:relative;width:104px;height:100px;margin-bottom:12px;box-sizing:border-box;border:4px {{ tensBoxStyle }} {{ tensBoxBorder }};border-radius:22px;background:var(--surface);display:grid;place-items:center;font-size:72px;font-weight:900;color:var(--good);transition:border-color .3s">{{ ansT }}</div>
+                    <div style="position:relative;width:104px;height:100px;margin-bottom:12px;box-sizing:border-box;border:4px {{ onesBoxStyle }} {{ onesBoxBorder }};border-radius:22px;background:var(--surface);display:grid;place-items:center;font-size:72px;font-weight:900;color:var(--good);transition:border-color .3s">{{ ansO }}</div>
+                  </div>
+                </div>
+              </div>
+              <div style="width:{{ sideW }};flex:none;display:flex;flex-direction:column;gap:12px">
+                <div style="background:{{ colMsgBg }};border-radius:20px;padding:16px 18px;min-height:96px;box-sizing:border-box;transition:background .3s">
+                  <div style="font-size:12px;font-weight:900;letter-spacing:.5px;color:var(--muted)">{{ colMsgHead }}</div>
+                  <div style="font-size:19px;font-weight:800;line-height:1.3;margin-top:4px;text-wrap:pretty">{{ colMsg }}</div>
+                </div>
+                <sc-if value="{{ colTrading }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ doTrade }}" style="border:none;background:var(--blue);color:var(--onApp);border-radius:16px;height:60px;font-size:16px;font-weight:900">Trade 1 ten for 10 ones</button>
+                </sc-if>
+                <sc-if value="{{ colTyping }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+                    <sc-for list="{{ keypad }}" as="k" hint-placeholder-count="10">
+                      <button onClick="{{ k.pick }}" style="height:64px;border:2px solid var(--line);background:var(--surface);color:var(--ink);border-radius:16px;font-size:28px;font-weight:900" style-active="transform:scale(.96)">{{ k.label }}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ colDone }}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{ colNext }}" style="border:none;background:var(--accent);color:var(--accentInk);border-radius:16px;height:60px;font-size:16px;font-weight:900">Next sum</button>
+                </sc-if>
+                <div style="flex:1"></div>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <sc-for list="{{ colSteps }}" as="s" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:10px;font-size:14px;font-weight:800;color:{{ s.color }}">
+                      <div style="width:22px;height:22px;border-radius:50%;background:{{ s.dot }};color:var(--onApp);display:grid;place-items:center;font-size:11px;font-weight:900">{{ s.n }}</div>{{ s.text }}</div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isMult }}" hint-placeholder-val="{{ false }}">
+            <div style="height:100%;box-sizing:border-box;padding:18px 22px;display:flex;flex-direction:var(--dir);gap:18px">
+              <div style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <div style="font-size:24px;font-weight:900;flex:1">{{ mPhrase }}</div>
+                  <div style="display:flex;gap:3px;background:var(--surface2);border-radius:11px;padding:3px">
+                    <sc-for list="{{ mProbs }}" as="o" hint-placeholder-count="3">
+                      <button onClick="{{ o.pick }}" style="border:none;background:{{ o.bg }};color:{{ o.color }};border-radius:8px;padding:0 12px;height:38px;font-size:14px;font-weight:800;white-space:nowrap">{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="flex:1;min-height:0;background:var(--surface);border-radius:26px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:20px">
+                  <div style="display:flex;flex-direction:column;gap:12px">
+                    <sc-for list="{{ mRows }}" as="r" hint-placeholder-count="3">
+                      <div style="display:flex;align-items:center;gap:12px">
+                        <div style="display:flex;gap:10px;padding:8px 10px;border-radius:999px;background:{{ r.bg }};transition:background .4s">
+                          <sc-for list="{{ r.dots }}" as="d" hint-placeholder-count="4">
+                            <div style="width:{{ mDot }};height:{{ mDot }};border-radius:50%;background:{{ d.c }};transition:background .4s"></div>
+                          </sc-for>
+                        </div>
+                        <div style="min-width:44px;height:36px;padding:0 10px;border-radius:999px;background:{{ r.c }};color:var(--onApp);display:grid;place-items:center;font-size:18px;font-weight:900;opacity:{{ r.op }};transform:translateX({{ r.x }});transition:all .4s">{{ r.total }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center">
+                    <sc-for list="{{ mCount }}" as="c" hint-placeholder-count="4">
+                      <div style="display:flex;align-items:center;gap:8px">
+                        <div style="font-size:16px;font-weight:900;color:var(--muted);display:{{ c.arrow }}">→</div>
+                        <div style="font-size:24px;font-weight:900;color:{{ c.color }};transition:color .3s">{{ c.n }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;gap:10px">
+                    <button onClick="{{ mStepFn }}" style="border:none;background:var(--accent);color:var(--accentInk);border-radius:14px;height:52px;padding:0 20px;font-size:15px;font-weight:900">{{ mStepLabel }}</button>
+                    <button onClick="{{ mTurn }}" style="border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;height:52px;padding:0 18px;font-size:15px;font-weight:800">Turn it round</button>
+                  </div>
+                </div>
+              </div>
+              <div style="width:{{ sideW }};flex:none;display:flex;flex-direction:column;gap:12px">
+                <div style="background:var(--surface);border-radius:20px;padding:18px;text-align:center;box-shadow:var(--shadow)">
+                  <div style="font-size:60px;font-weight:900;letter-spacing:-1px">{{ mQ }}</div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+                  <sc-for list="{{ mAnswers }}" as="a" hint-placeholder-count="3">
+                    <button onClick="{{ a.pick }}" style="height:80px;border:2px solid {{ a.border }};background:{{ a.bg }};color:{{ a.color }};border-radius:20px;font-size:34px;font-weight:900;box-shadow:var(--shadow);transition:all .25s">{{ a.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="font-size:16px;font-weight:800;color:{{ mMsgColor }};min-height:24px;text-wrap:pretty">{{ mMsg }}</div>
+                <sc-if value="{{ mSolved }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:var(--goodBg);border-radius:20px;padding:16px 18px">
+                    <div style="font-size:12px;font-weight:900;letter-spacing:.5px;color:var(--good)">FACT FAMILY</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin-top:8px">
+                      <sc-for list="{{ family }}" as="f" hint-placeholder-count="4">
+                        <div style="font-size:20px;font-weight:900">{{ f }}</div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isDiv }}" hint-placeholder-val="{{ false }}">
+            <div style="height:100%;box-sizing:border-box;padding:18px 22px;display:flex;flex-direction:var(--dir);gap:18px">
+              <div style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <div style="font-size:24px;font-weight:900;flex:1">{{ dPhrase }}</div>
+                  <div style="display:flex;gap:3px;background:var(--surface2);border-radius:11px;padding:3px">
+                    <sc-for list="{{ dProbs }}" as="o" hint-placeholder-count="3">
+                      <button onClick="{{ o.pick }}" style="border:none;background:{{ o.bg }};color:{{ o.color }};border-radius:8px;padding:0 12px;height:38px;font-size:14px;font-weight:800;white-space:nowrap">{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="flex:1;min-height:0;background:var(--surface);border-radius:26px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:20px">
+                  <div style="min-height:96px;max-width:460px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-content:center">
+                    <sc-for list="{{ pile }}" as="p" hint-placeholder-count="12">
+                      <div style="width:36px;height:36px;border-radius:50%;background:var(--accent);box-shadow:inset 0 -4px 0 rgba(0,0,0,.15)"></div>
+                    </sc-for>
+                    <sc-if value="{{ leftover }}" hint-placeholder-val="{{ false }}">
+                      <div style="width:100%;text-align:center;font-size:16px;font-weight:900;color:var(--accent)">{{ leftoverLabel }}</div>
+                    </sc-if>
+                  </div>
+                  <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center">
+                    <sc-for list="{{ plates }}" as="pl" hint-placeholder-count="3">
+                      <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+                        <div style="width:150px;height:150px;border-radius:50%;background:var(--surface2);box-shadow:inset 0 0 0 8px var(--bg);display:flex;flex-wrap:wrap;gap:6px;align-content:center;justify-content:center;padding:30px;box-sizing:border-box">
+                          <sc-for list="{{ pl.items }}" as="c" hint-placeholder-count="4">
+                            <div style="width:26px;height:26px;border-radius:50%;background:var(--good);box-shadow:inset 0 -3px 0 rgba(0,0,0,.15)"></div>
+                          </sc-for>
+                        </div>
+                        <div style="font-size:20px;font-weight:900;color:var(--muted)">{{ pl.count }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+                    <button onClick="{{ shareOne }}" style="border:none;background:var(--accent);color:var(--accentInk);border-radius:14px;height:52px;padding:0 20px;font-size:15px;font-weight:900">Share one each</button>
+                    <button onClick="{{ shareAll }}" style="border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;height:52px;padding:0 18px;font-size:15px;font-weight:800">Share them all</button>
+                    <button onClick="{{ shareReset }}" style="border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:14px;height:52px;padding:0 18px;font-size:15px;font-weight:800">Start again</button>
+                  </div>
+                </div>
+              </div>
+              <div style="width:{{ sideW }};flex:none;display:flex;flex-direction:column;gap:12px">
+                <div style="background:var(--surface);border-radius:20px;padding:18px;text-align:center;box-shadow:var(--shadow)">
+                  <div style="font-size:60px;font-weight:900;letter-spacing:-1px">{{ dQ }}</div>
+                  <div style="font-size:15px;font-weight:800;color:var(--muted)">How many on each plate?</div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+                  <sc-for list="{{ dAnswers }}" as="a" hint-placeholder-count="3">
+                    <button onClick="{{ a.pick }}" style="height:80px;border:2px solid {{ a.border }};background:{{ a.bg }};color:{{ a.color }};border-radius:20px;font-size:28px;font-weight:900;box-shadow:var(--shadow);transition:all .25s">{{ a.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="font-size:16px;font-weight:800;color:{{ dMsgColor }};min-height:24px;text-wrap:pretty">{{ dMsg }}</div>
+                <sc-if value="{{ dSolved }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:var(--goodBg);border-radius:20px;padding:16px 18px">
+                    <div style="font-size:12px;font-weight:900;letter-spacing:.5px;color:var(--good)">CHECK IT WITH TIMES</div>
+                    <div style="font-size:22px;font-weight:900;margin-top:6px">{{ dCheck }}</div>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isWrite }}" hint-placeholder-val="{{ false }}">
+            <div style="height:100%;box-sizing:border-box;padding:18px 22px;display:flex;flex-direction:var(--dir);gap:18px">
+              <div style="flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end">
+                  <sc-for list="{{ families }}" as="fm" hint-placeholder-count="3">
+                    <div style="display:flex;flex-direction:column;gap:4px">
+                      <div style="font-size:11px;font-weight:900;letter-spacing:.4px;color:var(--muted)">{{ fm.name }}</div>
+                      <div style="display:flex;gap:4px">
+                        <sc-for list="{{ fm.letters }}" as="l" hint-placeholder-count="3">
+                          <button onClick="{{ l.pick }}" style="width:44px;height:44px;border:1px solid var(--line);background:{{ l.bg }};color:{{ l.color }};border-radius:12px;font-size:22px;font-weight:900">{{ l.ch }}</button>
+                        </sc-for>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="flex:1;min-height:0;background:var(--surface);border-radius:26px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;padding:16px;transform:translateX({{ wShake }});transition:transform .08s">
+                  {{ writeSvg }}
+                </div>
+              </div>
+              <div style="width:{{ sideW }};flex:none;display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <sc-for list="{{ phases }}" as="p" hint-placeholder-count="4">
+                    <button onClick="{{ p.pick }}" style="display:flex;align-items:center;gap:10px;border:none;background:{{ p.bg }};color:var(--ink);border-radius:14px;padding:8px 12px 8px 8px;text-align:left">
+                      <div style="width:28px;height:28px;border-radius:50%;background:{{ p.dot }};color:var(--onApp);display:grid;place-items:center;font-size:13px;font-weight:900">{{ p.n }}</div>
+                      <div>
+                        <div style="font-size:15px;font-weight:900">{{ p.label }}</div>
+                        <div style="font-size:12px;font-weight:700;color:var(--muted)">{{ p.note }}</div>
+                      </div>
+                    </button>
+                  </sc-for>
+                </div>
+                <div style="background:{{ wMsgBg }};border-radius:18px;padding:14px 16px;min-height:72px;box-sizing:border-box;transition:background .3s">
+                  <div style="font-size:18px;font-weight:800;line-height:1.3;text-wrap:pretty">{{ wMsg }}</div>
+                </div>
+                <sc-if value="{{ wDone }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;gap:8px">
+                    <button onClick="{{ wAgain }}" style="flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;height:54px;font-size:15px;font-weight:800">Again</button>
+                    <button onClick="{{ wNext }}" style="flex:1.4;border:none;background:var(--accent);color:var(--accentInk);border-radius:14px;height:54px;font-size:15px;font-weight:900">{{ wNextLabel }}</button>
+                  </div>
+                </sc-if>
+                <div style="flex:1"></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                  <div style="font-size:12px;font-weight:800;color:var(--muted)">Letter check</div>
+                  <div style="display:flex;gap:3px;background:var(--surface2);border-radius:10px;padding:3px">
+                    <sc-for list="{{ strictOpts }}" as="o" hint-placeholder-count="3">
+                      <button onClick="{{ o.pick }}" style="border:none;background:{{ o.bg }};color:{{ o.color }};border-radius:8px;padding:0 10px;height:32px;font-size:12px;font-weight:800">{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isColour }}" hint-placeholder-val="{{ false }}">
+            <div style="height:100%;box-sizing:border-box;padding:18px 22px;display:flex;flex-direction:var(--dir);gap:18px">
+              <div style="flex:1;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;background:var(--surface);border-radius:26px;box-shadow:var(--shadow);padding:16px;position:relative">
+                <canvas ref="{{ colourRef }}" width="640" height="640" onPointerDown="{{ cDown }}" onPointerMove="{{ cMove }}" onPointerUp="{{ cUp }}" onPointerLeave="{{ cUp }}" style="height:100%;max-width:100%;aspect-ratio:1;touch-action:none;border-radius:16px;transform:translateX({{ cShake }});transition:transform .06s"></canvas>
+                <sc-if value="{{ cFinished }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;inset:0;border-radius:26px;background:rgba(20,14,10,.35);display:grid;place-items:center">
+                    <div style="background:var(--surface);border-radius:24px;padding:26px 34px;display:flex;flex-direction:column;align-items:center;gap:14px;box-shadow:var(--shadow)">
+                      <div style="display:flex;gap:6px">
+                        <sc-for list="{{ cStars }}" as="s" hint-placeholder-count="3">
+                          <svg width="44" height="44" viewBox="0 0 24 24" style="color:{{ s.c }}"><path fill="currentColor" d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"></path></svg>
+                        </sc-for>
+                      </div>
+                      <div style="font-size:28px;font-weight:900">Beautiful {{ picName }}!</div>
+                      <div style="font-size:15px;font-weight:700;color:var(--muted)">{{ cCrossLabel }}</div>
+                      <div style="display:flex;gap:10px">
+                        <button onClick="{{ cKeep }}" style="border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:14px;height:52px;padding:0 18px;font-size:15px;font-weight:800">Keep colouring</button>
+                        <button onClick="{{ cNextPic }}" style="border:none;background:var(--accent);color:var(--accentInk);border-radius:14px;height:52px;padding:0 22px;font-size:15px;font-weight:900">Next picture</button>
+                      </div>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+              <div style="width:{{ sideW }};flex:none;display:flex;flex-direction:column;gap:14px">
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+                  <sc-for list="{{ crayons }}" as="c" hint-placeholder-count="12">
+                    <button onClick="{{ c.pick }}" style="height:54px;border:none;border-radius:16px;background:{{ c.hex }};box-shadow:{{ c.ring }};transform:translateY({{ c.y }});transition:all .2s"></button>
+                  </sc-for>
+                </div>
+                <div style="background:var(--surface);border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:800"><span>{{ picName }}</span><span style="color:var(--muted)">{{ cPctLabel }}</span></div>
+                  <div style="height:12px;border-radius:6px;background:var(--surface2);overflow:hidden"><div style="height:100%;width:{{ cPct }};background:var(--good);border-radius:6px;transition:width .3s"></div></div>
+                  <div style="font-size:13px;font-weight:700;color:var(--muted)">Done at 85%. {{ cCrossLabel }}</div>
+                </div>
+                <div style="background:{{ cMsgBg }};border-radius:18px;padding:12px 16px;font-size:16px;font-weight:800;min-height:48px;box-sizing:border-box;transition:background .3s">{{ cMsg }}</div>
+                <div style="display:flex;gap:8px">
+                  <button onClick="{{ cUndo }}" style="flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;height:50px;font-size:15px;font-weight:800">Undo</button>
+                  <button onClick="{{ cClear }}" style="flex:1;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:14px;height:50px;font-size:15px;font-weight:800">Start over</button>
+                </div>
+                <div style="flex:1"></div>
+                <div style="font-size:12px;font-weight:900;letter-spacing:.5px;color:var(--muted)">GALLERY</div>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+                  <sc-for list="{{ gallery }}" as="g" hint-placeholder-count="4">
+                    <button onClick="{{ g.pick }}" style="aspect-ratio:1;border:none;border-radius:14px;background:#fff;padding:6px;box-shadow:{{ g.ring }}">
+                      <div style="width:100%;height:100%;background:{{ g.bgImg }} center / contain no-repeat"></div>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isCalli }}" hint-placeholder-val="{{ false }}">
+            <div style="height:100%;box-sizing:border-box;padding:18px 22px;display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <div style="font-size:24px;font-weight:900;flex:1">Calligraphy strokes</div>
+                <div style="display:flex;gap:3px;background:var(--surface2);border-radius:11px;padding:3px;flex-wrap:wrap">
+                  <sc-for list="{{ patterns }}" as="o" hint-placeholder-count="5">
+                    <button onClick="{{ o.pick }}" style="border:none;background:{{ o.bg }};color:{{ o.color }};border-radius:8px;padding:0 12px;height:38px;font-size:14px;font-weight:800;white-space:nowrap">{{ o.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="flex:1;min-height:0;background:#FFFDF7;border-radius:26px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box">
+                <div style="position:relative;width:100%;max-height:100%;aspect-ratio:5/2">
+                  {{ calliGuide }}
+                  <canvas ref="{{ calliRef }}" width="1000" height="400" onPointerDown="{{ kDown }}" onPointerMove="{{ kMove }}" onPointerUp="{{ kUp }}" onPointerLeave="{{ kUp }}" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="font-size:12px;font-weight:900;color:var(--muted)">NIB</div>
+                  <div style="display:flex;gap:3px;background:var(--surface2);border-radius:10px;padding:3px">
+                    <sc-for list="{{ nibs }}" as="o" hint-placeholder-count="3">
+                      <button onClick="{{ o.pick }}" style="border:none;background:{{ o.bg }};color:{{ o.color }};border-radius:8px;padding:0 12px;height:36px;font-size:13px;font-weight:800">{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="font-size:12px;font-weight:900;color:var(--muted)">INK</div>
+                  <sc-for list="{{ inks }}" as="o" hint-placeholder-count="3">
+                    <button onClick="{{ o.pick }}" style="width:36px;height:36px;border:none;border-radius:50%;background:{{ o.hex }};box-shadow:{{ o.ring }}"></button>
+                  </sc-for>
+                </div>
+                <div style="flex:1;font-size:14px;font-weight:700;color:var(--muted);min-width:200px;text-wrap:pretty">{{ calliTip }}</div>
+                <button onClick="{{ kClear }}" style="border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;height:50px;padding:0 20px;font-size:15px;font-weight:800">Clean page</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ outOfHearts }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;z-index:10;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center">
+              <div style="width:150px;height:150px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;gap:16px"><div style="width:20px;height:64px;border-radius:8px;background:var(--wood)"></div><div style="width:20px;height:64px;border-radius:8px;background:var(--wood)"></div></div>
+              <div style="font-size:40px;font-weight:900">Time for a little break</div>
+              <div style="font-size:18px;font-weight:700;color:var(--muted);max-width:520px">All the hearts are resting. Stretch, have some water, and ask a grown-up to unlock.</div>
+              <button onClick="{{ refillHearts }}" style="border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;height:50px;padding:0 20px;font-size:14px;font-weight:800">Grown-up unlock (demo)</button>
+            </div>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ toastOn }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;left:50%;bottom:24px;transform:translateX(-50%);z-index:30;background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:999px;font-size:15px;font-weight:800;white-space:nowrap">{{ toast }}</div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;direction&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Warm paper&quot;,&quot;Night room&quot;],&quot;default&quot;:&quot;Warm paper&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;orientation&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Landscape&quot;,&quot;Portrait&quot;],&quot;default&quot;:&quot;Landscape&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const THEMES = {
+  warm: {bg:'#F2EBDF',surface:'#FBF7F0',surface2:'#EADFCD',ink:'#2F2520',muted:'#6B5A4E',line:'#E0D3C0',wood:'#6E4630',woodInk:'#F7EFE3',accent:'#B4473A',accentInk:'#FFF8F2',good:'#3F7352',goodBg:'#E3EEDF',bad:'#B4473A',badBg:'#F5E0D9',blue:'#3E5C9A',blueBg:'#E3E8F2',pink:'#B5487A',pinkBg:'#F4E1EA',onApp:'#FFF8F2',shadow:'0 2px 0 rgba(60,40,25,.10),0 10px 28px rgba(60,40,25,.08)'},
+  night: {bg:'#0F1626',surface:'#182238',surface2:'#223050',ink:'#EEE7D8',muted:'#A3AEC4',line:'#2A3856',wood:'#0A101D',woodInk:'#EEE7D8',accent:'#E9B45E',accentInk:'#1B1405',good:'#84C9A4',goodBg:'#16302C',bad:'#EE9A88',badBg:'#33202E',blue:'#8FB0E8',blueBg:'#1D2A47',pink:'#E59AC0',pinkBg:'#33213A',onApp:'#0F1626',shadow:'0 0 0 1px rgba(255,255,255,.04),0 12px 30px rgba(0,0,0,.35)'}
+};
+const MODS = [['cols','Column sums'],['mult','Multiply'],['div','Divide'],['write','Handwriting'],['colour','Colouring'],['calli','Calligraphy']];
+const LEVELS = [['Count on',''],['Make ten',''],['Break ten',''],['Ones first',''],['Tens & ones',''],['Columns',''],['Carry & trade','cols'],['×2 ×5 ×10','mult'],['×3 ×4',''],['Share ÷','div'],['÷ remainder','']];
+const COLP = [{a:59,b:27,op:'+'},{a:84,b:39,op:'−'},{a:63,b:28,op:'−'}];
+const MULP = [[2,5],[3,4],[4,6]];
+const DIVP = [[12,3],[10,2],[14,4]];
+const LETTERS = {
+  c: ['M68 67 C63 61 57 60 50 60 C38 60 30 70 30 80 C30 92 40 100 50 100 C58 100 64 96 68 90'],
+  a: ['M68 67 C63 61 57 60 50 60 C38 60 30 70 30 80 C30 92 40 100 50 100 C60 100 68 92 68 80', 'M68 60 L68 100'],
+  d: ['M68 67 C63 61 57 60 50 60 C38 60 30 70 30 80 C30 92 40 100 50 100 C60 100 68 92 68 80', 'M68 20 L68 100'],
+  l: ['M50 20 L50 92 C50 98 54 101 61 98'],
+  t: ['M48 32 L48 92 C48 98 52 101 60 98', 'M35 60 L62 60'],
+  '2': ['M32 38 C32 26 41 20 50 20 C60 20 68 27 68 38 C68 54 48 72 32 100 L70 100'],
+  '5': ['M38 22 L35 55 C40 50 46 48 53 48 C63 48 70 58 70 72 C70 89 60 100 48 100 C40 100 34 96 31 92', 'M38 22 L66 22']
+};
+const FAMILIES = [['CURLY CATERPILLAR', ['c', 'a', 'd']], ['LONG LADDER', ['l', 't']], ['NUMBERS', ['2', '5']]];
+const PHASES = [['watch', 'Watch', 'The pen shows how'], ['trace', 'Trace', 'Follow the thick line'], ['dotted', 'Dotted', 'Join the dots'], ['own', 'On my own', 'Start at the green dot']];
+const TOL = {Gentle: 12, Normal: 9, Strict: 6.5};
+const PICS = [{file: '03.png', name: 'frog'}, {file: '07.png', name: 'butterfly'}, {file: '01.png', name: 'rocket'}, {file: '09.png', name: 'robot'}];
+const CRAYONS = ['#E0473C','#F08A2E','#F5C933','#8BC34A','#3E9B4F','#5BB8E8','#3B6FD1','#8A5BC7','#EE7FB0','#8B5A3C','#9AA0A6','#2B2B2B'];
+const PATTERNS = {
+  down: {label: 'Downstrokes', tip: 'Pull the pen down. Thick on the way down, thin on the way up.', d: () => Array.from({length: 10}, (_, i) => `M${95 + i * 88} 150 L${83 + i * 88} 290`)},
+  oval: {label: 'Ovals', tip: 'Start at the top and go round to the left, like an o.', d: () => Array.from({length: 6}, (_, i) => { const x = 130 + i * 150; return `M${x} 150 C${x - 58} 150 ${x - 58} 290 ${x} 290 C${x + 58} 290 ${x + 58} 150 ${x} 150`; })},
+  arch: {label: 'Arches', tip: 'Down, back up the same line, then over the hill, like an n.', d: () => Array.from({length: 6}, (_, i) => { const x = 90 + i * 145; return `M${x} 290 L${x} 165 C${x + 10} 140 ${x + 72} 140 ${x + 82} 172 L${x + 82} 290`; })},
+  wave: {label: 'Waves', tip: 'Keep the pen at the same angle and let the wave make thick and thin.', d: () => { let s = 'M60 220'; for (let i = 0; i < 8; i++) { const x = 60 + i * 110; s += ` Q${x + 55} ${i % 2 ? 310 : 130} ${x + 110} 220`; } return [s]; }},
+  free: {label: 'Free page', tip: 'Try your own letters. Hold the pen at the same slant all the time.', d: () => []}
+};
+const INKS = [['#1E1B1A', 'Black'], ['#24407A', 'Ink blue'], ['#7A3E22', 'Sepia']];
+const STAR = 'M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z';
+
+class Component extends DCLogic {
+  state = {
+    theme: this.props.direction === 'Night room' ? 'night' : 'warm',
+    orient: this.props.orientation === 'Portrait' ? 'port' : 'land',
+    scale: .6, scr: (typeof location !== 'undefined' && MODS.some(m => '#' + m[0] === location.hash)) ? location.hash.slice(1) : 'cols',
+    stars: 14, hearts: 5, toast: null,
+    cp: 0, cStep: 'ones', traded: false, ansO: '', ansT: '', carry: false, cMsg: '', cMsgKind: 'info',
+    mp: 1, mRev: 0, mTurned: false, mPick: null, mOk: false,
+    dp: 0, dealt: 0, dPick: null, dOk: false,
+    letter: 'a', phase: 'watch', wT: 0, sIdx: 0, pIdx: 0, inks: [], wMsg: '', wMsgKind: 'info', wDone: false, offs: 0, strict: 'Normal', wShake: 0, curInk: null,
+    picI: 0, crayon: 3, cPct: 0, cross: 0, cFinished: false, cKept: false, cMsgC: 'Pick a crayon and colour inside the lines.', cMsgKindC: 'info', cShake: 0,
+    pattern: 'down', nib: 'M', ink: 0
+  };
+  timers = [];
+  componentDidMount() {
+    this.onResize = () => this.fit(); window.addEventListener('resize', this.onResize);
+    this.fit(); setTimeout(() => this.fit(), 300);
+    const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    s.setAttribute('width', '0'); s.setAttribute('height', '0'); s.style.position = 'absolute'; s.style.visibility = 'hidden';
+    document.body.appendChild(s); this.sampler = s; this.cache = {};
+    this.resetCol(0); this.startWatch();
+  }
+  componentWillUnmount() { window.removeEventListener('resize', this.onResize); clearInterval(this.watchT); clearInterval(this.shareT); this.timers.forEach(clearTimeout); if (this.sampler) this.sampler.remove(); }
+  componentDidUpdate(pp) {
+    if (!pp) return;
+    if (pp.direction !== this.props.direction && this.props.direction) this.setState({theme: this.props.direction === 'Night room' ? 'night' : 'warm'});
+    if (pp.orientation !== this.props.orientation && this.props.orientation) this.setState({orient: this.props.orientation === 'Portrait' ? 'port' : 'land'});
+  }
+  applyVars() {
+    const el = document.documentElement, t = THEMES[this.state.theme];
+    Object.entries(t).forEach(([k, v]) => el.style.setProperty('--' + k, v));
+    el.style.setProperty('--dir', this.state.orient === 'land' ? 'row' : 'column');
+  }
+  dims() { return this.state.orient === 'land' ? [1316, 836] : [836, 1316]; }
+  fit() {
+    const [tw, th] = this.dims(), bh = this.bar ? this.bar.offsetHeight : 90;
+    const s = Math.max(.2, Math.min(1, (window.innerWidth - 32) / tw, (window.innerHeight - bh - 52) / th));
+    if (Math.abs(s - this.state.scale) > .001) this.setState({scale: s});
+  }
+  toastMsg(m) { clearTimeout(this.toastT); this.setState({toast: m}); this.toastT = setTimeout(() => this.setState({toast: null}), 2400); }
+  loseHeart() { this.setState(s => ({hearts: Math.max(0, s.hearts - 1)})); }
+  shake(key) { [8, -8, 6, -6, 3, 0].forEach((v, i) => setTimeout(() => this.setState({[key]: v}), i * 60)); }
+  go(scr) {
+    clearInterval(this.watchT); clearInterval(this.shareT);
+    this.setState({scr});
+    if (scr === 'write') this.setLetter(this.state.letter, 'watch');
+  }
+
+  /* ---------- columns ---------- */
+  resetCol(i) {
+    const p = COLP[i], needTrade = p.op === '−' && p.a % 10 < p.b % 10;
+    this.setState({cp: i, traded: false, ansO: '', ansT: '', carry: false, cStep: needTrade ? 'trade' : 'ones',
+      cMsgKind: 'info', cMsg: needTrade ? `${p.a % 10} take away ${p.b % 10}? Too small. Tap the ${Math.floor(p.a / 10)} to trade 1 ten for 10 ones.` : `Start with the ones: ${p.a % 10} ${p.op === '+' ? '+' : '−'} ${p.b % 10}.`});
+  }
+  doTrade() {
+    const s = this.state; if (s.cStep !== 'trade') return;
+    const p = COLP[s.cp], au = p.a % 10;
+    this.setState({traded: true, cStep: 'ones', cMsgKind: 'info', cMsg: `Good trade! Now it's ${au + 10} take away ${p.b % 10}.`});
+  }
+  colKey(d) {
+    const s = this.state, p = COLP[s.cp], at = Math.floor(p.a / 10), au = p.a % 10, bt = Math.floor(p.b / 10), bu = p.b % 10;
+    if (s.cStep === 'ones') {
+      const sum = au + bu, right = p.op === '+' ? sum % 10 : au + (s.traded ? 10 : 0) - bu;
+      if (d === right) {
+        const carry = p.op === '+' && sum >= 10;
+        this.setState({ansO: String(d), carry, cStep: 'tens', cMsgKind: 'info', cMsg: carry ? `${sum} ones have a ten hiding inside. Write ${d}, carry the 1 to the tens.` : `Now the tens: ${s.traded ? at - 1 : at} ${p.op === '+' ? '+' : '−'} ${bt}.`});
+      } else {
+        let m = `Not quite. Count the ones again: ${p.op === '+' ? au + ' + ' + bu : (au + (s.traded ? 10 : 0)) + ' − ' + bu}.`;
+        if (p.op === '−' && d === bu - au) m = `Careful! It's ${au + 10} take away ${bu}, not ${bu} take away ${au}.`;
+        if (p.op === '+' && d === 1 && sum >= 10) m = `So close! Only the ones digit goes here. The ten goes up to the tens.`;
+        this.setState({cMsgKind: 'bad', cMsg: m}); this.loseHeart();
+      }
+    } else if (s.cStep === 'tens') {
+      const right = p.op === '+' ? at + bt + (s.carry ? 1 : 0) : at - (s.traded ? 1 : 0) - bt;
+      if (d === right) {
+        const res = p.op === '+' ? p.a + p.b : p.a - p.b;
+        this.setState(x => ({ansT: String(d), cStep: 'done', stars: x.stars + 1, cMsgKind: 'good', cMsg: `Great job! ${p.a} ${p.op} ${p.b} = ${res}.`}));
+      } else {
+        let m = `Not quite. Tens: ${p.op === '+' ? at + ' + ' + bt + (s.carry ? ' + 1' : '') : (s.traded ? at - 1 : at) + ' − ' + bt}.`;
+        if (p.op === '−' && s.traded && d === at - bt) m = `Good trade! But that ten came from the ${at}, so it's ${at - 1} now.`;
+        if (p.op === '+' && s.carry && d === at + bt) m = `So close! Don't forget the 1 you carried.`;
+        this.setState({cMsgKind: 'bad', cMsg: m}); this.loseHeart();
+      }
+    }
+  }
+
+  /* ---------- writing ---------- */
+  sample(d) {
+    if (this.cache[d]) return this.cache[d];
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', d); this.sampler.appendChild(p);
+    const L = p.getTotalLength(), n = Math.max(12, Math.round(L / 3.2)), pts = [];
+    for (let i = 0; i <= n; i++) { const q = p.getPointAtLength(L * i / n); pts.push([q.x, q.y]); }
+    p.remove(); return (this.cache[d] = pts);
+  }
+  strokes() { return (LETTERS[this.state.letter] || []).map(d => ({d, pts: this.sampler ? this.sample(d) : []})); }
+  setLetter(letter, phase) {
+    clearInterval(this.watchT);
+    const ph = phase || 'watch';
+    this.setState({letter, phase: ph, sIdx: 0, pIdx: 0, inks: [], curInk: null, offs: 0, wDone: false, wT: 0, wMsgKind: 'info',
+      wMsg: ph === 'watch' ? 'Watch the pen. Start, follow, stop.' : 'Start at the green dot and follow the line.'}, () => { if (ph === 'watch') this.startWatch(); });
+  }
+  startWatch() {
+    clearInterval(this.watchT);
+    if (this.state.scr !== 'write' || this.state.phase !== 'watch') return;
+    this.setState({wT: 0});
+    this.watchT = setInterval(() => {
+      const n = this.strokes().length, t = this.state.wT + 0.025;
+      if (t >= n + 0.4) { clearInterval(this.watchT); this.setState({wT: n, wDone: true, wMsg: 'Your turn! Trace it with your finger.'}); return; }
+      this.setState({wT: t});
+    }, 40);
+  }
+  svgPt(e) { const r = e.currentTarget.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * 100, (e.clientY - r.top) / r.height * 160]; }
+  wDown(e) {
+    const s = this.state; if (s.phase === 'watch' || s.wDone) return;
+    const st = this.strokes()[s.sIdx]; if (!st) return;
+    const p = this.svgPt(e), tol = TOL[s.strict], d0 = Math.hypot(p[0] - st.pts[0][0], p[1] - st.pts[0][1]);
+    if (d0 > tol * 1.6) { this.setState({wMsgKind: 'bad', wMsg: 'Start at the green dot.'}); return; }
+    e.currentTarget.setPointerCapture && e.currentTarget.setPointerCapture(e.pointerId);
+    this.drawing = true; this.offNow = false;
+    this.setState({curInk: [p], pIdx: 0, wMsgKind: 'info', wMsg: 'Follow the line…'});
+  }
+  wMove(e) {
+    if (!this.drawing) return;
+    const s = this.state, st = this.strokes()[s.sIdx], p = this.svgPt(e), tol = TOL[s.strict];
+    let idx = s.pIdx;
+    for (let k = 1; k <= 4 && idx + k < st.pts.length; k++) if (Math.hypot(p[0] - st.pts[idx + k][0], p[1] - st.pts[idx + k][1]) < tol) idx = idx + k;
+    let minD = Infinity; st.pts.forEach(q => { minD = Math.min(minD, Math.hypot(p[0] - q[0], p[1] - q[1])); });
+    const patch = {curInk: (s.curInk || []).concat([p]), pIdx: idx};
+    if (minD > tol * 2.2 && !this.offNow) { this.offNow = true; patch.offs = s.offs + 1; patch.wMsgKind = 'bad'; patch.wMsg = 'Oops, stay on the line.'; this.shake('wShake'); }
+    if (minD <= tol * 1.4) this.offNow = false;
+    this.setState(patch);
+  }
+  wUp() {
+    if (!this.drawing) return; this.drawing = false;
+    const s = this.state, all = this.strokes(), st = all[s.sIdx];
+    if (s.pIdx >= st.pts.length - 3) {
+      const inks = s.inks.concat([s.curInk || []]), next = s.sIdx + 1;
+      if (next >= all.length) {
+        const st3 = s.offs === 0 ? 3 : (s.offs <= 2 ? 2 : 1);
+        this.setState(x => ({inks, curInk: null, sIdx: next, wDone: true, stars: x.stars + 1, wMsgKind: 'good', wMsg: ['', 'Good try! Slow and steady next time.', 'Nice writing!', 'Perfect! Right on the line.'][st3]}));
+      } else this.setState({inks, curInk: null, sIdx: next, pIdx: 0, wMsgKind: 'info', wMsg: `Lovely. Now stroke ${next + 1}: start at the green dot.`});
+    } else this.setState({curInk: null, pIdx: 0, wMsgKind: 'bad', wMsg: 'Keep going all the way to the end of the line.'});
+  }
+  renderWriteSvg() {
+    const s = this.state, h = React.createElement, all = this.strokes(), ph = s.phase;
+    const pts = (arr) => arr.map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' ');
+    const kids = [
+      h('line', {key: 'l1', x1: -20, x2: 120, y1: 20, y2: 20, stroke: 'var(--line)', strokeWidth: 1}),
+      h('line', {key: 'l2', x1: -20, x2: 120, y1: 60, y2: 60, stroke: 'var(--muted)', strokeWidth: .8, strokeDasharray: '3 3', opacity: .6}),
+      h('line', {key: 'l3', x1: -20, x2: 120, y1: 100, y2: 100, stroke: '#D0453A', strokeWidth: 1.4}),
+      h('line', {key: 'l4', x1: -20, x2: 120, y1: 140, y2: 140, stroke: 'var(--line)', strokeWidth: 1})
+    ];
+    all.forEach((st, i) => {
+      if (ph === 'watch' || ph === 'trace') kids.push(h('path', {key: 'g' + i, d: st.d, fill: 'none', stroke: 'var(--surface2)', strokeWidth: ph === 'trace' ? 13 : 9, strokeLinecap: 'round', strokeLinejoin: 'round'}));
+      if (ph === 'dotted') kids.push(h('path', {key: 'g' + i, d: st.d, fill: 'none', stroke: 'var(--muted)', strokeWidth: 3, strokeLinecap: 'round', strokeDasharray: '0.1 6', opacity: .7}));
+    });
+    if (ph === 'watch') {
+      all.forEach((st, i) => {
+        const f = Math.max(0, Math.min(1, s.wT - i)); if (f <= 0) return;
+        const cut = st.pts.slice(0, Math.max(2, Math.round(st.pts.length * f)));
+        kids.push(h('polyline', {key: 'w' + i, points: pts(cut), fill: 'none', stroke: 'var(--accent)', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round'}));
+        if (f < 1) { const q = cut[cut.length - 1]; kids.push(h('circle', {key: 'pen', cx: q[0], cy: q[1], r: 5.5, fill: 'var(--ink)'})); }
+      });
+    } else {
+      s.inks.forEach((ink, i) => kids.push(h('polyline', {key: 'i' + i, points: pts(ink), fill: 'none', stroke: 'var(--blue)', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round'})));
+      if (s.curInk && s.curInk.length > 1) kids.push(h('polyline', {key: 'cur', points: pts(s.curInk), fill: 'none', stroke: 'var(--blue)', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round'}));
+      const st = all[s.sIdx];
+      if (st && !s.wDone) {
+        if (ph === 'trace' && s.pIdx > 0) kids.push(h('polyline', {key: 'prog', points: pts(st.pts.slice(0, s.pIdx + 1)), fill: 'none', stroke: 'var(--good)', strokeWidth: 3, strokeLinecap: 'round', opacity: .55}));
+        const a = st.pts[0], b = st.pts[Math.min(4, st.pts.length - 1)];
+        const ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+        kids.push(h('circle', {key: 'start', cx: a[0], cy: a[1], r: 5, fill: 'var(--good)'}));
+        kids.push(h('text', {key: 'num', x: a[0], y: a[1] + 2.2, textAnchor: 'middle', fontSize: 6, fontWeight: 900, fill: 'var(--onApp)', style: {fontFamily: 'Nunito'}}, String(s.sIdx + 1)));
+        if (ph !== 'own') kids.push(h('path', {key: 'arr', d: `M${a[0] + Math.cos(ang) * 9} ${a[1] + Math.sin(ang) * 9} l${Math.cos(ang + 2.5) * 4} ${Math.sin(ang + 2.5) * 4} M${a[0] + Math.cos(ang) * 9} ${a[1] + Math.sin(ang) * 9} l${Math.cos(ang - 2.5) * 4} ${Math.sin(ang - 2.5) * 4}`, stroke: 'var(--good)', strokeWidth: 2, strokeLinecap: 'round', fill: 'none'}));
+      }
+    }
+    return h('svg', {viewBox: '0 0 100 160', style: {height: '100%', maxHeight: '100%', aspectRatio: '100 / 160', touchAction: 'none', overflow: 'visible', cursor: 'crosshair'},
+      onPointerDown: (e) => this.wDown(e), onPointerMove: (e) => this.wMove(e), onPointerUp: () => this.wUp(), onPointerLeave: () => this.wUp()}, kids);
+  }
+
+  /* ---------- colouring ---------- */
+  colourRef = (el) => { if (el && el !== this.cv) { this.cv = el; this.loadPic(); } if (!el) this.cv = null; };
+  loadPic() {
+    const cv = this.cv; if (!cv) return;
+    const W = 640, pic = PICS[this.state.picI], img = new Image();
+    img.onload = () => {
+      const art = document.createElement('canvas'); art.width = art.height = W;
+      const a = art.getContext('2d'); a.fillStyle = '#fff'; a.fillRect(0, 0, W, W);
+      const sc = Math.min(W / img.width, W / img.height) * .94, w = img.width * sc, hh = img.height * sc;
+      a.drawImage(img, (W - w) / 2, (W - hh) / 2, w, hh);
+      const d = a.getImageData(0, 0, W, W).data, N = W * W, line = new Uint8Array(N);
+      for (let i = 0; i < N; i++) line[i] = (d[i * 4] * .3 + d[i * 4 + 1] * .59 + d[i * 4 + 2] * .11) < 160 ? 1 : 0;
+      const lab = new Int32Array(N).fill(-1), q = new Int32Array(N), sizes = [], border = [];
+      let nl = 0;
+      for (let s0 = 0; s0 < N; s0++) {
+        if (line[s0] || lab[s0] >= 0) continue;
+        let h0 = 0, t = 0, size = 0, touch = false; q[t++] = s0; lab[s0] = nl;
+        while (h0 < t) {
+          const p = q[h0++]; size++; const x = p % W, y = (p / W) | 0;
+          if (x === 0 || y === 0 || x === W - 1 || y === W - 1) touch = true;
+          if (x > 0 && !line[p - 1] && lab[p - 1] < 0) { lab[p - 1] = nl; q[t++] = p - 1; }
+          if (x < W - 1 && !line[p + 1] && lab[p + 1] < 0) { lab[p + 1] = nl; q[t++] = p + 1; }
+          if (y > 0 && !line[p - W] && lab[p - W] < 0) { lab[p - W] = nl; q[t++] = p - W; }
+          if (y < W - 1 && !line[p + W] && lab[p + W] < 0) { lab[p + W] = nl; q[t++] = p + W; }
+        }
+        sizes.push(size); border.push(touch); nl++;
+      }
+      const inside = new Uint8Array(N); let total = 0;
+      for (let i = 0; i < N; i++) { const l = lab[i]; if (l >= 0 && !border[l] && sizes[l] > 60) { inside[i] = 1; total++; } }
+      const red = document.createElement('canvas'); red.width = red.height = W;
+      const rc = red.getContext('2d'), rd = rc.createImageData(W, W);
+      for (let i = 0; i < N; i++) if (line[i]) { rd.data[i * 4] = 222; rd.data[i * 4 + 1] = 60; rd.data[i * 4 + 2] = 50; rd.data[i * 4 + 3] = 255; }
+      rc.putImageData(rd, 0, 0);
+      const paint = cv.getContext('2d').createImageData(W, W); paint.data.fill(255);
+      Object.assign(this, {art, red, lab, inside, total, paint, painted: new Uint8Array(N), count: 0, undo: [], flash: 0});
+      this.setState({cPct: 0, cross: 0, cFinished: false, cKept: false, cMsgC: 'Pick a crayon and colour inside the lines.', cMsgKindC: 'info'});
+      this.drawC();
+    };
+    img.src = 'assets/colour/' + pic.file;
+  }
+  drawC() {
+    if (!this.cv || !this.paint) return;
+    const c = this.cv.getContext('2d');
+    c.globalCompositeOperation = 'source-over'; c.putImageData(this.paint, 0, 0);
+    c.globalCompositeOperation = 'multiply'; c.drawImage(this.art, 0, 0);
+    c.globalCompositeOperation = 'source-over'; if (this.flash) c.drawImage(this.red, 0, 0);
+  }
+  cPos(e) { const r = this.cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) / r.width * 640), Math.round((e.clientY - r.top) / r.height * 640)]; }
+  regionAt(x, y) {
+    const W = 640;
+    for (let rr = 0; rr <= 5; rr++) for (let dy = -rr; dy <= rr; dy++) for (let dx = -rr; dx <= rr; dx++) {
+      const xx = x + dx, yy = y + dy; if (xx < 0 || yy < 0 || xx >= W || yy >= W) continue;
+      const l = this.lab[yy * W + xx]; if (l >= 0) return l;
+    }
+    return -1;
+  }
+  dab(cx, cy) {
+    const W = 640, r = 13 - this.state.picI * 2, P = this.paint.data, hex = CRAYONS[this.state.crayon];
+    const cr = parseInt(hex.slice(1, 3), 16), cg = parseInt(hex.slice(3, 5), 16), cb = parseInt(hex.slice(5, 7), 16), reg = this.reg;
+    for (let y = Math.max(0, cy - r); y <= Math.min(W - 1, cy + r); y++) for (let x = Math.max(0, cx - r); x <= Math.min(W - 1, cx + r); x++) {
+      if ((x - cx) * (x - cx) + (y - cy) * (y - cy) > r * r) continue;
+      const i = y * W + x; if (this.lab[i] !== reg) continue;
+      if (!this.painted[i]) { this.painted[i] = 1; if (this.inside[i]) this.count++; }
+      P[i * 4] = cr; P[i * 4 + 1] = cg; P[i * 4 + 2] = cb;
+    }
+  }
+  cDown(e) {
+    if (!this.paint || this.state.cFinished) return;
+    const [x, y] = this.cPos(e), reg = this.regionAt(x, y); if (reg < 0) return;
+    e.currentTarget.setPointerCapture && e.currentTarget.setPointerCapture(e.pointerId);
+    this.undo.push({d: new Uint8ClampedArray(this.paint.data), m: new Uint8Array(this.painted), c: this.count}); if (this.undo.length > 8) this.undo.shift();
+    this.reg = reg; this.cDraw = true; this.offNow = false; this.last = [x, y]; this.dab(x, y); this.drawC();
+  }
+  cMove(e) {
+    if (!this.cDraw) return;
+    const [x, y] = this.cPos(e), [lx, ly] = this.last, dist = Math.hypot(x - lx, y - ly), steps = Math.max(1, Math.ceil(dist / 4));
+    for (let k = 1; k <= steps; k++) this.dab(Math.round(lx + (x - lx) * k / steps), Math.round(ly + (y - ly) * k / steps));
+    this.last = [x, y];
+    const l = this.lab[y * 640 + x];
+    if (l >= 0 && l !== this.reg && !this.offNow) {
+      this.offNow = true; this.flash = 1; this.shake('cShake');
+      this.setState(s => ({cross: s.cross + 1, cMsgC: 'Oops! Stay inside the lines.', cMsgKindC: 'bad'}));
+      setTimeout(() => { this.flash = 0; this.drawC(); }, 450);
+    } else if (l === this.reg) this.offNow = false;
+    if (!this.raf) this.raf = requestAnimationFrame(() => { this.raf = null; this.drawC(); });
+  }
+  cUp() {
+    if (!this.cDraw) return; this.cDraw = false;
+    const pct = this.total ? Math.min(100, Math.round(this.count / this.total * 100)) : 0;
+    const fin = pct >= 85 && !this.state.cKept && !this.state.cFinished;
+    this.setState(s => ({cPct: pct, cFinished: fin || s.cFinished, stars: fin ? s.stars + 1 : s.stars, cMsgKindC: s.cMsgKindC === 'bad' ? 'bad' : 'info', cMsgC: s.cMsgKindC === 'bad' ? s.cMsgC : (pct > 60 ? 'Nearly there!' : 'Lovely colours.')}));
+    setTimeout(() => this.setState({cMsgKindC: 'info'}), 1500);
+  }
+
+  /* ---------- calligraphy ---------- */
+  calliRef = (el) => { if (el && el !== this.kc) { this.kc = el; } if (!el) this.kc = null; };
+  kPos(e) { const r = this.kc.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * 1000, (e.clientY - r.top) / r.height * 400]; }
+  kDown(e) { if (!this.kc) return; e.currentTarget.setPointerCapture && e.currentTarget.setPointerCapture(e.pointerId); this.kDraw = true; this.kl = this.kPos(e); this.kSeg(this.kl, this.kl); }
+  kSeg(a, b) {
+    const c = this.kc.getContext('2d'), w = {S: 10, M: 18, L: 28}[this.state.nib], ang = 40 * Math.PI / 180;
+    const nx = Math.cos(ang) * w / 2, ny = -Math.sin(ang) * w / 2;
+    c.fillStyle = INKS[this.state.ink][0]; c.globalAlpha = .92;
+    c.beginPath(); c.moveTo(a[0] + nx, a[1] + ny); c.lineTo(b[0] + nx, b[1] + ny); c.lineTo(b[0] - nx, b[1] - ny); c.lineTo(a[0] - nx, a[1] - ny); c.closePath(); c.fill();
+    c.beginPath(); c.moveTo(b[0] + nx, b[1] + ny); c.lineTo(b[0] - nx, b[1] - ny); c.lineWidth = 1.2; c.strokeStyle = c.fillStyle; c.stroke();
+  }
+  kMove(e) { if (!this.kDraw) return; const p = this.kPos(e); this.kSeg(this.kl, p); this.kl = p; }
+  kUp() { this.kDraw = false; }
+  kClear() { if (this.kc) this.kc.getContext('2d').clearRect(0, 0, 1000, 400); }
+  renderGuide() {
+    const h = React.createElement, pat = PATTERNS[this.state.pattern];
+    const kids = [[70, 'var(--line)', 1.5, null], [150, 'var(--blue)', 1.5, '6 6'], [290, 'var(--accent)', 2, null], [360, 'var(--line)', 1.5, null]].map(([y, c, w, da], i) => h('line', {key: 'r' + i, x1: 0, x2: 1000, y1: y, y2: y, stroke: c, strokeWidth: w, strokeDasharray: da || undefined, opacity: .7}));
+    for (let i = 0; i < 14; i++) kids.push(h('line', {key: 's' + i, x1: 20 + i * 75, y1: 360, x2: 20 + i * 75 + 30, y2: 70, stroke: 'var(--line)', strokeWidth: 1, opacity: .5}));
+    pat.d().forEach((d, i) => kids.push(h('path', {key: 'p' + i, d, fill: 'none', stroke: 'var(--muted)', strokeWidth: 3, strokeLinecap: 'round', strokeDasharray: '1 9', opacity: .55})));
+    return h('svg', {viewBox: '0 0 1000 400', preserveAspectRatio: 'none', style: {position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none'}}, kids);
+  }
+
+  renderVals() {
+    const vk = this.state.theme + this.state.orient;
+    if (vk !== this.lastVk) { this.lastVk = vk; this.applyVars(); setTimeout(() => this.fit(), 0); }
+    const s = this.state, land = s.orient === 'land', [tw, th] = this.dims(), sc = s.scr;
+    const chrome = (x) => x ? {bg: '#EDEBE7', color: '#151517'} : {bg: 'transparent', color: '#CFCCC8'};
+    const seg = (x) => x ? {bg: 'var(--surface)', color: 'var(--ink)'} : {bg: 'transparent', color: 'var(--muted)'};
+    const isMath = ['cols', 'mult', 'div'].includes(sc);
+    const app = {cols: ['Maths', 'Level 7 · Carry & trade', 'var(--good)'], mult: ['Maths', 'Level 8 · Times tables (new)', 'var(--good)'], div: ['Maths', 'Level 10 · Sharing (new)', 'var(--good)'],
+      write: ['Writing', 'Year 1 · ' + (FAMILIES.find(f => f[1].includes(s.letter)) || ['Letters'])[0].toLowerCase(), 'var(--blue)'], colour: ['Colouring', 'Picture ' + (s.picI + 1) + ' of 36', 'var(--pink)'], calli: ['Calligraphy', 'Broad-nib basics', 'var(--wood)']}[sc];
+    const curLevel = {cols: 7, mult: s.mp === 0 ? 8 : 9, div: s.dp === 2 ? 11 : 10}[sc] || 0;
+    const out = {
+      barRef: (el) => { this.bar = el; },
+      dirOpts: [['warm', 'A · Warm paper'], ['night', 'B · Night room']].map(([k, l]) => Object.assign({label: l, pick: () => this.setState({theme: k})}, chrome(s.theme === k))),
+      orientOpts: [['land', 'Landscape'], ['port', 'Portrait']].map(([k, l]) => Object.assign({label: l, pick: () => this.setState({orient: k})}, chrome(s.orient === k))),
+      nav: MODS.map(([k, l]) => Object.assign({label: l, pick: () => this.go(k)}, chrome(sc === k))),
+      tw, th, scale: s.scale, fw: Math.round(tw * s.scale), fh: Math.round(th * s.scale),
+      appName: app[0], appSub: app[1], appColor: app[2], stars: s.stars, isMath, showHearts: isMath,
+      hearts: [0, 1, 2, 3, 4].map(i => ({color: i < s.hearts ? 'var(--accent)' : 'var(--line)', sc: i < s.hearts ? 1 : .8})),
+      outOfHearts: isMath && s.hearts <= 0, refillHearts: () => this.setState({hearts: 5}),
+      levels: LEVELS.map(([l], i) => { const n = i + 1, cur = n === curLevel, past = n < curLevel, fut = n >= 8;
+        return {n, label: l, bg: cur ? 'var(--good)' : 'transparent', color: cur ? 'var(--onApp)' : (past ? 'var(--ink)' : 'var(--muted)'),
+          dotBg: cur ? 'var(--onApp)' : (past ? 'var(--good)' : (fut ? 'var(--blueBg)' : 'var(--surface2)')), dotColor: cur ? 'var(--good)' : (past ? 'var(--onApp)' : (fut ? 'var(--blue)' : 'var(--muted)')),
+          ring: !cur && fut ? 'inset 0 0 0 1px var(--blue)' : 'none'}; }),
+      sideW: land ? '340px' : 'auto',
+      isCols: sc === 'cols', isMult: sc === 'mult', isDiv: sc === 'div', isWrite: sc === 'write', isColour: sc === 'colour', isCalli: sc === 'calli',
+      toastOn: !!s.toast, toast: s.toast
+    };
+
+    if (sc === 'cols') {
+      const p = COLP[s.cp], at = Math.floor(p.a / 10), au = p.a % 10, bt = Math.floor(p.b / 10), bu = p.b % 10, st = s.cStep;
+      const needTrade = p.op === '−' && au < bu;
+      Object.assign(out, {
+        colProbs: COLP.map((q, i) => Object.assign({label: `${q.a} ${q.op} ${q.b}`, pick: () => this.resetCol(i)}, seg(i === s.cp))),
+        at, au, bt, bu, op: p.op,
+        smallTens: s.traded ? String(at - 1) : (s.carry ? '1' : ''), smallOp: s.traded || s.carry ? 1 : 0, smallY: s.traded || s.carry ? '0' : '10px',
+        smallColor: s.carry ? 'var(--pink)' : 'var(--blue)', strikeSc: s.traded ? 1 : 0, supW: s.traded ? '20px' : '0px', supOp: s.traded ? 1 : 0,
+        tensTopColor: s.traded ? 'var(--muted)' : 'var(--ink)', tradeRing: st === 'trade' ? '0 0 0 4px var(--blue)' : 'none',
+        onesRing: st === 'ones' ? 'inset 0 0 0 3px var(--pink)' : 'none',
+        ansO: s.ansO, ansT: s.ansT,
+        onesBoxBorder: st === 'ones' ? 'var(--pink)' : (s.ansO ? 'var(--good)' : 'var(--line)'), onesBoxStyle: s.ansO ? 'solid' : 'dashed',
+        tensBoxBorder: st === 'tens' ? 'var(--blue)' : (s.ansT ? 'var(--good)' : 'var(--line)'), tensBoxStyle: s.ansT ? 'solid' : 'dashed',
+        doTrade: () => this.doTrade(),
+        colMsgHead: s.cMsgKind === 'bad' ? 'LET\u2019S LOOK AGAIN' : (s.cMsgKind === 'good' ? 'YAHOO!' : (st === 'trade' ? 'TRADE' : (st === 'ones' ? 'ONES FIRST' : 'TENS'))),
+        colMsg: s.cMsg, colMsgBg: s.cMsgKind === 'bad' ? 'var(--badBg)' : (s.cMsgKind === 'good' ? 'var(--goodBg)' : 'var(--surface)'),
+        colTrading: st === 'trade', colTyping: st === 'ones' || st === 'tens', colDone: st === 'done',
+        keypad: [1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(d => ({label: d, pick: () => this.colKey(d)})),
+        colNext: () => this.resetCol((s.cp + 1) % COLP.length),
+        colSteps: (needTrade ? [['trade', 'Trade 1 ten for 10 ones']] : []).concat([['ones', 'Ones first'], ['tens', 'Then the tens']]).map(([k, t], i, arr) => {
+          const order = arr.map(a => a[0]).concat(['done']), cur = order.indexOf(st), me = order.indexOf(k);
+          return {n: i + 1, text: t, dot: me < cur ? 'var(--good)' : (me === cur ? 'var(--accent)' : 'var(--line)'), color: me <= cur ? 'var(--ink)' : 'var(--muted)'}; })
+      });
+    }
+
+    if (sc === 'mult') {
+      const [a0, b0] = MULP[s.mp], rows = s.mTurned ? b0 : a0, cols = s.mTurned ? a0 : b0, prod = a0 * b0;
+      const rc = ['var(--accent)', 'var(--good)', 'var(--blue)', 'var(--pink)', 'var(--wood)', 'var(--accent)'];
+      const opts = [prod - b0, prod, prod + a0].filter(v => v > 0);
+      const order = s.mp === 1 ? [1, 0, 2] : (s.mp === 2 ? [2, 1, 0] : [0, 2, 1]);
+      Object.assign(out, {
+        mPhrase: `${rows} groups of ${cols}`,
+        mProbs: MULP.map(([x, y], i) => Object.assign({label: `${x} × ${y}`, pick: () => this.setState({mp: i, mRev: 0, mTurned: false, mPick: null, mOk: false})}, seg(i === s.mp))),
+        mDot: cols > 5 ? '34px' : '42px',
+        mRows: Array.from({length: rows}, (_, r) => ({bg: r < s.mRev ? 'var(--surface2)' : 'transparent', c: rc[r % rc.length], op: r < s.mRev ? 1 : 0, x: r < s.mRev ? '0' : '-8px', total: (r + 1) * cols,
+          dots: Array.from({length: cols}, () => ({c: r < s.mRev ? rc[r % rc.length] : 'var(--line)'}))})),
+        mCount: [0].concat(Array.from({length: rows}, (_, r) => (r + 1) * cols)).map((n, i) => ({n, arrow: i ? 'block' : 'none', color: i <= s.mRev ? 'var(--ink)' : 'var(--line)'})),
+        mStepLabel: s.mRev < rows ? `Count by ${cols}s` : 'Count again',
+        mStepFn: () => this.setState(x => ({mRev: x.mRev < rows ? x.mRev + 1 : 0})),
+        mTurn: () => this.setState(x => ({mTurned: !x.mTurned, mRev: x.mOk ? (x.mTurned ? a0 : b0) : 0})),
+        mQ: `${a0} × ${b0}`,
+        mAnswers: order.map(i => opts[i]).filter(v => v != null).map(v => {
+          const picked = s.mPick === v, ok = v === prod;
+          return {label: v, bg: picked ? (ok ? 'var(--good)' : 'var(--badBg)') : 'var(--surface)', color: picked && ok ? 'var(--onApp)' : 'var(--ink)', border: picked ? (ok ? 'var(--good)' : 'var(--bad)') : 'var(--line)',
+            pick: () => { if (this.state.mOk) return; if (ok) this.setState(x => ({mPick: v, mOk: true, mRev: rows, stars: x.stars + 1})); else { this.setState({mPick: v}); this.loseHeart(); } }};
+        }),
+        mMsg: s.mOk ? `Great job! ${a0} × ${b0} = ${prod}.` : (s.mPick != null ? `Not quite. Count by ${cols}s down the rows.` : `How many dots altogether?`),
+        mMsgColor: s.mOk ? 'var(--good)' : (s.mPick != null ? 'var(--bad)' : 'var(--muted)'),
+        mSolved: s.mOk, family: [`${a0} × ${b0} = ${prod}`, `${b0} × ${a0} = ${prod}`, `${prod} ÷ ${a0} = ${b0}`, `${prod} ÷ ${b0} = ${a0}`]
+      });
+    }
+
+    if (sc === 'div') {
+      const [n, g] = DIVP[s.dp], q = Math.floor(n / g), r = n % g, left = n - s.dealt;
+      const fmt = (v) => r ? `${v} r ${r}` : String(v);
+      const opts = [q - 1, q, q + 1];
+      const deal = (k) => { const room = this.state.dealt + k <= n - r ? k : 0; if (room) this.setState(x => ({dealt: x.dealt + 1})); return room; };
+      const shareN = (cnt) => { clearInterval(this.shareT); let k = 0; this.shareT = setInterval(() => { if (k >= cnt || !deal(1)) return clearInterval(this.shareT); k++; }, 220); };
+      Object.assign(out, {
+        dPhrase: `Share ${n} between ${g}`,
+        dProbs: DIVP.map(([x, y], i) => Object.assign({label: `${x} ÷ ${y}`, pick: () => { clearInterval(this.shareT); this.setState({dp: i, dealt: 0, dPick: null, dOk: false}); }}, seg(i === s.dp))),
+        pile: Array.from({length: left}, (_, i) => i),
+        leftover: s.dealt >= n - r && r > 0, leftoverLabel: `${r} left over. Not enough for everyone!`,
+        plates: Array.from({length: g}, (_, i) => { const c = Math.floor(s.dealt / g) + (i < s.dealt % g ? 1 : 0); return {items: Array.from({length: c}, (_, j) => j), count: c}; }),
+        shareOne: () => shareN(g), shareAll: () => shareN(n), shareReset: () => { clearInterval(this.shareT); this.setState({dealt: 0, dPick: null, dOk: false}); },
+        dQ: `${n} ÷ ${g}`,
+        dAnswers: opts.map(v => { const picked = s.dPick === v, ok = v === q;
+          return {label: fmt(v), bg: picked ? (ok ? 'var(--good)' : 'var(--badBg)') : 'var(--surface)', color: picked && ok ? 'var(--onApp)' : 'var(--ink)', border: picked ? (ok ? 'var(--good)' : 'var(--bad)') : 'var(--line)',
+            pick: () => { if (this.state.dOk) return; if (ok) { this.setState(x => ({dPick: v, dOk: true, stars: x.stars + 1})); shareN(n); } else { this.setState({dPick: v}); this.loseHeart(); } }}; }),
+        dMsg: s.dOk ? `Great job! ${n} ÷ ${g} = ${fmt(q)}.` : (s.dPick != null ? 'Not quite. Share them out and count one plate.' : 'Share them out, then count one plate.'),
+        dMsgColor: s.dOk ? 'var(--good)' : (s.dPick != null ? 'var(--bad)' : 'var(--muted)'),
+        dSolved: s.dOk, dCheck: r ? `${g} × ${q} = ${g * q}, + ${r} = ${n}` : `${g} × ${q} = ${n}`
+      });
+    }
+
+    if (sc === 'write') {
+      const pi = PHASES.findIndex(p => p[0] === s.phase);
+      Object.assign(out, {
+        families: FAMILIES.map(([name, ls]) => ({name, letters: ls.map(ch => Object.assign({ch, pick: () => this.setLetter(ch, 'watch')}, ch === s.letter ? {bg: 'var(--blue)', color: 'var(--onApp)'} : {bg: 'var(--surface)', color: 'var(--ink)'}))})),
+        writeSvg: this.sampler ? this.renderWriteSvg() : null, wShake: s.wShake + 'px',
+        phases: PHASES.map(([k, l, note], i) => ({n: i + 1, label: l, note, bg: k === s.phase ? 'var(--surface)' : 'transparent', dot: i < pi ? 'var(--good)' : (i === pi ? 'var(--blue)' : 'var(--line)'), pick: () => this.setLetter(s.letter, k)})),
+        wMsg: s.wMsg, wMsgBg: s.wMsgKind === 'bad' ? 'var(--badBg)' : (s.wMsgKind === 'good' ? 'var(--goodBg)' : 'var(--surface)'),
+        wDone: s.wDone, wAgain: () => this.setLetter(s.letter, s.phase),
+        wNextLabel: pi < 3 ? 'Next: ' + PHASES[pi + 1][1] : 'Next letter',
+        wNext: () => { if (pi < 3) this.setLetter(s.letter, PHASES[pi + 1][0]); else { const all = FAMILIES.flatMap(f => f[1]); this.setLetter(all[(all.indexOf(s.letter) + 1) % all.length], 'watch'); } },
+        strictOpts: Object.keys(TOL).map(k => Object.assign({label: k, pick: () => this.setState({strict: k})}, seg(k === s.strict)))
+      });
+    }
+
+    if (sc === 'colour') {
+      const st3 = s.cross <= 1 ? 3 : (s.cross <= 4 ? 2 : 1);
+      Object.assign(out, {
+        colourRef: this.colourRef, cDown: (e) => this.cDown(e), cMove: (e) => this.cMove(e), cUp: () => this.cUp(), cShake: s.cShake + 'px',
+        crayons: CRAYONS.map((hex, i) => ({hex, ring: i === s.crayon ? '0 0 0 3px var(--surface), 0 0 0 6px ' + hex : 'inset 0 -5px 0 rgba(0,0,0,.18)', y: i === s.crayon ? '-3px' : '0', pick: () => this.setState({crayon: i})})),
+        picName: PICS[s.picI].name, cPct: s.cPct + '%', cPctLabel: s.cPct + '%',
+        cCrossLabel: s.cross === 0 ? 'No line crossings yet.' : `${s.cross} line crossing${s.cross > 1 ? 's' : ''}.`,
+        cMsg: s.cMsgC, cMsgBg: s.cMsgKindC === 'bad' ? 'var(--badBg)' : 'var(--surface)',
+        cUndo: () => { const u = this.undo && this.undo.pop(); if (!u) return; this.paint.data.set(u.d); this.painted = u.m; this.count = u.c; this.drawC(); this.setState({cPct: Math.round(this.count / this.total * 100)}); },
+        cClear: () => this.loadPic(),
+        cFinished: s.cFinished, cStars: [0, 1, 2].map(i => ({c: i < st3 ? 'var(--accent)' : 'var(--line)'})),
+        cKeep: () => this.setState({cFinished: false, cKept: true}),
+        cNextPic: () => this.setState({picI: (s.picI + 1) % PICS.length}, () => this.loadPic()),
+        gallery: PICS.map((p, i) => ({bgImg: "url('assets/colour/" + p.file + "')", name: p.name, ring: i === s.picI ? '0 0 0 3px var(--pink)' : 'inset 0 0 0 1px var(--line)', pick: () => this.setState({picI: i}, () => this.loadPic())}))
+      });
+    }
+
+    if (sc === 'calli') {
+      Object.assign(out, {
+        patterns: Object.keys(PATTERNS).map(k => Object.assign({label: PATTERNS[k].label, pick: () => { this.setState({pattern: k}); this.kClear(); }}, seg(k === s.pattern))),
+        calliGuide: this.renderGuide(), calliRef: this.calliRef, calliTip: PATTERNS[s.pattern].tip,
+        kDown: (e) => this.kDown(e), kMove: (e) => this.kMove(e), kUp: () => this.kUp(), kClear: () => this.kClear(),
+        nibs: [['S', 'Thin'], ['M', 'Medium'], ['L', 'Wide']].map(([k, l]) => Object.assign({label: l, pick: () => this.setState({nib: k})}, seg(k === s.nib))),
+        inks: INKS.map(([hex], i) => ({hex, ring: i === s.ink ? '0 0 0 3px var(--surface), 0 0 0 5px ' + hex : 'none', pick: () => this.setState({ink: i})}))
+      });
+    }
+    return out;
+  }
+}
+</script>
+</body>
+</html>
