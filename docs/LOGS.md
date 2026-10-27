@@ -36,6 +36,7 @@ Every line has `k`, `at` (UTC ISO) and `day` (local "YYYY-MM-DD HH:MM").
 | `level` | Maths level changed: `l` |
 | `write` | One writing try: `d`, `it` (item), `lv`, `r` (round), `ok`, `why`, `pen` |
 | `compare` | One Bigger-or-smaller answer: `st` (picture range: 1 rows, 2 to 20, 3 to 99), `t` (rows, pick, sign, order), `q` (question key), `a` (his answer), `c` (correct), `ok`, `ms` |
+| `concept` | One quick-game answer: `c` (concept id), `w` (0/1 which word), `ok`, `ms`, `ph` (phase 0–3), `teach` (shown, not tested), `at` (piano, colour, compare, menu); or a move break: `move`, `at` |
 | `colour` | One colouring result: `d`, `pic`, `crosses`, `strokes`, `sec`, `pen`, plus stars and memory-game fields |
 | `lock`, `unlock` | Screen-time or mistake lock: `r` (reason), `how` |
 | `earn` | Time earned with maths: `m` |

@@ -579,6 +579,34 @@
   .cmans button:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,.35); }
   .cmmsg { text-align: center; font-size: 22px; font-weight: 800; min-height: 60px; }
   #homeCompare { --edge: #7a3d9c; background: linear-gradient(160deg, #d9a6ff, #8b5cf6 70%); }
+  /* Concepts: quick games that pop up (js/concepts.js) */
+  .concept { position: fixed; inset: 0; z-index: 9; display: none; align-items: center; justify-content: center; background: radial-gradient(ellipse at 20% 0, #4a35a8 0, transparent 55%), rgba(14,12,32,.97); }
+  .concept.open { display: flex; }
+  .cccard { width: min(980px, 96vw); max-height: 96vh; display: flex; flex-direction: column; align-items: center; gap: 14px; color: #fbf8ff; text-align: center; }
+  .cctop { display: flex; align-items: center; gap: 14px; font-size: 22px; color: #ffd86b; }
+  .ccdots { display: flex; gap: 8px; } .ccdots i { width: 16px; height: 16px; border-radius: 50%; background: #ffffff2a; } .ccdots i.now { background: #ffd86b88; } .ccdots i.ok { background: #5fd38f; }
+  .ccagain { border: 0; border-radius: 14px; background: #ffffff1f; color: #fff; font-size: 26px; padding: 4px 14px; }
+  .ccask { font-size: clamp(22px, 4.4vh, 34px); font-weight: 800; line-height: 1.2; max-width: 92vw; }
+  .ccopts { display: flex; gap: 5vw; justify-content: center; align-items: center; min-height: 40vh; }
+  .ccopts button { border: 5px solid transparent; border-radius: 26px; padding: 6px; background: #ffffff14; box-shadow: 0 6px 0 #0006; transition: transform .15s; }
+  .ccopts button .ccsvg { display: block; width: min(42vw, 60vh * 1.33); height: auto; border-radius: 18px; }
+  .ccopts button:active { transform: translateY(4px); }
+  .ccopts button.off, .ccopts .ccopt.off { pointer-events: none; }
+  .ccopts button.glow, .ccopts .ccopt.glow { border-color: #ffd86b; animation: ccglow 1s ease-in-out infinite alternate; }
+  .ccopts .ccopt.glow { animation: ccglowg 1s ease-in-out infinite alternate; }
+  @keyframes ccglow { to { transform: scale(1.06); box-shadow: 0 0 34px #ffd86b; } }
+  @keyframes ccglowg { to { filter: drop-shadow(0 0 10px #ffd86b); } }
+  .ccopts button.yes { border-color: #5fd38f; transform: scale(1.05); } .ccopts button.no { border-color: #ff6b6b; opacity: .6; }
+  .ccopts .ccopt.yes { filter: drop-shadow(0 0 8px #5fd38f) drop-shadow(0 0 8px #5fd38f); }
+  .ccopts.scene .ccsvg { width: min(80vw, 60vh * 1.33); height: auto; border-radius: 22px; }
+  .ccopts.scene .ccopt { cursor: pointer; }
+  .ccopts.sound button { width: min(26vw, 230px); height: min(26vw, 200px); display: flex; flex-direction: column; align-items: center; justify-content: center; font: inherit; color: #1e1b2e; }
+  .ccopts.sound button:nth-child(1) { background: #8fd3ff; } .ccopts.sound button:nth-child(2) { background: #ffc4e1; }
+  .ccopts.sound button b { font-size: 90px; line-height: 1; } .ccopts.sound button small { font-size: 34px; }
+  .ccopts.sound button.lit { transform: scale(1.12); box-shadow: 0 0 40px #ffd86b; border-color: #ffd86b; }
+  .ccopts.move { flex-direction: column; gap: 20px; } .ccmove { font-size: 150px; line-height: 1; animation: bob 1.4s ease-in-out infinite; }
+  .ccgo { border: 0; border-radius: 22px; padding: 14px 40px; font: inherit; font-size: 32px; font-weight: 800; background: #5fd38f; color: #10301f; box-shadow: 0 6px 0 #0006; } .ccgo:disabled { opacity: .4; }
+  .ccdone { font-size: 90px; } .ccmsg { min-height: 1.3em; font-size: clamp(18px, 3.4vh, 26px); font-weight: 700; max-width: 92vw; }
   /* Colouring */
   .colour { position: fixed; left: 10px; right: 10px; top: var(--wtop, 56px); bottom: 10px; z-index: 4; display: none; flex-direction: column; gap: 8px; }
   body.incolour .colour { display: flex; }
@@ -776,6 +804,15 @@
           <button class="set" id="cmStageSet"></button>
           <button class="set" id="cmResetSet"></button>
         </div>
+        <h4>Quick concept games</h4>
+        <div class="mlist">
+          <button class="set" id="ccEverySet"></button>
+          <button class="set" id="ccNumSet"></button>
+          <button class="set" id="ccOtherSet"></button>
+          <button class="set" id="ccMoveSet"></button>
+          <button class="set" id="ccTrySet"></button>
+          <button class="set" id="ccResetSet"></button>
+        </div>
         <h4>When he is stuck</h4>
         <div class="mlist">
           <button class="set" id="rvOn"></button>
@@ -885,6 +922,9 @@
 <div class="write" id="write"><div class="wbar"><div class="wlv" id="wLv"></div><div class="wrow" id="wRow"></div><div class="wdots" id="wDots"></div>
   <button id="wHear" hidden>&#128266;</button><button id="wShow">&#128064; <span></span></button><button id="wClear">&#8634;</button></div>
   <div class="wpad" id="wPad"><canvas id="wBg"></canvas><canvas id="wInk"></canvas></div></div>
+<div class="concept" id="concept"><div class="cccard">
+  <div class="cctop"><b id="ccTitle"></b><div class="ccdots" id="ccDots"></div><button class="ccagain" id="ccAgain" hidden>🔊</button></div>
+  <div class="ccask" id="ccAsk"></div><div class="ccopts" id="ccOpts"></div><div class="ccmsg" id="ccMsg"></div></div></div>
 <div class="compare" id="compare"><div class="wbar"><div class="wlv" id="cmLv"></div><div class="wdots" id="cmDots"></div><div class="wlv" id="cmStars" style="margin-left:auto"></div></div>
   <div class="cmask" id="cmAsk"></div><div class="cmstage" id="cmStage"></div><div class="cmans" id="cmAns"></div><div class="cmmsg" id="cmMsg"></div></div>
 <div class="colour" id="colour"><div class="wbar"><button id="cPics">&#128444;&#65039;</button><button id="cPrev">&#9664;</button><div class="wlv" id="cTitle"></div><div class="cstars" id="cStars"></div><div class="cleft" id="cLeft"></div>
@@ -948,6 +988,7 @@
 
 <script src="js/icons.js"></script>
 <script src="js/compare.js"></script>
+<script src="js/concepts.js"></script>
 <script>
   var PLAYLIST = "PLDVezc1Pgjccf0cePq-4SB1K6NExfYT6x";
   var KEY = "lastLesson";
@@ -1374,6 +1415,7 @@
         var d = day(), n = NN[midi % 12] + (Math.floor(midi / 12) - 1);
         d.nn++; d.ins[ins] = (d.ins[ins] || 0) + 1; d.nt[n] = (d.nt[n] || 0) + 1;
         ses.n++; ses.ins[ins] = (ses.ins[ins] || 0) + 1;
+        if (window.concepts) concepts.note();   // quick concept games pop up after some minutes of playing
       },
       piano: function (on) {                  // Play along opened / closed: one diary line per session
         if (on && !ses.on) ses = { on: true, sec: 0, so: 0, n: 0, ins: {}, t0: new Date().toISOString() };
@@ -2189,6 +2231,10 @@
     window.pianoNat = function (m, on) {
       var el = keysEl.querySelector('[data-m="' + m + '"]'); if (!el) return;
       if (on) { el.classList.add("on"); act.note(m, instrument); flyOn(m); } else { el.classList.remove("on"); flyOff(m); }
+    };
+    window.pianoPlayNote = function (m, vel, ms) {   // the concept games play a note on his own piano sound (high/low, loud/quiet, long/short)
+      noteOn(m, vel); var el = keysEl.querySelector('[data-m="' + m + '"]'); if (el) el.classList.add("on");
+      setTimeout(function () { noteOff(m); if (el) el.classList.remove("on"); }, ms);
     };
     function natCfg() { try { if (window.NPiano) NPiano.cfg(loud / 100, SPACE[space].wet, SPACE[space].w); } catch (e) {} }
     function applySpace() { natCfg(); if (wet) wet.gain.setTargetAtTime(SPACE[space].wet, ctx.currentTime, 0.05); }
@@ -3040,12 +3086,17 @@
     // Level: the old "Numbers up to" setting migrates once (5/10 -> level 1, 20 -> level 2)
     var level = parseInt(get("quizLevel", ""), 10);
     if (!(level >= 1 && level <= MAX_LEVEL)) { level = +get("quizUpTo", "10") >= 20 ? 2 : 1; put("quizLevel", level); }
+    // A ceiling he only passes by being sure: the next level opens after GATE_RUN right first time in a row at the top level
+    // (level 7 frustrated him at level 5-6 skills; the grown-up asked for level 5 max until 100 in a row).
+    var GATE_RUN = 100, cap = clamp(parseInt(get("quizCap", "5"), 10) || 5, 1, MAX_LEVEL), gateRun = +get("quizGateRun", "0") || 0;
+    if (level > cap) { level = cap; put("quizLevel", level); }
     var cfg = { on: get("quizOn", "1") === "1", review: get("quizRepeat", "1") === "1", hint: [0, 20, 30, 45].indexOf(parseInt(get("hintAfter", "20"), 10)) >= 0 ? parseInt(get("hintAfter", "20"), 10) : 20,
                style: /^(test|A|B|C)$/.test(get("hintStyle", "test")) ? get("hintStyle", "test") : "test", every: clamp(+get("quizEvery", "2") || 2, 1, 4), need: clamp(+get("quizNeed", "1") || 1, 1, 3) };
+    Object.defineProperty(cfg, "gate", { enumerable: false, get: function () { return { cap: cap, run: gateRun, need: GATE_RUN }; } });
     Object.defineProperty(cfg, "level", {
       enumerable: true,
       get: function () { return level; },
-      set: function (v) { level = clamp(v, 1, MAX_LEVEL); put("quizLevel", level); act.level(level); run = 0; miss = 0; put("quizRun", 0); put("quizMiss", 0); guard.base(level); }
+      set: function (v) { level = clamp(v, 1, MAX_LEVEL); if (level > cap) { cap = level; put("quizCap", cap); } put("quizLevel", level); act.level(level); run = 0; miss = 0; put("quizRun", 0); put("quizMiss", 0); guard.base(level); }
     });
     var count = +get("quizCount", "1"), open = false, answer = 0, curQ = "", lastQ = "", curA = 0, curB = 0;
     var curPlus = true, curLv = 1, curRv = false, manual = false, earnOnly = false, cont = null, lastPraise = -1, sinceRv = REVIEW_GAP;
@@ -3451,7 +3502,10 @@
         sessRight++; sessMiss = 0; put("quizSessMiss", 0); miss = 0; put("quizMiss", 0);
         var up = false;
         if (!curRv) {                                                // a repeated question never moves the level
-          if (++run >= LEVEL_UP_AFTER && level < MAX_LEVEL) { level++; run = 0; up = true; put("quizLevel", level); act.level(level); }
+          if (level >= cap && cap < MAX_LEVEL) {                    // at the ceiling: count the long run that opens the next level
+            run = 0; if (++gateRun >= GATE_RUN) { cap++; gateRun = 0; level++; up = true; put("quizCap", cap); put("quizLevel", level); act.level(level); }
+            put("quizGateRun", gateRun);
+          } else if (++run >= LEVEL_UP_AFTER && level < Math.min(cap, MAX_LEVEL)) { level++; run = 0; up = true; put("quizLevel", level); act.level(level); }
           put("quizRun", run);
         }
         sound([72, 76, 79, 84], "triangle");
@@ -3478,7 +3532,7 @@
         return;
       }
       // wrong: the screen goes red (or grey), the explanation is shown and spoken, a freeze at least as long as the speech, then a NEW question
-      run = 0; put("quizRun", 0);
+      run = 0; put("quizRun", 0); gateRun = 0; put("quizGateRun", 0);
       sessRight = 0; sessMiss++; put("quizSessMiss", sessMiss);
       if (!curRv && ++miss >= LEVEL_DOWN_AFTER) { miss = 0; if (level > 1) { level--; put("quizLevel", level); act.level(level); } }
       put("quizMiss", miss);
@@ -4400,6 +4454,7 @@
       save();
       logIt({ stars: n, mem: memRes ? memRes.ok + "/" + memRes.n : undefined, peeks: memRes ? peeks : undefined });
       confetti(n === 3 ? 140 : 80); bar();
+      setTimeout(function () { if (window.concepts && document.body.classList.contains("incolour")) concepts.maybe("colour", null, 0.6); }, 9000);
       var say = n === 3 ? pick("s3", [L("Perfect! You stayed inside the lines. Three stars!", "¡Perfecto! No te saliste de las líneas. ¡Tres estrellas!"),
           L("Amazing! So neat. Three stars!", "¡Increíble! Muy limpio. ¡Tres estrellas!"), L("Wow, a careful artist! Three stars!", "¡Qué artista tan cuidadoso! ¡Tres estrellas!")])
         : n === 2 ? pick("s2", [L("Great colouring! Two stars!", "¡Muy bien coloreado! ¡Dos estrellas!"), L("Lovely! Two stars. A bit slower at the lines for three.", "¡Precioso! Dos estrellas. Un poco más despacio en las líneas para tres.")])
@@ -4894,9 +4949,15 @@
       $("qOn").textContent = "Maths quiz: " + (c.on ? "ON" : "OFF");
       $("qEvery").textContent = "Quiz after: every " + (c.every > 1 ? c.every + " lessons" : "lesson");
       $("qNeed").textContent = "Correct answers needed: " + c.need;
-      $("qLevel").textContent = "Level: " + c.level;
+      $("qLevel").textContent = "Level: " + c.level + (c.gate.cap < 7 ? " (level " + (c.gate.cap + 1) + " opens after " + c.gate.need + " right in a row: " + c.gate.run + " of " + c.gate.need + ")" : "");
       $("cmStageSet").textContent = "\u2696\ufe0f Stage: " + compare.stage() + " \u2013 " + compare.stageName(compare.stage()) + " (tap to change)";
       $("cmResetSet").textContent = "Start Bigger or smaller again: " + compare.stars() + " stars so far";
+      $("ccEverySet").textContent = "⏱ A quick game every: " + (concepts.cfg.every ? concepts.cfg.every + " min of piano" : "off");
+      $("ccNumSet").textContent = "Questions each time: " + concepts.cfg.n;
+      $("ccOtherSet").textContent = "Also in colouring and Bigger or smaller: " + (concepts.cfg.other ? "yes" : "no");
+      $("ccMoveSet").textContent = "Move breaks (hands up, touch the floor…): " + (concepts.cfg.move ? "yes" : "no");
+      $("ccTrySet").textContent = "▶ Try one now (learned " + concepts.count() + " of " + concepts.total + ")" + (concepts.current() ? " – learning: " + concepts.current() : "");
+      $("ccResetSet").textContent = "Start the concept games again: " + concepts.stars() + " stars so far";
       $("wLevel").textContent = "✍️ Writing level: " + writing.level() + " – " + writing.levelName() + " (tap to change)";
       $("wTol").textContent = "Letter check: " + writing.strictness();
       var co = colouring.opt();
@@ -4988,6 +5049,12 @@
     $("qLevel").onclick = function () { quiz.cfg.level = cycle([1, 2, 3, 4, 5, 6, 7], quiz.cfg.level); label(); };
     $("cmStageSet").onclick = function () { compare.stage(compare.stage() % compare.max + 1); label(); };
     $("cmResetSet").onclick = function () { compare.reset(); label(); };
+    $("ccEverySet").onclick = function () { var E = concepts.EVERY; concepts.set("every", E[(E.indexOf(concepts.cfg.every) + 1) % E.length]); label(); };
+    $("ccNumSet").onclick = function () { concepts.set("n", concepts.cfg.n % 3 + 1); label(); };
+    $("ccOtherSet").onclick = function () { concepts.set("other", concepts.cfg.other ? 0 : 1); label(); };
+    $("ccMoveSet").onclick = function () { concepts.set("move", concepts.cfg.move ? 0 : 1); label(); };
+    $("ccTrySet").onclick = function () { closeGate(); setTimeout(function () { concepts.show("menu"); }, 300); };
+    $("ccResetSet").onclick = function () { concepts.reset(); label(); };
     $("wLevel").onclick = function () { writing.setLevel(writing.level() % WRITE_LEVELS.length + 1); label(); };
     $("cAdd").onclick = function () { $("cFile").value = ""; $("cFile").click(); };
     $("cFile").onchange = function () { var f = $("cFile").files[0]; if (f) colouring.addOwn(f, function () { $("cAdd").textContent = "Added! Add another picture"; label(); }); };

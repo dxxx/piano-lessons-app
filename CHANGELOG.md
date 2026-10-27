@@ -4,6 +4,15 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.25 — 2026-10-27
+- **Quick concept games while he plays.** After some minutes of real piano playing (default 5), at a pause in his notes, a short game opens: 2 questions, then "Back to the piano!" They teach 20 basic concepts in a research-based order: bigger/smaller, louder/quieter, longer/shorter, higher/lower notes, taller, full/empty, heavier/lighter (see-saw), closer/further, above/below, inside/outside, in front/behind, between, first/last, faster/slower, long/short notes, thicker/thinner, wider/narrower, hot/cold, darker/lighter colour, brighter/dimmer. See [docs/CONCEPTS-TEACHING.md](docs/CONCEPTS-TEACHING.md).
+  - One word of a pair first, shown before it is asked (the right one glows), then the other word, then both mixed; learned only after two different days; learned ones come back after 1, 2, 4, 7, 14 days. A new picture every question; two concepts in play at once.
+  - Sound questions play real notes on his piano sound. A movement break every 4th game (hands up high, touch the floor, clap in front of you). At most 4 games an hour; two misses end the game kindly. Fast right answers get a ⚡.
+  - Also at a break in Colouring and in Bigger or smaller. Menu → Maths → Quick concept games: how often, how many questions, other activities, move breaks, try one now, start again. Diary event `concept`.
+- **Research folder** [research/](research/INDEX.md): seven files (basic concepts, attention and focus, learning science, concepts in pictures, kids' app design, music concepts, UK curriculum map with 127 concept pairs), about 200 sources, with an index by question.
+- **Maths level ceiling**: level 5 is the top for now (level 7 was too hard). Level 6 opens only after 100 right first time in a row at level 5 (a wrong answer starts the count again); the same for 7 after that. A saved level above the ceiling comes down to it. Menu → Maths → Level shows the count.
+- **Bigger or smaller**: every row of things shows its number at the start.
+
 ## 1.24 — 2026-10-27
 - **Fix: piano notes sounding from other screens.** With the grand piano, the app lays a native touch layer over the keys for fast response. It stayed active under the home screen, Colouring, Bigger or smaller and the grown-ups' Menu, so drawing or tapping settings over where the keys sit played notes. Now each key is handed to the native layer only while nothing covers it (checked at the key's own spot, again at once when a screen or the Menu opens), and a touch that lands on no key passes through to the page.
 - **Bigger or smaller is mixed, never blocked**: every stage now interleaves question types and reviews earlier stages, and the same type never comes three times in a row.
