@@ -29,8 +29,8 @@ var compare = (function () {
   function cmpWord(sign) { return sign === "<" ? L("smaller than", "menor que") : sign === ">" ? L("bigger than", "mayor que") : L("the same as", "igual que"); }
 
   // ---- Pictures ----
-  function rowHtml(n, thing) {                              // one row of things in fixed cells, so two rows line up one to one
-    var h = '<div class="cmrow">';
+  function rowHtml(n, thing) {                              // one row of things in fixed cells, so two rows line up one to one;
+    var h = '<div class="cmrow"><b class="cmcount">' + n + "</b>";   // the count first, in a fixed column, so he links the number to the row
     for (var i = 0; i < n; i++) h += "<i>" + thing + "</i>";
     return h + "</div>";
   }
