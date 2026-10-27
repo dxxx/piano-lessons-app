@@ -76,6 +76,10 @@
   body.play aside { padding: 6px; }
   body.play .lesson { margin-bottom: 6px; border-width: 2px; border-radius: 8px; }
   body.play .lesson .num { font-size: 12px; padding: 1px 6px; left: 4px; top: 4px; }
+  .piano .side { flex: none; display: flex; flex-direction: column; gap: 6px; }
+  .piano .side .oct { flex: 1; }
+  .oct.zoom { flex: 0 0 34% !important; font-size: 26px; font-weight: 700; }
+  body.keylock .oct.zoom { display: none; }
   .oct { flex: none; width: 46px; border: 0; border-radius: 12px; background: #2b2742; color: var(--ink); font-size: 20px; }
   .keys-row { position: relative; flex: 1; display: flex; touch-action: none; border-radius: 10px; overflow: hidden;
     background: #000; padding-top: 4px; }
@@ -92,7 +96,7 @@
   #instPop .space > span { color: var(--muted); font-size: 15px; white-space: nowrap; }
   #instPop .space button { flex: 1; padding: 10px 4px; font-size: 15px; }
   #instPop .space button b { display: inline; font-size: 20px; }
-  .wk .c-oct { position: absolute; top: 8px; font-size: 12px; color: #a39fbd; font-weight: 600; }
+  .wk .c-oct { position: absolute; bottom: 38px; font-size: 12px; color: #a39fbd; font-weight: 600; }   /* below the black keys, so zoomed-out keys still show it */
   .vol { display: none; align-items: center; gap: 6px; color: var(--muted); font-size: 15px; margin-left: auto; }
   body.play .vol { display: flex; }
   body.play #playMode { margin-left: 0 !important; }
@@ -576,9 +580,11 @@
       <button class="btn" id="next" disabled>Next &#9654;</button>
     </div>
     <div class="piano" id="piano">
-      <button class="oct" id="octDown" aria-label="Lower octave">&#9664;</button>
+      <div class="side"><button class="oct" id="octDown" aria-label="Lower octave">&#9664;</button>
+        <button class="oct zoom" id="zoomOut" aria-label="Smaller keys, more of them">&minus;</button></div>
       <div class="keys-row" id="keys"></div>
-      <button class="oct" id="octUp" aria-label="Higher octave">&#9654;</button>
+      <div class="side"><button class="oct" id="octUp" aria-label="Higher octave">&#9654;</button>
+        <button class="oct zoom" id="zoomIn" aria-label="Bigger keys">+</button></div>
     </div>
   </section>
   <aside><h2 id="allLessons">All lessons</h2><div id="list"></div></aside>
@@ -642,6 +648,7 @@
           <button class="set" id="pVol"></button>
           <button class="set" id="qSens"></button>
           <button class="set" id="pSnd"></button>
+          <button class="set" id="pZoom"></button>
         </div>
         <div class="note">The loudness limit caps the piano and the game sounds, on top of the tablet's own volume.</div>
       </section>
@@ -1342,7 +1349,27 @@
     var WHITE = [0, 2, 4, 5, 7, 9, 11];
     var keysEl = document.getElementById("keys"), btn = document.getElementById("playMode");
     var volEl = document.getElementById("vol");
-    var base = 48;            // MIDI note of the leftmost C (48 = C3); two octaves + the top C are shown
+    var base = 48;            // MIDI note of the leftmost C (48 = C3)
+    // Key size (zoom, like Synthesia): how many semitones the keyboard shows; fewer = bigger keys. Remembered, with the octave.
+    // A grown-up can lock it (Menu > Piano): the zoom buttons then disappear and the chosen size stays.
+    var SPANS = [12, 19, 24, 31, 36, 48], span = 24, zoomLock = false;
+    try {
+      var sp = parseInt(localStorage.getItem("keySpan"), 10); if (SPANS.indexOf(sp) >= 0) span = sp;
+      var bs = parseInt(localStorage.getItem("keyBase"), 10); if (bs >= 24 && bs % 12 === 0 && bs + span <= 108) base = bs;
+      zoomLock = localStorage.getItem("keyZoomLock") === "1";
+    } catch (e) {}
+    document.body.classList.toggle("keylock", zoomLock);
+    function saveKeys() { try { localStorage.setItem("keySpan", span); localStorage.setItem("keyBase", base); } catch (e) {} }
+    function zoom(dir) {                       // dir -1 = bigger keys (fewer), +1 = smaller keys (more); keeps the middle of the keyboard
+      var i = SPANS.indexOf(span) + dir; if (i < 0 || i >= SPANS.length) return;
+      var mid = base + span / 2; span = SPANS[i];
+      base = Math.max(24, Math.min(108 - span, Math.round((mid - span / 2) / 12) * 12));
+      base -= base % 12; saveKeys(); build();
+    }
+    window.pianoZoomLock = function (next) {
+      if (next) { zoomLock = !zoomLock; try { localStorage.setItem("keyZoomLock", zoomLock ? "1" : "0"); } catch (e) {} document.body.classList.toggle("keylock", zoomLock); }
+      return zoomLock;
+    };
     var ctx = null, master = null, wave = null, organWave = null, pulseWave = null, driveCurve = null, voices = {}, held = {};
     var robotLast = null, robotOffT = -9, glideFrom = null;   // robot voice: previous note, for the portamento
     var instrument = "grand";
@@ -1697,7 +1724,7 @@
       releaseAll();
       keysEl.innerHTML = "";
       var whites = [];
-      for (var m = base; m <= base + 24; m++) if (WHITE.indexOf(m % 12) >= 0) whites.push(m);
+      for (var m = base; m <= base + span; m++) if (WHITE.indexOf(m % 12) >= 0) whites.push(m);
       var w = 100 / whites.length;
       whites.forEach(function (m) {
         var k = document.createElement("div");
@@ -1706,7 +1733,7 @@
         keysEl.appendChild(k);
       });
       whites.forEach(function (m, i) {                       // black key sits on the border after this white key
-        if (m === base + 24 || [4, 11].indexOf(m % 12) >= 0) return;
+        if (m === base + span || [4, 11].indexOf(m % 12) >= 0) return;
         var b = document.createElement("div");
         b.className = "bk"; b.dataset.m = m + 1; b.innerHTML = "<span>" + NAMES[(m + 1) % 12] + "</span>";
         b.style.left = "calc(" + ((i + 1) * w) + "% - " + (w * 0.32) + "%)"; b.style.width = (w * 0.64) + "%";
@@ -1777,8 +1804,10 @@
       if (player && player.setVolume) player.setVolume(document.body.classList.contains("play") ? +volEl.value : 100);
     };
 
-    document.getElementById("octDown").onclick = function () { if (base > 24) { base -= 12; build(); } };
-    document.getElementById("octUp").onclick = function () { if (base < 72) { base += 12; build(); } };
+    document.getElementById("octDown").onclick = function () { if (base > 24) { base -= 12; saveKeys(); build(); } };
+    document.getElementById("octUp").onclick = function () { if (base + span + 12 <= 108) { base += 12; saveKeys(); build(); } };
+    document.getElementById("zoomIn").onclick = function () { zoom(-1); };
+    document.getElementById("zoomOut").onclick = function () { zoom(1); };
     volEl.oninput = function () { if (player && player.setVolume) player.setVolume(+volEl.value); };
 
     function apply(on) {
@@ -4156,6 +4185,7 @@
       $("cLimit").textContent = "Stop the picture after: " + (co.limit ? co.limit + " times over the line" : "Never") + " (then a 1 min rest)";
       $("pVol").textContent = "Loudness limit: " + window.pianoLoud() + " %";
       $("pSnd").textContent = "He can change the sound: " + (window.pianoSndFix() ? "OFF" : "ON");
+      $("pZoom").textContent = "He can change the key size (+ / −): " + (window.pianoZoomLock() ? "OFF (size stays as set)" : "ON");
       $("cClear").textContent = "Remove my own pictures: " + colouring.ownCount(); $("cClear").disabled = !colouring.ownCount();
       $("qEvery").disabled = $("qNeed").disabled = $("qLevel").disabled = !c.on;
     }
@@ -4207,6 +4237,7 @@
     $("hColour").onclick = function () { appMode.toggleShown("colour"); mlabel(); };
     $("pVol").onclick = function () { window.pianoLoud(true); label(); };
     $("pSnd").onclick = function () { window.pianoSndFix(true); label(); };
+    $("pZoom").onclick = function () { window.pianoZoomLock(true); label(); };
     $("wTol").onclick = function () { writing.strictness(true); label(); };
     $("cShake").onclick = function () { colouring.opt("quiet"); label(); };
     $("cAll").onclick = function () { colouring.opt("all"); label(); };
