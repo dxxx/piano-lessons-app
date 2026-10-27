@@ -529,6 +529,50 @@
   @keyframes wshake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
   .home .opts button:nth-child(3) { animation-delay: -3.2s; }
   #homeWrite { --edge: #c2541f; background: linear-gradient(160deg, #ffc36b, #ff7a59 70%); }
+  /* Compare: bigger, smaller, the same */
+  .compare { position: fixed; left: 10px; right: 10px; top: var(--wtop, 56px); bottom: 10px; z-index: 4; display: none; flex-direction: column; gap: 6px; }
+  body.incompare .compare { display: flex; }
+  body.incompare .stage > :not(header), body.incompare aside { display: none !important; }
+  body.incompare header > :not(#lock):not(#homeBtn) { display: none !important; }
+  .cmask { text-align: center; font-size: 26px; font-weight: 800; min-height: 32px; }
+  .cmstage { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+  .cmstage.shake { animation: wshake .35s; }
+  .cmstage .cmpick { width: min(92vw, 900px); border: 3px solid transparent; border-radius: 22px; padding: 6px 14px; background: #ffffff12; font: inherit; color: inherit; text-align: left; }
+  .cmstage .cmpick.ca { border-color: #ff8fb166; } .cmstage .cmpick.cb { border-color: #8fd3ff66; }
+  .cmstage .cmpick:active { background: #ffffff22; }
+  .cmstage .cmpick.win { background: #5fd38f33; border-color: #5fd38f; } .cmstage .cmpick.tie { border-color: var(--accent); }
+  .cmstage .cmpick.no { border-color: #ff6b6b; }
+  .cmrow { display: flex; gap: 0; } .cmrow i { display: inline-block; width: 72px; font-size: 48px; line-height: 1.1; text-align: center; font-style: normal; }
+  .cmeq { display: flex; align-items: center; justify-content: center; gap: 28px; font-size: 96px; font-weight: 900; line-height: 1; }
+  .cmeq .ca { color: #ff8fb1; } .cmeq .cb { color: #8fd3ff; }
+  .cmeq .cq { min-width: 1.1em; text-align: center; border: 4px dashed var(--accent); border-radius: 18px; padding: 0 12px; color: var(--accent); font-size: 72px; line-height: 1.3; }
+  .cmeq .cq.got { border-style: solid; background: #5fd38f33; color: #5fd38f; border-color: #5fd38f; }
+  .cmpics { display: flex; gap: 60px; align-items: flex-end; justify-content: center; }
+  .cmframes { display: flex; gap: 10px; } .cmframe { display: grid; grid-template-columns: repeat(5, 30px); grid-auto-rows: 30px; gap: 2px; padding: 3px; border-radius: 8px; border: 3px solid #e8e4ff; background: #2a2260; }
+  .cmframe i { border-radius: 50%; background: transparent; margin: 3px; } .cmframe i.on { background: #ffe27a; } .cb .cmframe i.on { background: #8fd3ff; } .ca .cmframe i.on { background: #ff8fb1; }
+  .cmblocks { display: flex; align-items: flex-end; gap: 8px; min-height: 160px; }
+  .cmblocks .stick { width: 22px; height: 160px; border-radius: 5px; background: repeating-linear-gradient(#5b7cff 0 13px, #2a2260 13px 16px); border: 2px solid #a9b8ff; }
+  .cmblocks .cubes { display: grid; grid-template-columns: repeat(2, 22px); grid-auto-rows: 22px; gap: 4px; direction: ltr; align-content: end; }
+  .cmblocks .cubes b { border-radius: 4px; background: #ff8fb1; } .cb .cmblocks .cubes b { background: #8fd3ff; }
+  .ca .cmblocks .stick { background: repeating-linear-gradient(#ff8fb1 0 13px, #4a2250 13px 16px); border-color: #ffc4d6; }
+  .cb .cmblocks .stick { background: repeating-linear-gradient(#8fd3ff 0 13px, #1e3a60 13px 16px); border-color: #c8ecff; }
+  .cmwhy { width: min(92vw, 900px); }
+  .cmwhy:empty { display: none; }
+  .cmline { width: 100%; height: auto; display: block; }
+  .cmline circle.ca { fill: #ff8fb1; } .cmline circle.cb { fill: #8fd3ff; } .cmline text.lab.ca { fill: #ff8fb1; } .cmline text.lab.cb { fill: #8fd3ff; }
+  .cmorder { display: flex; gap: 18px; } .cmorder i { width: 120px; height: 96px; border-radius: 20px; border: 4px dashed #ffffff55; font-style: normal; font-size: 54px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+  .cmorder i.on { border-style: solid; border-color: var(--accent); background: #ffffff12; }
+  .cmans { display: flex; justify-content: center; gap: 22px; min-height: 100px; }
+  .cmans button { min-width: 120px; height: 96px; border: 0; border-radius: 22px; font: inherit; font-size: 50px; font-weight: 900; color: #1e1b2e; background: #8fd3ff; box-shadow: 0 5px 0 rgba(0,0,0,.35); padding: 0 18px; }
+  .cmans button:nth-child(2) { background: #b6f09c; } .cmans button:nth-child(3) { background: #ffc4e1; }
+  .cmans button.same { font-size: 30px; background: #ffe27a; }
+  .cmans button.sign { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; gap: 4px; }
+  .cmans button.sign small { font-size: 16px; font-weight: 800; }
+  .cmans button[disabled] { opacity: .5; } .cmans button.used { opacity: .25; }
+  .cmans button.yes { background: var(--accent); transform: scale(1.1); } .cmans button.no { background: #ff6b6b; }
+  .cmans button:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,.35); }
+  .cmmsg { text-align: center; font-size: 22px; font-weight: 800; min-height: 60px; }
+  #homeCompare { --edge: #7a3d9c; background: linear-gradient(160deg, #d9a6ff, #8b5cf6 70%); }
   /* Colouring */
   .colour { position: fixed; left: 10px; right: 10px; top: var(--wtop, 56px); bottom: 10px; z-index: 4; display: none; flex-direction: column; gap: 8px; }
   body.incolour .colour { display: flex; }
@@ -696,6 +740,7 @@
           <button class="set" id="hMath"></button>
           <button class="set" id="hWrite"></button>
           <button class="set" id="hColour"></button>
+          <button class="set" id="hCompare"></button>
         </div>
         <div class="note">A hidden activity is gone from the start screen. At least one always stays.</div>
       </section>
@@ -717,6 +762,11 @@
           <button class="set dep" id="qEvery"></button>
           <button class="set dep" id="qNeed"></button>
           <button class="set dep" id="qLevel"></button>
+        </div>
+        <h4>Bigger or smaller</h4>
+        <div class="mlist">
+          <button class="set" id="cmStageSet"></button>
+          <button class="set" id="cmResetSet"></button>
         </div>
         <h4>When he is stuck</h4>
         <div class="mlist">
@@ -819,10 +869,16 @@
       <path d="M89 112 C55 90 36 72 36 52 C36 38 47 30 59 30 C70 30 80 37 89 48 C98 37 108 30 119 30 C131 30 142 38 142 52 C142 72 123 90 89 112 Z" fill="#ff6fb5" stroke="#2b2160" stroke-width="4"/>
       <path d="M58 50 C62 44 68 42 72 44" stroke="#fff9" stroke-width="5" fill="none" stroke-linecap="round"/>
       <g class="note"><g transform="rotate(-28 160 64)"><rect x="151" y="14" width="20" height="76" rx="4" fill="#4cc9ff"/><rect x="151" y="30" width="20" height="8" fill="#fff6"/>
-      <path d="M151 90 L161 112 L171 90z" fill="#4cc9ff"/><path d="M157 104 L161 112 L165 104z" fill="#2b2160"/></g></g></svg><span></span></button></div></div>
+      <path d="M151 90 L161 112 L171 90z" fill="#4cc9ff"/><path d="M157 104 L161 112 L165 104z" fill="#2b2160"/></g></g></svg><span></span></button><button id="homeCompare"><svg class="art" viewBox="0 0 200 140" aria-hidden="true">
+      <g><rect x="22" y="40" width="44" height="90" rx="10" fill="#ff8fb1"/><rect x="22" y="40" width="44" height="10" rx="5" fill="#fff5"/><text x="44" y="30" font-size="30" font-weight="900" fill="#fff" text-anchor="middle">3</text></g>
+      <g><rect x="134" y="12" width="44" height="118" rx="10" fill="#8fd3ff"/><rect x="134" y="12" width="44" height="10" rx="5" fill="#fff5"/><text x="156" y="8" font-size="0" fill="#fff"></text><text x="156" y="42" font-size="30" font-weight="900" fill="#2b2160" text-anchor="middle">7</text></g>
+      <path d="M78 60 L118 84 L78 108" fill="none" stroke="#ffd86b" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="30" cy="18" r="5" fill="#fff8"/><circle cx="110" cy="24" r="4" fill="#fff8"/><circle cx="120" cy="124" r="3" fill="#fff6"/></svg><span></span></button></div></div>
 <div class="write" id="write"><div class="wbar"><div class="wlv" id="wLv"></div><div class="wrow" id="wRow"></div><div class="wdots" id="wDots"></div>
   <button id="wHear" hidden>&#128266;</button><button id="wShow">&#128064; <span></span></button><button id="wClear">&#8634;</button></div>
   <div class="wpad" id="wPad"><canvas id="wBg"></canvas><canvas id="wInk"></canvas></div></div>
+<div class="compare" id="compare"><div class="wbar"><div class="wlv" id="cmLv"></div><div class="wdots" id="cmDots"></div><div class="wlv" id="cmStars" style="margin-left:auto"></div></div>
+  <div class="cmask" id="cmAsk"></div><div class="cmstage" id="cmStage"></div><div class="cmans" id="cmAns"></div><div class="cmmsg" id="cmMsg"></div></div>
 <div class="colour" id="colour"><div class="wbar"><button id="cPics">&#128444;&#65039;</button><button id="cPrev">&#9664;</button><div class="wlv" id="cTitle"></div><div class="cstars" id="cStars"></div><div class="cleft" id="cLeft"></div>
   <div class="cpal" id="cPal"></div><button id="cPeek" hidden>&#128064;</button><button id="cUndo">&#8630;</button><button id="cNext">&#9654;</button></div>
   <div class="wpad" id="cPad"><canvas id="cPaint"></canvas><canvas id="cModel"></canvas><canvas id="cLive"></canvas><canvas id="cLine"></canvas><div class="cgal" id="cGal" hidden></div>
@@ -883,6 +939,7 @@
 </div>
 
 <script src="js/icons.js"></script>
+<script src="js/compare.js"></script>
 <script>
   var PLAYLIST = "PLDVezc1Pgjccf0cePq-4SB1K6NExfYT6x";
   var KEY = "lastLesson";
@@ -1277,6 +1334,7 @@
         if (document.body.classList.contains("play")) { d.pa += dt; ses.sec += dt; }
         if (document.body.classList.contains("solo")) { d.so = (d.so || 0) + dt; ses.so += dt; }
         if (document.body.classList.contains("math")) d.mt = (d.mt || 0) + dt;   // math-only mode time
+        if (document.body.classList.contains("incompare")) d.cm = (d.cm || 0) + dt;   // Compare time
         if (player && player.getPlayerState && player.getPlayerState() === 1) {
           var vd = player.getVideoData ? player.getVideoData() : null, id = vd && vd.video_id;
           if (id) {
@@ -1333,7 +1391,7 @@
   function save(i) { try { localStorage.setItem(KEY, String(i)); } catch (e) {} }
 
   function onYouTubeIframeAPIReady() {
-    if (player || document.body.classList.contains("math") || document.body.classList.contains("inwrite") || document.body.classList.contains("incolour") || document.body.classList.contains("athome")) return;   // maths, writing, colouring and the start screen never load the videos
+    if (player || document.body.classList.contains("math") || document.body.classList.contains("inwrite") || document.body.classList.contains("incolour") || document.body.classList.contains("incompare") || document.body.classList.contains("athome")) return;   // maths, writing, colouring and the start screen never load the videos
     player = new YT.Player("player", {
       playerVars: {
         listType: "playlist", list: PLAYLIST, index: saved(),
@@ -4416,14 +4474,16 @@
 
   var appMode = (function () {
     var m = "piano", start = "choose", atHome = false, homeEl = document.getElementById("home");
-    try { m = localStorage.getItem("appMode"); if (m !== "math" && m !== "write" && m !== "colour") m = "piano"; var sm = localStorage.getItem("startMode"); if (sm === "piano" || sm === "math" || sm === "write" || sm === "colour") start = sm; } catch (e) {}
+    try { m = localStorage.getItem("appMode"); if (m !== "math" && m !== "write" && m !== "colour" && m !== "compare") m = "piano"; var sm = localStorage.getItem("startMode"); if (sm === "piano" || sm === "math" || sm === "write" || sm === "colour" || sm === "compare") start = sm; } catch (e) {}
     function apply(next) {
       atHome = false; document.body.classList.remove("athome"); homeEl.classList.remove("on");
       m = next;
       try { localStorage.setItem("appMode", m); } catch (e) {}
       document.body.classList.toggle("math", m === "math"); document.body.classList.toggle("inwrite", m === "write"); document.body.classList.toggle("incolour", m === "colour");
+      document.body.classList.toggle("incompare", m === "compare");
       if (m !== "write") writing.stop();
       if (m !== "colour") colouring.stop();
+      if (m !== "compare") compare.stop();
       if (m === "math") {
         if (player && player.pauseVideo) player.pauseVideo();
         quiz.mathStop(); quiz.mathStart();
@@ -4433,6 +4493,9 @@
       } else if (m === "colour") {
         if (player && player.pauseVideo) player.pauseVideo();
         quiz.mathStop(); colouring.start();
+      } else if (m === "compare") {
+        if (player && player.pauseVideo) player.pauseVideo();
+        quiz.mathStop(); compare.start();
       } else {
         quiz.mathStop();
         if (!player && window.YT && YT.Player) onYouTubeIframeAPIReady();   // first time in this run
@@ -4440,14 +4503,14 @@
       }
     }
     function home() {
-      quiz.mathStop(); writing.stop(); colouring.stop(); voice.hush(true);
+      quiz.mathStop(); writing.stop(); colouring.stop(); compare.stop(); voice.hush(true);
       if (player && player.pauseVideo) player.pauseVideo();
-      atHome = true; document.body.classList.remove("math", "inwrite", "incolour"); document.body.classList.add("athome"); homeEl.classList.add("on");
+      atHome = true; document.body.classList.remove("math", "inwrite", "incolour", "incompare"); document.body.classList.add("athome"); homeEl.classList.add("on");
     }
     function fixed() { document.body.classList.toggle("fixedStart", start !== "choose"); }
-    var CARD = { piano: "homePiano", math: "homeMath", write: "homeWrite", colour: "homeColour" }, hide = [];
+    var CARD = { piano: "homePiano", math: "homeMath", write: "homeWrite", colour: "homeColour", compare: "homeCompare" }, hide = [];
     try { hide = JSON.parse(localStorage.getItem("homeHide") || "[]").filter(function (k) { return CARD[k]; }); } catch (e) { hide = []; }
-    if (hide.length > 3) hide = [];
+    if (hide.length > 4) hide = [];
     function cards() { Object.keys(CARD).forEach(function (k) { document.getElementById(CARD[k]).hidden = hide.indexOf(k) >= 0; }); }
     cards();
     onLang(function () {
@@ -4456,23 +4519,26 @@
       document.querySelector("#homeMath span").textContent = L("Maths", "Mates");
       document.querySelector("#homeWrite span").textContent = L("Writing", "Escritura");
       document.querySelector("#homeColour span").textContent = L("Colouring", "Colorear");
+      document.querySelector("#homeCompare span").textContent = L("Bigger or smaller", "Mayor o menor");
     });
     document.getElementById("homePiano").onclick = function () { apply("piano"); };
     document.getElementById("homeMath").onclick = function () { apply("math"); };
     document.getElementById("homeWrite").onclick = function () { apply("write"); };
     document.getElementById("homeColour").onclick = function () { apply("colour"); };
+    document.getElementById("homeCompare").onclick = function () { apply("compare"); };
     document.getElementById("homeBtn").onclick = function () { if (start === "choose" && !(quiz.isOpen() && m !== "math")) home(); };   // never a way out of the quiz between lessons
     fixed();
     return {
       math: function () { return m === "math"; },
       write: function () { return m === "write"; },
       colour: function () { return m === "colour"; },
+      compare: function () { return m === "compare"; },
       home: function () { return atHome; },
       startMode: function () { return start; },
       shown: function (k) { return hide.indexOf(k) < 0; },
       toggleShown: function (k) {                                   // never hides the last one; a hidden fixed start falls back to the choice
         var i = hide.indexOf(k);
-        if (i >= 0) hide.splice(i, 1); else if (hide.length < 3) hide.push(k); else return false;
+        if (i >= 0) hide.splice(i, 1); else if (hide.length < 4) hide.push(k); else return false;
         try { localStorage.setItem("homeHide", JSON.stringify(hide)); } catch (e) {}
         cards();
         if (hide.indexOf(start) >= 0) { start = "choose"; try { localStorage.setItem("startMode", start); } catch (e) {} fixed(); }
@@ -4815,6 +4881,8 @@
       $("qEvery").textContent = "Quiz after: every " + (c.every > 1 ? c.every + " lessons" : "lesson");
       $("qNeed").textContent = "Correct answers needed: " + c.need;
       $("qLevel").textContent = "Level: " + c.level;
+      $("cmStageSet").textContent = "\u2696\ufe0f Stage: " + compare.stage() + " \u2013 " + compare.stageName(compare.stage()) + " (tap to change)";
+      $("cmResetSet").textContent = "Start Bigger or smaller again: " + compare.stars() + " stars so far";
       $("wLevel").textContent = "✍️ Writing level: " + writing.level() + " – " + writing.levelName() + " (tap to change)";
       $("wTol").textContent = "Letter check: " + writing.strictness();
       var co = colouring.opt();
@@ -4841,8 +4909,8 @@
       $("vNote").textContent = voice.note() + (kidName() ? " Corrections and tips start with \u201cHey " + kidName() + ",\u201d and a short pause." : " Add his name and corrections and tips will start with \u201cHey <name>,\u201d.");
     }
     function mlabel() {
-      $("qMode").textContent = "Opens with: " + { choose: "he chooses", piano: "Piano lessons", math: "Maths only", write: "Writing only", colour: "Colouring only" }[appMode.startMode()];
-      [["hPiano", "piano", "Piano lessons"], ["hMath", "math", "Maths"], ["hWrite", "write", "Writing"], ["hColour", "colour", "Colouring"]].forEach(function (x) {
+      $("qMode").textContent = "Opens with: " + { choose: "he chooses", piano: "Piano lessons", math: "Maths only", write: "Writing only", colour: "Colouring only", compare: "Bigger or smaller only" }[appMode.startMode()];
+      [["hPiano", "piano", "Piano lessons"], ["hMath", "math", "Maths"], ["hWrite", "write", "Writing"], ["hColour", "colour", "Colouring"], ["hCompare", "compare", "Bigger or smaller"]].forEach(function (x) {
         $(x[0]).textContent = x[2] + ": " + (appMode.shown(x[1]) ? "ON" : "OFF");
       });
       $("qTry").disabled = appMode.math();
@@ -4880,13 +4948,14 @@
       i.onblur = save; i.onclick = function (e) { e.stopPropagation(); };
     };
     $("qMode").onclick = function () {
-      var order = ["choose", "piano", "math", "write", "colour"].filter(function (k) { return k === "choose" || appMode.shown(k); });
+      var order = ["choose", "piano", "math", "write", "colour", "compare"].filter(function (k) { return k === "choose" || appMode.shown(k); });
       appMode.setStart(order[(order.indexOf(appMode.startMode()) + 1) % order.length]); mlabel();
     };
     $("hPiano").onclick = function () { appMode.toggleShown("piano"); mlabel(); };
     $("hMath").onclick = function () { appMode.toggleShown("math"); mlabel(); };
     $("hWrite").onclick = function () { appMode.toggleShown("write"); mlabel(); };
     $("hColour").onclick = function () { appMode.toggleShown("colour"); mlabel(); };
+    $("hCompare").onclick = function () { appMode.toggleShown("compare"); mlabel(); };
     $("pVol").onclick = function () { window.pianoLoud(true); label(); };
     $("pSnd").onclick = function () { window.pianoSndFix(true); label(); };
     $("pZoom").onclick = function () { window.pianoZoomLock(true); label(); };
@@ -4903,6 +4972,8 @@
     $("qEvery").onclick = function () { quiz.cfg.every = cycle([1, 2, 3, 4], quiz.cfg.every); quiz.save(); label(); };
     $("qNeed").onclick = function () { quiz.cfg.need = cycle([1, 2, 3], quiz.cfg.need); quiz.save(); label(); };
     $("qLevel").onclick = function () { quiz.cfg.level = cycle([1, 2, 3, 4, 5, 6, 7], quiz.cfg.level); label(); };
+    $("cmStageSet").onclick = function () { compare.stage(compare.stage() % compare.max + 1); label(); };
+    $("cmResetSet").onclick = function () { compare.reset(); label(); };
     $("wLevel").onclick = function () { writing.setLevel(writing.level() % WRITE_LEVELS.length + 1); label(); };
     $("cAdd").onclick = function () { $("cFile").value = ""; $("cFile").click(); };
     $("cFile").onchange = function () { var f = $("cFile").files[0]; if (f) colouring.addOwn(f, function () { $("cAdd").textContent = "Added! Add another picture"; label(); }); };

@@ -4,6 +4,14 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.23 — 2026-10-27
+- **New home tile: Bigger or smaller** (the 4th activity next to piano, maths and colouring). Teaches more / fewer / the same and the < = > signs the way UK schools do in Year 1–2 (see [docs/COMPARE-TEACHING.md](docs/COMPARE-TEACHING.md)):
+  - **Stage 1 · Items**: two rows of the same thing lined up one to one, so the extras stick out; tap the row with more (or fewer), or "The same". 4 right in a row moves on.
+  - **Stage 2 · Numbers to 20**: a ? b with a ten-frame under each number; pick < = > (each button also says smaller / the same / bigger). A slip shows both numbers on a number line. 6 in a row moves on.
+  - **Stage 3 · Numbers to 99**: tens-sticks and ones-cubes in each number's colour, with the classic traps (47 vs 42, 36 vs 63, 39 vs 41); now and then three numbers to put in order.
+  - The sign is taught by its shape (the open side faces the bigger number), not the crocodile. Every wrong answer says why in school words, with his name ("Hey Sam, not quite. Tens first: …").
+  - Menu → Maths → Bigger or smaller: set the stage, or start again. Stars and stage are kept on the tablet. Diary event `compare`; time counts in the day's activity.
+
 ## 1.22 — 2026-10-27
 - **Messages with his name**: Menu → Voice & language → **Child's name**. With a name set, corrections and tips start with "Hey Sam," and a short pause, so he knows the message is for him:
   - maths mistake: "Hey Sam, … you said 9. Let's see…"; the first hint: "Hey Sam, … easy trick: make ten! 8 needs 2."; the mini-lesson: "Hey Sam, … look how easy this is."
