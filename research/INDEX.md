@@ -16,6 +16,8 @@ Written 2026-10-27 by seven parallel research agents (web search + reading sourc
 | 06 | [06-music-concepts-and-piano.md](06-music-concepts-and-piano.md) | KS1 music + Model Music Curriculum Y1–2, pitch-direction naming, left-low/right-high on the keyboard, Kodály/Orff/Dalcroze, music and attention (honest) | 10 | 23 | sound questions, piano teaching features |
 | 07 | [07-uk-curriculum-concept-map.md](07-uk-curriculum-concept-map.md) | Every basic concept by end of Year 2 from EYFS + KS1 (maths, science, English, music, art): **master table of 127 concept pairs**, 11 teaching units | 13 | 17 | "what is still missing?", unit order, curriculum wording |
 
+**Audit of what the app actually uses:** [APPLIED.md](APPLIED.md) — all 111 rules: 47 done, 39 partly, 24 not yet (2026-10-27, v1.26).
+
 ## Ask → where
 
 | Question | Look in |
