@@ -5,14 +5,16 @@
 //   - scramble: in the last 2.5 s, 14+ presses, at least 3 in 4 of them on a key not used yet in that stretch, jumping 5+
 //     semitones on average. Music repeats its keys (a tune, broken chords, a bass line); mashing hardly ever does. A scale,
 //     a trill or a slide along the keys moves by 1-2, so they never count either.
+//   - a little fun is fine (operator 2026-10-27: "make this limit x3 bigger, some little fun is ok"): one slam or scramble is
+//     only counted; the pause comes on the 3rd burst within 10 s, i.e. mashing kept up three times as long
 //   - first time: the voice says it ("Hey Sam, slow down. If you want to play, play. If you don't, take a little pause.")
 //     and a tortoise covers the keys for 5 s; again within 10 minutes: 15 s, then 30 s. Ten calm minutes reset it.
 //   - only in Play along / Piano only, never while a game, the Menu, a lock or the eye cover is up
 // Uses hey, voice, diary, coverOn (index.html). Setting: localStorage calmOn ("0" = off), Menu → Piano. Diary event: mash.
 var calm = (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var SLAM_N = 6, SLAM_MS = 250, WIN_MS = 2500, SCR_N = 14, SCR_NEW = 0.75, SCR_JUMP = 5, PAUSES = [5, 15, 30], RESET_MS = 600000;
-  var on = true, hits = [], strikes = 0, lastStrike = 0, until = 0, timer = 0;
+  var SLAM_N = 6, SLAM_MS = 250, WIN_MS = 2500, SCR_N = 14, SCR_NEW = 0.75, SCR_JUMP = 5, PAUSES = [5, 15, 30], RESET_MS = 600000, BURSTS = 3, BURST_MS = 10000;
+  var on = true, hits = [], bursts = [], strikes = 0, lastStrike = 0, until = 0, timer = 0;
   try { on = localStorage.getItem("calmOn") !== "0"; } catch (e) {}
   function L2(en, es) { return window.voice && voice.cfg.lang === "es" ? es : en; }
   function live() {
@@ -37,14 +39,17 @@ var calm = (function () {
     hits.push({ t: now, m: m });
     while (hits.length && now - hits[0].t > WIN_MS) hits.shift();
     var kind = check(now);
-    if (kind) strike(kind, now);
+    if (!kind) return;
+    hits = [];                                              // the next burst needs fresh presses
+    bursts.push(now); while (bursts.length && now - bursts[0] > BURST_MS) bursts.shift();
+    if (bursts.length >= BURSTS) { bursts = []; strike(kind, now); }
   }
   function strike(kind, now) {
-    var n = hits.length; hits = [];
+    var n = BURSTS; hits = [];
     if (now - lastStrike > RESET_MS) strikes = 0;
     var sec = PAUSES[Math.min(strikes, PAUSES.length - 1)];
     strikes++; lastStrike = now; until = now + sec * 1000;
-    if (window.diary) diary.ev("mash", { kind: kind, n: n, strike: strikes, pause: sec });
+    if (window.diary) diary.ev("mash", { kind: kind, bursts: n, strike: strikes, pause: sec });
     if (window.pianoStopAll) pianoStopAll();
     var c = $("calm");
     $("calmMsg").textContent = L2("Slow down", "Más despacio");
@@ -65,6 +70,6 @@ var calm = (function () {
     note: note,
     isOn: function () { return on; },
     set: function (v) { on = !!v; try { localStorage.setItem("calmOn", on ? "1" : "0"); } catch (e) {} },
-    _state: function () { return { hits: hits.length, strikes: strikes, pause: Math.max(0, Math.ceil((until - Date.now()) / 1000)) }; }
+    _state: function () { return { hits: hits.length, bursts: bursts.length, strikes: strikes, pause: Math.max(0, Math.ceil((until - Date.now()) / 1000)) }; }
   };
 })();
