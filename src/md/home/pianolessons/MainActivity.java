@@ -22,6 +22,8 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -120,6 +122,7 @@ public class MainActivity extends Activity {
             public void onEvent(String type, String arg) { jsEye(type, arg); }
         });
         web.addJavascriptInterface(new Eye(), "Eye");
+        web.addJavascriptInterface(new Diary(), "NDiary");
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -392,6 +395,41 @@ public class MainActivity extends Activity {
     }
 
     /** The page's eye-guard calls. */
+    // Permanent logs for the grown-ups: files in /sdcard/Android/data/md.home.pianolessons/files/diary/, read over adb
+    // (adb pull). append() adds one line to a monthly events file and is never trimmed; write() replaces a snapshot file.
+    private class Diary {
+        private File dir() {
+            File d = new File(getExternalFilesDir(null), "diary");
+            if (!d.isDirectory()) d.mkdirs();
+            return d;
+        }
+
+        private boolean okName(String n) { return n != null && n.matches("[A-Za-z0-9_.-]{1,64}"); }
+
+        @JavascriptInterface
+        public synchronized boolean append(String name, String line) {
+            if (!okName(name) || line == null) return false;
+            try (FileOutputStream o = new FileOutputStream(new File(dir(), name), true)) {
+                o.write((line.replace('\n', ' ') + "\n").getBytes("UTF-8"));
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        @JavascriptInterface
+        public synchronized boolean write(String name, String data) {
+            if (!okName(name) || data == null) return false;
+            File tmp = new File(dir(), name + ".tmp"), f = new File(dir(), name);
+            try (FileOutputStream o = new FileOutputStream(tmp)) {
+                o.write(data.getBytes("UTF-8"));
+            } catch (Exception e) {
+                return false;
+            }
+            return tmp.renameTo(f);
+        }
+    }
+
     private class Eye {
         @JavascriptInterface
         public void config(final boolean on, final boolean strict) {

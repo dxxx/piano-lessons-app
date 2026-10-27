@@ -1184,10 +1184,37 @@
   }
   // </pure>
 
+  // ---- Permanent diary for the grown-ups (Java NDiary): files in Android/data/md.home.pianolessons/files/diary/, read with adb pull.
+  // events-YYYY-MM.jsonl: every logged event, one JSON line each, never trimmed. snap-YYYY-MM-DD.json: all in-app records
+  // (every localStorage key), rewritten each minute; one file per day is kept. The app never deletes these files: the Menu's
+  // clear/reset buttons only clear the in-app copy (and take a snapshot first), so old records stay until a grown-up pulls them. ----
+  var diary = (function () {
+    function ok() { return !!(window.NDiary && NDiary.append); }
+    function two(n) { return n < 10 ? "0" + n : "" + n; }
+    function day(d) { return d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()); }
+    function ev(kind, o) {
+      if (!ok()) return;
+      var d = new Date(), e = { k: kind, at: d.toISOString(), day: day(d) + " " + two(d.getHours()) + ":" + two(d.getMinutes()) };
+      if (o) for (var k in o) if (o[k] !== undefined && !(k in e)) e[k] = o[k];
+      try { NDiary.append("events-" + day(d).slice(0, 7) + ".jsonl", JSON.stringify(e)); } catch (x) {}
+    }
+    function snap() {
+      if (!ok()) return;
+      var all = {};
+      try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); all[k] = localStorage.getItem(k); } } catch (x) {}
+      try { NDiary.write("snap-" + day(new Date()) + ".json", JSON.stringify({ at: new Date().toISOString(), ls: all })); } catch (x) {}
+    }
+    setTimeout(snap, 5000); setInterval(snap, 60000);
+    document.addEventListener("visibilitychange", function () { if (document.hidden) snap(); });
+    ev("open", { ua: navigator.userAgent.replace(/.*Android ([\d.]+).*?; ([^)]+)\).*/, "Android $1; $2") });
+    return { ev: ev, snap: snap };
+  })();
+
   // ---- Activity log for the grown-ups (shown behind the PIN). Small aggregate counters in localStorage "actLog",
   // one record per day (no per-note event log); days older than 90 days keep only their totals. ----
   var act = (function () {
     var KEYN = "actLog", D, lastTick = Date.now(), ticks = 0, vid = "", started = false, fin = false;
+    var ses = { on: false, sec: 0, so: 0, n: 0, ins: {} };   // the current Play along session, for the diary
     var NN = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
     function two(n) { return n < 10 ? "0" + n : "" + n; }
     function dkey(d) { return d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()); }
@@ -1213,17 +1240,18 @@
       var now = Date.now(), dt = Math.min((now - lastTick) / 1000, 15); lastTick = now;
       if (!document.hidden && dt > 0) {
         var d = day(); d.s += dt; d.l = hm();
-        if (document.body.classList.contains("play")) d.pa += dt;
+        if (document.body.classList.contains("play")) { d.pa += dt; ses.sec += dt; }
+        if (document.body.classList.contains("solo")) { d.so = (d.so || 0) + dt; ses.so += dt; }
         if (document.body.classList.contains("math")) d.mt = (d.mt || 0) + dt;   // math-only mode time
         if (player && player.getPlayerState && player.getPlayerState() === 1) {
           var vd = player.getVideoData ? player.getVideoData() : null, id = vd && vd.video_id;
           if (id) {
             if (id !== vid) { vid = id; started = false; fin = false; }
             var L = lesson(id, vd.title); if (vd.title) L.t = vd.title;
-            if (!started) { started = true; L.st++; }
+            if (!started) { started = true; L.st++; diary.ev("lesson", { id: id, t: L.t }); }
             L.sec += dt; L.last = new Date().toISOString();
             var dur = player.getDuration(), cur = player.getCurrentTime();
-            if (!fin && dur > 0 && cur / dur >= 0.9) { fin = true; L.fin++; }
+            if (!fin && dur > 0 && cur / dur >= 0.9) { fin = true; L.fin++; diary.ev("lesson_done", { id: id, t: L.t, sec: Math.round(L.sec) }); }
           }
         }
       }
@@ -1245,18 +1273,24 @@
       note: function (midi, ins) {
         var d = day(), n = NN[midi % 12] + (Math.floor(midi / 12) - 1);
         d.nn++; d.ins[ins] = (d.ins[ins] || 0) + 1; d.nt[n] = (d.nt[n] || 0) + 1;
+        ses.n++; ses.ins[ins] = (ses.ins[ins] || 0) + 1;
+      },
+      piano: function (on) {                  // Play along opened / closed: one diary line per session
+        if (on && !ses.on) ses = { on: true, sec: 0, so: 0, n: 0, ins: {}, t0: new Date().toISOString() };
+        else if (!on && ses.on) { ses.on = false; diary.ev("piano", { from: ses.t0, sec: Math.round(ses.sec), solo: Math.round(ses.so), notes: ses.n, sounds: ses.ins }); }
       },
       level: function (l) {
         if (D.lv.length && D.lv[D.lv.length - 1].l === l) return;
+        diary.ev("level", { l: l });
         D.lv.push({ t: new Date().toISOString(), l: l });
         if (D.lv.length > 30) D.lv = D.lv.slice(-30);
         save();
       },
-      tooClose: function () { var d = day(); d.ey = (d.ey || 0) + 1; save(); },
-      lockEv: function (r) { D.lk = (D.lk || []).concat({ t: new Date().toISOString(), r: r, u: "", ut: "" }).slice(-40); save(); },
-      lockEnd: function (how) { var e = D.lk && D.lk[D.lk.length - 1]; if (e && !e.u) { e.u = how; e.ut = new Date().toISOString(); save(); } },
-      earnEv: function (m) { D.er = (D.er || []).concat({ t: new Date().toISOString(), m: m }).slice(-60); save(); },
-      clear: function () { D = { d: {}, les: {}, lv: [] }; newSession(); save(); },
+      tooClose: function () { var d = day(); d.ey = (d.ey || 0) + 1; save(); diary.ev("too_close"); },
+      lockEv: function (r) { diary.ev("lock", { r: r }); D.lk = (D.lk || []).concat({ t: new Date().toISOString(), r: r, u: "", ut: "" }).slice(-40); save(); },
+      lockEnd: function (how) { diary.ev("unlock", { how: how }); var e = D.lk && D.lk[D.lk.length - 1]; if (e && !e.u) { e.u = how; e.ut = new Date().toISOString(); save(); } },
+      earnEv: function (m) { diary.ev("earn", { m: m }); D.er = (D.er || []).concat({ t: new Date().toISOString(), m: m }).slice(-60); save(); },
+      clear: function () { diary.snap(); diary.ev("reset", { what: "activity" }); D = { d: {}, les: {}, lv: [] }; newSession(); save(); },
       key: dkey
     };
   })();
@@ -1937,7 +1971,7 @@
       instrument = id;
       var x = INSTR.filter(function (i) { return i[0] === id; })[0];
       instBtn.innerHTML = x[1] + " " + iname(x);
-      if (save) try { localStorage.setItem("instrument", id); } catch (e) {}
+      if (save) { try { localStorage.setItem("instrument", id); } catch (e) {} diary.ev("sound", { id: id }); }
       if (SETS[id] && document.body.classList.contains("play")) loadSet(id);
       hint();
     }
@@ -2059,6 +2093,7 @@
     var soloBtn = document.getElementById("soloBtn");
     function soloLabel() { soloBtn.innerHTML = document.body.classList.contains("solo") ? "&#127916; " + L("Video", "V\u00eddeo") : "&#127929; " + L("Piano only", "Solo piano"); }
     function setSolo(on) {
+      if (on !== document.body.classList.contains("solo")) diary.ev(on ? "solo_on" : "solo_off");
       document.body.classList.toggle("solo", on);
       soloLabel();
       try { localStorage.setItem("pianoSolo", on ? "1" : "0"); } catch (e) {}
@@ -2092,6 +2127,7 @@
 
     function apply(on) {
       document.body.classList.toggle("play", on);
+      act.piano(on);
       try { if (window.NPiano) { NPiano.active(on); if (!on) natOk = false; } } catch (e) {}
       btn.innerHTML = on ? "&#10005; " + L("Close piano", "Cerrar piano") : "&#127929; " + L("Play along", "Tocar el piano");
       if (!on) { releaseAll(); instPop.classList.remove("open"); if (document.body.classList.contains("solo")) setSolo(false); }
@@ -2993,7 +3029,7 @@
         if (sk) e.sl = sk;
         if (hintFull) e.hs = curHs;
       }
-      log.push(e);
+      log.push(e); diary.ev("quiz", e);
       if (log.length > LOG_MAX) log = log.slice(-LOG_MAX);
       put("quizLog", JSON.stringify(log));
     }
@@ -3157,6 +3193,7 @@
       };
     }
     function clearRecords() {
+      diary.snap(); diary.ev("reset", { what: "quiz" });
       log = []; run = 0; miss = 0; review = []; mastered = { d: "", n: 0 };
       put("quizLog", "[]"); put("quizRun", 0); put("quizMiss", 0); put("quizReview", "[]"); put("quizMastered", "{}");
     }
@@ -3316,6 +3353,7 @@
       var d = new Date(), two = function (n) { return (n < 10 ? "0" : "") + n; };
       log.push({ d: d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()) + " " + two(d.getHours()) + ":" + two(d.getMinutes()),
         it: cur.item, lv: prog.lv, r: prog.r, ok: ok, why: why || "", pen: penUsed });
+      diary.ev("write", log[log.length - 1]);
       if (log.length > 3000) log = log.slice(-3000);
       put("writeLog", JSON.stringify(log));
     }
@@ -4002,7 +4040,7 @@
       var d = new Date(), two = function (v) { return (v < 10 ? "0" : "") + v; }, o = { d: d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()) + " " + two(d.getHours()) + ":" + two(d.getMinutes()),
         pic: pic().en, crosses: crosses, strokes: strokes.length, sec: Math.round((Date.now() - t0) / 1000), pen: penUsed };
       for (var k in x) if (x[k] !== undefined) o[k] = x[k];
-      log.push(o); put("colourLog", JSON.stringify(log.slice(-1000)));
+      log.push(o); diary.ev("colour", o); put("colourLog", JSON.stringify(log.slice(-1000)));
     }
     function starTxt(n) { return "★★★".slice(0, n) + "☆☆☆".slice(n); }
     function bar() {

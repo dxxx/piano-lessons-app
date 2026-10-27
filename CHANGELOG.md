@@ -4,6 +4,13 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.18 — 2026-10-27
+- **Permanent logs**: every record is now also saved in files on the tablet (`Android/data/md.home.pianolessons/files/diary/`). The app never trims or deletes them, and the Menu's clear/reset buttons only clear the in-app copy (a snapshot is taken first), so old records stay until a grown-up pulls them with adb
+  - `events-YYYY-MM.jsonl`: every event as it happens: maths answers, writing tries, colouring results, lessons started and finished, piano sessions (time, Piano only time, notes, sounds used), sound changes, level changes, locks, earned time, eye guard, resets
+  - `snap-YYYY-MM-DD.json`: a full copy of all in-app records, every minute, one file per day
+  - How to read them and what each event means: `docs/LOGS.md`
+- The daily activity now also counts time in Piano only
+
 ## 1.17 — 2026-10-27
 - **41 more sounds, 72 in all**, all on one screen:
   - Keys: 🤠 Honky-tonk, 👑 Harpsichord, 🕺 Funky clav, ✨ Celesta, 💎 Vibraphone, 🪗 Accordion
