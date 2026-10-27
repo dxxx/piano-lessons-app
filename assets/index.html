@@ -3158,8 +3158,10 @@
     var level = parseInt(get("quizLevel", ""), 10);
     if (!(level >= 1 && level <= MAX_LEVEL)) { level = +get("quizUpTo", "10") >= 20 ? 2 : 1; put("quizLevel", level); }
     // A ceiling he only passes by being sure: the next level opens after GATE_RUN right first time in a row at the top level
-    // (level 7 frustrated him at level 5-6 skills; the grown-up asked for level 5 max until 100 in a row).
-    var GATE_RUN = 100, cap = clamp(parseInt(get("quizCap", "5"), 10) || 5, 1, MAX_LEVEL), gateRun = +get("quizGateRun", "0") || 0;
+    // without any hint (level 7 frustrated him, then level 5 was still hard: the grown-up set level 4 as the top,
+    // and level 5 opens only after 100 right in a row with no hint; a wrong answer or a hint starts the count again).
+    var GATE_RUN = 100, cap = clamp(parseInt(get("quizCap", "4"), 10) || 4, 1, MAX_LEVEL), gateRun = +get("quizGateRun", "0") || 0;
+    if (get("quizCapV", "") !== "2") { cap = Math.min(cap, 4); gateRun = 0; put("quizCap", cap); put("quizGateRun", 0); put("quizCapV", "2"); }   // one-time: 1.25's top of 5 -> 4
     if (level > cap) { level = cap; put("quizLevel", level); }
     var cfg = { on: get("quizOn", "1") === "1", review: get("quizRepeat", "1") === "1", hint: [0, 20, 30, 45].indexOf(parseInt(get("hintAfter", "20"), 10)) >= 0 ? parseInt(get("hintAfter", "20"), 10) : 20,
                style: /^(test|A|B|C)$/.test(get("hintStyle", "test")) ? get("hintStyle", "test") : "test", every: clamp(+get("quizEvery", "2") || 2, 1, 4), need: clamp(+get("quizNeed", "1") || 1, 1, 3) };
@@ -3574,7 +3576,8 @@
         var up = false;
         if (!curRv) {                                                // a repeated question never moves the level
           if (level >= cap && cap < MAX_LEVEL) {                    // at the ceiling: count the long run that opens the next level
-            run = 0; if (++gateRun >= GATE_RUN) { cap++; gateRun = 0; level++; up = true; put("quizCap", cap); put("quizLevel", level); act.level(level); }
+            run = 0; if (hinted) gateRun = 0;                        // right with a hint: does not count, the run starts again
+            else if (++gateRun >= GATE_RUN) { cap++; gateRun = 0; level++; up = true; put("quizCap", cap); put("quizLevel", level); act.level(level); }
             put("quizGateRun", gateRun);
           } else if (++run >= LEVEL_UP_AFTER && level < Math.min(cap, MAX_LEVEL)) { level++; run = 0; up = true; put("quizLevel", level); act.level(level); }
           put("quizRun", run);
@@ -5020,7 +5023,7 @@
       $("qOn").textContent = "Maths quiz: " + (c.on ? "ON" : "OFF");
       $("qEvery").textContent = "Quiz after: every " + (c.every > 1 ? c.every + " lessons" : "lesson");
       $("qNeed").textContent = "Correct answers needed: " + c.need;
-      $("qLevel").textContent = "Level: " + c.level + (c.gate.cap < 7 ? " (level " + (c.gate.cap + 1) + " opens after " + c.gate.need + " right in a row: " + c.gate.run + " of " + c.gate.need + ")" : "");
+      $("qLevel").textContent = "Level: " + c.level + (c.gate.cap < 7 ? " (level " + (c.gate.cap + 1) + " opens after " + c.gate.need + " right in a row with no hint: " + c.gate.run + " of " + c.gate.need + ")" : "");
       $("cmStageSet").textContent = "\u2696\ufe0f Stage: " + compare.stage() + " \u2013 " + compare.stageName(compare.stage()) + " (tap to change)";
       $("cmResetSet").textContent = "Start Bigger or smaller again: " + compare.stars() + " stars so far";
       $("ccEverySet").textContent = "⏱ A quick game every: " + (concepts.cfg.every ? concepts.cfg.every + " min of piano" : "off");
