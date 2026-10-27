@@ -118,6 +118,13 @@
   body.big aside { padding: 6px; }
   body.big .lesson { margin-bottom: 6px; border-width: 2px; border-radius: 8px; }
   body.big .lesson .num { font-size: 12px; padding: 1px 6px; left: 4px; top: 4px; }
+  /* Play along: the piano runs the full width, under the video AND the lesson strip; the strip only sits beside the video */
+  body.play .app { grid-template-rows: auto minmax(0, 1fr) auto; }
+  body.play .stage { display: contents; }
+  body.play header { grid-column: 1; grid-row: 1; }
+  body.play .player-wrap { grid-column: 1; grid-row: 2; min-height: 0; }
+  body.play aside { grid-column: 2; grid-row: 1 / 3; min-height: 0; }
+  body.play .piano { grid-column: 1 / -1; grid-row: 3; }
   header .lock { border: 0; border-radius: 10px; background: #2b2742; color: var(--muted);
     font-size: 15px; padding: 8px 14px; }
   .gate .q { font-size: 22px; font-weight: 700; margin: 8px 0 14px; }
