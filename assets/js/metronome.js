@@ -20,7 +20,10 @@ var beat = (function () {
 
   var on = false, timer = null, nextT = 0, count = 0, queue = [], heard = [], ses = null, raf = 0;
   function ac() { return window.pianoAudio ? window.pianoAudio() : null; }
-  function solo() { return document.body.classList.contains("solo") && document.body.classList.contains("play"); }
+  function solo() {                                         // the Piano only screen itself (body keeps "solo" under home, maths, colouring...)
+    var b = document.body.classList;
+    return b.contains("solo") && b.contains("play") && !b.contains("athome") && !b.contains("math") && !b.contains("inwrite") && !b.contains("incolour") && !b.contains("incompare");
+  }
   function resting() { return document.body.classList.contains("inconcept") || document.hidden || (window.coverOn && coverOn()); }   // a game, the Menu, the quiz, the lock...
 
   // ---- Sound: a short wood-block "tock" (a falling sine plus a click of noise); beat 1 is higher ----
@@ -47,7 +50,7 @@ var beat = (function () {
     while (nextT < c.currentTime + 0.12) {
       var b = count % cfg.beats;
       click(nextT, b === 0);
-      queue.push({ t: nextT, b: b }); heard.push(nextT); if (heard.length > 8) heard.shift();
+      queue.push({ t: nextT, b: b }); heard.push({ t: nextT, b: b }); if (heard.length > 8) heard.shift();
       nextT += gap; count++;
     }
   }
@@ -65,12 +68,13 @@ var beat = (function () {
   function note() {
     if (!on || !ses || resting()) return;
     var c = ac(); if (!c) return;
-    var t = c.currentTime, best = 9;
-    for (var i = 0; i < heard.length; i++) best = Math.min(best, Math.abs(t - heard[i]));
+    var t = c.currentTime, best = 9, bb = -1;
+    for (var i = 0; i < heard.length; i++) { var g = Math.abs(t - heard[i].t); if (g < best) { best = g; bb = heard[i].b; } }
     ses.notes++;
     if (best < 0.12) {
       ses.hits++;
-      var dots = $("beatDots").children, d = dots[cur]; if (d) { d.classList.remove("hit"); void d.offsetWidth; d.classList.add("hit"); }
+      var d = $("beatDots").children[bb];                  // ring the beat he hit (it may be the one just coming), for a moment only
+      if (d) { clearTimeout(d._hitT); d.classList.add("hit"); d._hitT = setTimeout(function () { d.classList.remove("hit"); }, Math.min(400, 48000 / cfg.bpm)); }
       $("beatHits").textContent = "🎯 " + ses.hits;
     }
   }
