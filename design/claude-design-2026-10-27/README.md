@@ -46,3 +46,6 @@ The app already has the four tricks (Count on/back, Make ten, Ones first, Tens a
 ## Design ideas outside maths
 
 See `DESIGN-NOTES.md`: five-tile home with progress, a splash per app, a big edge-to-edge piano, line icons instead of emoji on buttons, school-lined handwriting in 4 steps, colouring with 12 crayons and a progress bar, a new calligraphy module, and a grown-ups Menu grouped into cards.
+
+## Not yet in the app: "Follow the keys" (prototype Piano tab, screen `A-app-07-piano.png`)
+Noted 2026-10-27 at the operator's request. The prototype's Piano tab shows the lesson's notes as a row of letter tiles (C D E D C E F G); the current note is red and a red dot sits on the key to press. He plays the note himself, then the next tile lights. This is the reverse of the video lessons: the app waits for him, note by note, instead of him copying a video. Research fit: 06 R9–R12 (answer on the keyboard, notes from his song, copy-back), 01/03 errorless start. Not built yet.
