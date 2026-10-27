@@ -124,3 +124,5 @@ and served to the page by the WebView (no network needed).
 Grand piano samples: Salamander Grand Piano by Alexander Holm, CC-BY 3.0.
 Synth pads: FluidR3_GM soundfont by Frank Wen, MIT licence (per-note renders from gleitz/midi-js-soundfonts; that
 project's README labels the renders CC-BY 3.0, so credit is given here either way).
+Lead, synth bass, voice, sci-fi, guitars, sax, trumpet, marimba, steel drums, violin, strings, flute, harp, kalimba and bells:
+MusyngKite soundfont renders from gleitz/midi-js-soundfonts, CC-BY-SA 3.0 (these sample files stay under that licence).

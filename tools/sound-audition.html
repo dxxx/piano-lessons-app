@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sound Audition</title>
+<style>
+  :root { --bg: #14122b; --card: #211d44; --ink: #f1eefc; --mute: #a39fbd; --acc: #ffc24b; --on: #3da5ff; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.4 system-ui, sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { margin: 0 0 4px; font-size: 24px; }
+  p { color: var(--mute); margin: 4px 0 16px; }
+  h2 { font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--acc); margin: 26px 0 8px; }
+  .row { display: grid; grid-template-columns: 210px repeat(3, 1fr) 70px; gap: 8px; align-items: center; background: var(--card);
+         border-radius: 12px; padding: 8px 10px; margin-bottom: 6px; }
+  .row b { font-weight: 600; }
+  .row small { display: block; color: var(--mute); font-size: 12px; }
+  button { background: #2f2a5e; color: var(--ink); border: 1px solid #443d80; border-radius: 9px; padding: 9px 6px; font: inherit; cursor: pointer; }
+  button:hover { border-color: var(--on); }
+  button.playing { background: var(--on); color: #0b0a1a; }
+  button.miss { opacity: .35; cursor: default; }
+  button.pick { background: var(--acc); color: #1a1400; border-color: var(--acc); }
+  .star { padding: 9px 0; }
+  #picks { position: sticky; bottom: 0; background: #0d0c1f; border-top: 1px solid #333; padding: 10px 16px; font-size: 13px; color: var(--mute); }
+  #picks code { color: var(--acc); }
+  @media (max-width: 700px) { .row { grid-template-columns: 1fr 1fr 1fr; } .row > div:first-child { grid-column: 1 / -1; } .star { grid-column: 1 / -1; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sound audition</h1>
+  <p>Each button plays a short phrase with real recorded notes. Three free sound sets: <b>FluidR3</b> (MIT / CC-BY, what our pads already use),
+     <b>MusyngKite</b> (CC-BY-SA, bigger and richer), <b>FatBoy</b> (CC-BY-SA, punchy). Tap ⭐ on the version you like; the picks list at the bottom is what I build into the app.
+     Grand piano and soft piano are not on this page: they stay as they are.</p>
+  <div id="list"></div>
+</main>
+<div id="picks">Picks: <span id="pickTxt">none yet</span></div>
+<script>
+var BASE = "https://gleitz.github.io/midi-js-soundfonts/";
+var SETS = ["FluidR3_GM", "MusyngKite", "FatBoy"], SETL = ["FluidR3", "MusyngKite", "FatBoy"];
+// phrases: [note, start beat, length beats]
+var MEL = [["C4",0,1],["E4",1,1],["G4",2,1],["C5",3,2],["G4",5,1],["A4",6,2]];
+var BASS = [["C2",0,1.5],["C2",1.5,0.5],["G2",2,1],["A2",3,1],["F2",4,1.5],["F2",5.5,0.5],["G2",6,2]];
+var CHORD = [["C4",0,4],["E4",0,4],["G4",0,4],["A3",4,4],["C4",4,4],["E4",4,4]];
+var GROUPS = [
+  ["Replace: Synth lead", [["lead_2_sawtooth","Saw lead",MEL],["lead_1_square","Square lead",MEL],["lead_8_bass__lead","Bass + lead",MEL],["synth_brass_1","Synth brass",MEL]]],
+  ["Replace: Bass", [["synth_bass_1","Synth bass 1",BASS],["synth_bass_2","Synth bass 2",BASS],["electric_bass_finger","Electric bass",BASS],["slap_bass_1","Slap bass",BASS],["acoustic_bass","Double bass",BASS]]],
+  ["Replace: Robot voice", [["lead_6_voice","Voice lead",MEL],["voice_oohs","Voice oohs",MEL],["synth_choir","Synth voice",MEL]]],
+  ["New: strings and guitars", [["violin","Violin",MEL],["string_ensemble_1","Strings",CHORD],["pizzicato_strings","Pizzicato",MEL],["acoustic_guitar_nylon","Guitar",MEL],["electric_guitar_clean","Electric guitar",MEL],["overdriven_guitar","Rock guitar",MEL],["orchestral_harp","Harp",MEL]]],
+  ["New: wind and brass", [["flute","Flute",MEL],["pan_flute","Pan flute",MEL],["ocarina","Ocarina",MEL],["recorder","Recorder",MEL],["trumpet","Trumpet",MEL],["alto_sax","Saxophone",MEL],["harmonica","Harmonica",MEL]]],
+  ["New: fun and bells", [["kalimba","Kalimba",MEL],["marimba","Marimba",MEL],["vibraphone","Vibraphone",MEL],["steel_drums","Steel drums",MEL],["glockenspiel","Glockenspiel",MEL],["celesta","Celesta",MEL],["tubular_bells","Bells",MEL],["accordion","Accordion",MEL],["fx_3_crystal","Crystal (FX)",MEL],["fx_8_scifi","Sci-fi (FX)",MEL]]],
+  ["Compare: what we have now", [["xylophone","Xylophone",MEL],["music_box","Music box",MEL],["electric_piano_1","Electric piano",CHORD],["drawbar_organ","Organ",CHORD],["pad_2_warm","Warm pad",CHORD]]]
+];
+var ac = null, cache = {}, picks = {}, playing = null;
+try { picks = JSON.parse(localStorage.getItem("auditionPicks") || "{}"); } catch (e) {}
+function ctx() { if (!ac) ac = new AudioContext(); if (ac.state === "suspended") ac.resume(); return ac; }
+function load(set, inst, n) {
+  var u = BASE + set + "/" + inst + "-mp3/" + n + ".mp3";
+  if (!cache[u]) cache[u] = fetch(u).then(function (r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+                                    .then(function (b) { return ctx().decodeAudioData(b); });
+  return cache[u];
+}
+function play(btn, set, inst, phrase) {
+  if (btn.classList.contains("miss")) return;
+  if (playing) { playing.g.gain.setTargetAtTime(0, ac.currentTime, 0.05); playing.b.classList.remove("playing"); }
+  btn.classList.add("playing");
+  var bpm = phrase === CHORD ? 70 : 110, beat = 60 / bpm;
+  Promise.all(phrase.map(function (p) { return load(set, inst, p[0]); })).then(function (bufs) {
+    var c = ctx(), g = c.createGain(), t0 = c.currentTime + 0.05, end = 0; g.connect(c.destination); g.gain.value = 0.8;
+    playing = { g: g, b: btn };
+    phrase.forEach(function (p, i) {
+      var s = c.createBufferSource(), e = c.createGain(), t = t0 + p[1] * beat, d = p[2] * beat;
+      s.buffer = bufs[i]; s.connect(e); e.connect(g);
+      e.gain.setValueAtTime(1, t); e.gain.setTargetAtTime(0, t + d, 0.12);
+      s.start(t); s.stop(t + d + 1); end = Math.max(end, p[1] + p[2]);
+    });
+    setTimeout(function () { btn.classList.remove("playing"); }, (end * beat + 0.6) * 1000);
+  }).catch(function () { btn.classList.remove("playing"); btn.classList.add("miss"); btn.textContent = "(not in this set)"; });
+}
+function showPicks() {
+  var k = Object.keys(picks);
+  document.getElementById("pickTxt").innerHTML = k.length ? k.map(function (i) { return "<code>" + i + " = " + picks[i] + "</code>"; }).join(" · ") : "none yet";
+  try { localStorage.setItem("auditionPicks", JSON.stringify(picks)); } catch (e) {}
+}
+var list = document.getElementById("list");
+GROUPS.forEach(function (gr) {
+  var h = document.createElement("h2"); h.textContent = gr[0]; list.appendChild(h);
+  gr[1].forEach(function (it) {
+    var row = document.createElement("div"); row.className = "row";
+    row.innerHTML = "<div><b>" + it[1] + "</b><small>" + it[0] + "</small></div>";
+    var btns = SETS.map(function (set, i) {
+      var b = document.createElement("button"); b.textContent = "▶ " + SETL[i];
+      b.onclick = function () { play(b, set, it[0], it[2]); }; row.appendChild(b); return b;
+    });
+    var star = document.createElement("button"); star.className = "star"; star.textContent = "⭐";
+    star.title = "Pick the last version you played";
+    star.onclick = function () {
+      var last = btns.findIndex(function (b) { return b.dataset.last; });
+      if (picks[it[0]]) { delete picks[it[0]]; star.classList.remove("pick"); }
+      else { picks[it[0]] = SETL[last < 0 ? 0 : last]; star.classList.add("pick"); }
+      showPicks();
+    };
+    btns.forEach(function (b) { b.addEventListener("click", function () { btns.forEach(function (x) { delete x.dataset.last; }); b.dataset.last = "1"; }); });
+    if (picks[it[0]]) star.classList.add("pick");
+    row.appendChild(star); list.appendChild(row);
+  });
+});
+showPicks();
+</script>
+</body>
+</html>

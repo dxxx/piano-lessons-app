@@ -114,6 +114,11 @@
   #instPop button b { display: block; font-size: 38px; line-height: 1.2; font-weight: 400; }
   #instPop button.cur { border-color: var(--accent); background: #3a3459; }
   @media (max-width: 560px) { #instPop .grid { grid-template-columns: repeat(2, 1fr); } }
+  #instPop .grid { grid-template-columns: repeat(9, 1fr); width: min(1000px, 96vw); gap: 8px; padding: 14px 16px; }
+  #instPop button[data-id] { padding: 6px 2px; font-size: 12.5px; line-height: 1.15; }
+  #instPop button[data-id] b { font-size: 30px; }
+  #instPop .ghead { grid-column: 1 / -1; color: var(--muted); font-size: 14px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin: 4px 0 -2px 4px; }
+  @media (max-width: 760px) { #instPop .grid { grid-template-columns: repeat(4, 1fr); } }
   .hint { color: var(--muted); font-size: 13px; white-space: nowrap; }
   body:not(.play) .hint { display: none !important; }
   .vol input { width: 130px; accent-color: var(--accent); }
@@ -1423,7 +1428,18 @@
                  ["epiano", "&#127928;", "Electric piano", "Piano eléctrico"], ["organ", "&#127926;", "Organ", "Órgano"],
                  ["robot", "&#129302;", "Robot voice", "Voz de robot"], ["lead", "&#127899;&#65039;", "Synth lead", "Sintetizador"], ["808", "&#128266;", "808 bass", "Bajo 808"],
                  ["chip", "&#128126;", "Chiptune", "Videojuego"], ["warmpad", "&#127756;", "Warm pad", "Colchón cálido"], ["polysynth", "&#127898;&#65039;", "Polysynth", "Polisintetizador"],
-                 ["xylo", "&#127752;", "Xylophone", "Xilófono"]];
+                 ["xylo", "&#127752;", "Xylophone", "Xilófono"],
+                 ["synthbass", "&#128265;", "Synth bass", "Bajo sintetizado"], ["voice", "&#127908;", "Voice ooh", "Voz uuh"], ["scifi", "&#128640;", "Sci-fi", "Ciencia ficción"],
+                 ["guitar", "&#129685;", "Guitar", "Guitarra"], ["rockguitar", "&#129304;", "Rock guitar", "Guitarra rock"], ["sax", "&#127927;", "Saxophone", "Saxofón"],
+                 ["trumpet", "&#127930;", "Trumpet", "Trompeta"], ["marimba", "&#129345;", "Marimba", "Marimba"], ["steeldrums", "&#127965;&#65039;", "Steel drums", "Tambor metálico"],
+                 ["violin", "&#127931;", "Violin", "Violín"], ["strings", "&#127776;", "Strings", "Cuerdas"], ["flute", "&#128038;", "Flute", "Flauta"],
+                 ["harp", "&#129498;", "Harp", "Arpa"], ["kalimba", "&#127888;", "Kalimba", "Kalimba"], ["bells", "&#128276;", "Bells", "Campanitas"]];
+    // The picker shows the sounds in groups
+    var IGROUPS = [["Pianos", "Pianos", ["grand", "soft", "epiano", "organ", "musicbox"]],
+                   ["Synths", "Sintetizadores", ["lead", "synthbass", "808", "robot", "voice", "chip", "warmpad", "polysynth", "scifi"]],
+                   ["Band", "Banda", ["guitar", "rockguitar", "sax", "trumpet", "marimba", "steeldrums"]],
+                   ["Orchestra", "Orquesta", ["violin", "strings", "flute", "harp"]],
+                   ["Fun", "Divertidos", ["xylo", "kalimba", "bells"]]];
     function iname(x) { return L(x[2], x[3]); }
     try { var si = localStorage.getItem("instrument"); if (si === "pad") si = "warmpad";   // the old synth pad is now the sampled warm pad
           if (INSTR.some(function (x) { return x[0] === si; })) instrument = si; } catch (e) {}
@@ -1476,7 +1492,24 @@
     var SETS = {
       grand:     { dir: "grand",     acc: ["Ds", "Fs"], gain: 0.9, rel: 0.35 },
       warmpad:   { dir: "warmpad",   acc: ["Eb", "Gb"], gain: 1.5, rel: 0.8, loop: true },
-      polysynth: { dir: "polysynth", acc: ["Eb", "Gb"], gain: 1.5, rel: 0.8, loop: true }
+      polysynth: { dir: "polysynth", acc: ["Eb", "Gb"], gain: 1.5, rel: 0.8, loop: true },
+      // MusyngKite renders (CC-BY-SA 3.0). Gains matched by measured loudness (first 0.6 s RMS against the grand).
+      lead:       { dir: "lead",       acc: ["Eb", "Gb"], gain: 1.3, rel: 0.25, loop: true },
+      synthbass:  { dir: "synthbass",  acc: ["Eb", "Gb"], gain: 1.6, rel: 0.15 },   // decays like a plucked string: no loop
+      voice:      { dir: "voice",      acc: ["Eb", "Gb"], gain: 1.1, rel: 0.5, loop: true },
+      scifi:      { dir: "scifi",      acc: ["Eb", "Gb"], gain: 1.6, rel: 0.8, loop: true },
+      guitar:     { dir: "guitar",     acc: ["Eb", "Gb"], gain: 3.5, rel: 0.8 },
+      rockguitar: { dir: "rockguitar", acc: ["Eb", "Gb"], gain: 0.7, rel: 0.3, loop: true },
+      sax:        { dir: "sax",        acc: ["Eb", "Gb"], gain: 1.2, rel: 0.25, loop: true },
+      trumpet:    { dir: "trumpet",    acc: ["Eb", "Gb"], gain: 2.1, rel: 0.25, loop: true },
+      marimba:    { dir: "marimba",    acc: ["Eb", "Gb"], gain: 2.5, rel: 1.0 },
+      steeldrums: { dir: "steeldrums", acc: ["Eb", "Gb"], gain: 3.7, rel: 1.0 },
+      violin:     { dir: "violin",     acc: ["Eb", "Gb"], gain: 2.9, rel: 0.4, loop: true },
+      strings:    { dir: "strings",    acc: ["Eb", "Gb"], gain: 1.1, rel: 0.6, loop: true },
+      flute:      { dir: "flute",      acc: ["Eb", "Gb"], gain: 1.6, rel: 0.3, loop: true },
+      harp:       { dir: "harp",       acc: ["Eb", "Gb"], gain: 3.9, rel: 1.2 },
+      kalimba:    { dir: "kalimba",    acc: ["Eb", "Gb"], gain: 6.0, rel: 1.2 },
+      bells:      { dir: "bells",      acc: ["Eb", "Gb"], gain: 4.2, rel: 1.2 }
     };
     Object.keys(SETS).forEach(function (id) {
       var set = SETS[id], names = ["C", set.acc[0], set.acc[1], "A"], offs = [0, 3, 6, 9];
@@ -1924,11 +1957,15 @@
     build();
     setInstrument(instrument, false);
     var instPop = document.getElementById("instPop"), instGrid = document.getElementById("instGrid");
-    INSTR.forEach(function (x) {                           // the sound picker: a grid of big buttons
+    IGROUPS.forEach(function (gr) {                        // the sound picker: a grid of big buttons, in groups
+      var h = document.createElement("div"); h.className = "ghead"; h.textContent = L(gr[0], gr[1]); instGrid.appendChild(h);
+      gr[2].forEach(function (id) {
+      var x = INSTR.filter(function (i) { return i[0] === id; })[0];
       var b = document.createElement("button"); b.dataset.id = x[0];
       b.innerHTML = "<b>" + x[1] + "</b>" + iname(x);
       b.onclick = function (e) { e.stopPropagation(); audio(); setInstrument(x[0], true); instPop.classList.remove("open"); };
       instGrid.appendChild(b);
+      });
     });
     var spaceRow = document.createElement("div"); spaceRow.className = "space"; instGrid.appendChild(spaceRow);
     function drawSpace() {

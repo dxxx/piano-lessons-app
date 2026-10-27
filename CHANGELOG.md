@@ -4,6 +4,30 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.15 — 2026-10-27
+- **15 new sounds, 27 in all**, and the sound picker is now grouped: Pianos · Synths · Band · Orchestra · Fun
+  - New Synths: 🔉 Synth bass, 🎤 Voice ooh, 🚀 Sci-fi. 🎛️ Synth lead is now a real recording (it was made by Web Audio)
+  - Band: 🪕 Guitar, 🤘 Rock guitar, 🎷 Saxophone, 🎺 Trumpet, 🥁 Marimba, 🏝️ Steel drums
+  - Orchestra: 🎻 Violin, 🌠 Strings, 🐦 Flute, 🧚 Harp
+  - Fun: 🎐 Kalimba, 🔔 Bells
+  - All are recorded notes from the free MusyngKite sound set (CC-BY-SA 3.0); each sound's loudness is matched to the grand piano
+  - Held notes keep sounding on the long instruments (violin, strings, flute, sax, trumpet, voice, synth lead, sci-fi, rock guitar); plucked ones and the synth bass ring out on their own
+- Grand piano and soft piano are unchanged
+- New file `docs/SOUNDS-AND-ENGINES.md`: every sound, the engine that plays it, where it comes from and the version that added it
+
+## 1.14 — 2026-10-27
+- **🎹 Piano only** (inside Play along): hides the video and the lesson strip, makes the keyboard bigger, and every note he plays flies up out of its key as a glowing bar, like Synthesia's free play (blue = left hand, orange = right hand)
+- **Key names** (Menu → Piano): Letters (C D E), Do Re Mi (Do Re Mi Fa Sol La Si), or Both
+- **Black keys written as** (Menu → Piano): Sharps (C#), Flats (Db), Like the videos (Db Eb F# Ab Bb), or Both
+
+## 1.13 — 2026-10-27
+- **Key size zoom**: − / + make the keys bigger or smaller (1 to 4 octaves, keeping the middle); the size and the octave are remembered. Menu → Piano can lock the size
+- Play along: the piano runs the full width under the video and the lesson strip
+
+## 1.12 — 2026-10-27
+- **Native grand piano**: a C++ sound engine (AAudio, exclusive MMAP) answers in about 8 ms (it was about 120 ms), and touches on the keys are read natively in 2–3 ms. That is faster than Synthesia on the same kind of tablet
+- The native engine's sound matches the page's (same pan, compressor and room echo)
+
 ## 1.11 — 2026-10-26
 - **Start screen**: the app opens on "Hi! What do you want to do?" with two big drawn cards, 🎹 **Piano lessons** and 🧮 **Math**; a 🏠 button goes back to it (never from the quiz between lessons). Menu → **Start screen** sets he chooses / always piano / always math
 - **New look**: a rounded kids' font (Fredoka, bundled, works offline), a night-sky background, chunky press-down buttons, coloured answer buttons, softer red screen
