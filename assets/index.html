@@ -201,12 +201,16 @@
   .songlist button.playing { background: #4a3d95; box-shadow: 0 0 0 3px #ffd86b, 0 3px 0 #15102f; animation: songPulse 1.2s ease-in-out infinite; }
   @keyframes songPulse { 50% { box-shadow: 0 0 0 6px #ffd86b80, 0 3px 0 #15102f; } }
   .songnone { grid-column: 1 / -1; color: #c9bff5; font-size: 18px; text-align: center; margin-top: 40px; }
-  .follow { position: absolute; left: 10px; right: 10px; bottom: 8px; z-index: 2; display: flex; flex-direction: column; gap: 6px; }
+  .follow { position: absolute; left: 10px; right: 10px; top: 8px; z-index: 2; display: flex; flex-direction: column; gap: 6px; }
   .follow[hidden] { display: none; }
+  .follow::before { content: ""; position: absolute; left: -10px; right: -10px; top: -8px; height: 76px; z-index: -1; pointer-events: none;
+    background: linear-gradient(#120f2a 55%, #120f2a00); border-radius: 16px 16px 0 0; }   /* falling notes fade in under the song bar */
   .fwtop { display: flex; align-items: center; gap: 10px; color: #fbf8ff; }
   .fwtop b { font-size: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .fwtop span { color: #c9bff5; font-size: 14px; margin-right: auto; }
   .fwbar { height: 6px; border-radius: 3px; background: #ffffff22; overflow: hidden; } .fwbar i { display: block; height: 100%; width: 0; background: #5fd38f; transition: width .2s; }
   .fwtiles { display: flex; gap: 8px; align-items: flex-end; min-height: 74px; }
+  .fwtiles:empty { display: none; }
+  body.infollow .beatfly { top: 62px; transform: translateX(-50%) scale(.7); transform-origin: top center; }
   .fwtiles i { flex: 0 0 auto; font: 800 26px Fredoka, system-ui, sans-serif; font-style: normal; width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center;
     background: #ffffff1a; color: #ffffffb0; border: 2px solid #ffffff30; position: relative; }
   .fwtiles i.now { width: 72px; height: 72px; font-size: 38px; background: #ff7a59; color: #fff; border-color: #fff; box-shadow: 0 0 22px #ff7a5999; }
@@ -2545,6 +2549,40 @@
     function flyOn(m) { if (fly.run) fly.notes.push({ m: m, s: performance.now(), e: 0 }); }
     function flyOff(m) { for (var i = fly.notes.length - 1; i >= 0; i--) if (fly.notes[i].m === m && !fly.notes[i].e) { fly.notes[i].e = performance.now(); break; } }
     function rrect(c, x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+    // Songs (js/follow.js): the same bars, falling onto their keys. pos = where the song is (seconds); a bar's bottom edge is its start,
+    // so it reaches the key line when the song gets there and waits on it (glowing) until he presses the key; a played note pops.
+    function fall(c, br, h, fw) {
+      var PX = follow.PX, pulse = 0.5 + 0.5 * Math.sin(fw.now / 160);
+      for (var i = fw.steps.length - 1; i >= 0; i--) {
+        var s = fw.steps[i], cur = s === fw.cur;
+        s.n.forEach(function (n) {
+          var el = keysEl.querySelector('[data-m="' + n[0] + '"]'); if (!el) return;
+          if (n[2] <= fw.pos) return;                          // already played through (Listen)
+          var bot = h - (n[1] - fw.pos) * PX, top = h - (n[2] - fw.pos) * PX;
+          if (bot < -4) return;
+          bot = Math.min(bot, h); top = Math.min(top, bot - 14);
+          var kr = el.getBoundingClientRect(), black = el.classList.contains("bk");
+          var w = kr.width * (black ? 1 : 0.86), x = kr.left - br.left + (kr.width - w) / 2, hh = bot - top;
+          var col = FLY_C[n[3] === "L" ? "L" : "R"], g = c.createLinearGradient(0, top, 0, bot);
+          g.addColorStop(0, col[0]); g.addColorStop(1, col[1]);
+          c.save(); c.globalAlpha = cur ? 1 : 0.88;
+          c.shadowColor = col[1]; c.shadowBlur = cur && fw.waiting ? 18 + 18 * pulse : 16; c.fillStyle = g;
+          rrect(c, x, top, w, hh, 8); c.fill(); c.restore();
+          c.fillStyle = "rgba(255,255,255,.9)"; rrect(c, x + 3, bot - 6, w - 6, 4, 2); c.fill();          // bright leading edge, at the bottom
+          if (hh > 24 && w > 16) {
+            c.fillStyle = "#fff"; c.font = "700 " + Math.min(18, w * 0.5) + "px Fredoka, system-ui, sans-serif"; c.textAlign = "center";
+            c.fillText(NAMES[n[0] % 12], x + w / 2, bot - 12);
+          }
+        });
+      }
+      fw.pops.forEach(function (p) {                         // a caught note bursts on the key line
+        var el = keysEl.querySelector('[data-m="' + p.m + '"]'); if (!el) return;
+        var kr = el.getBoundingClientRect(), cx = kr.left - br.left + kr.width / 2, k = (fw.now - p.t) / 450, r = kr.width * (0.8 + 1.6 * k);
+        var col = FLY_C[p.h === "L" ? "L" : "R"][1], a = Math.round((1 - k) * 200).toString(16); if (a.length < 2) a = "0" + a;
+        var rg = c.createRadialGradient(cx, h, 0, cx, h, r); rg.addColorStop(0, col + a); rg.addColorStop(1, col + "00");
+        c.fillStyle = rg; c.fillRect(cx - r, h - r, 2 * r, r);
+      });
+    }
     function flyFrame() {
       if (!fly.run) return;
       var cv = fly.cv, c = cv.getContext("2d"), dpr = window.devicePixelRatio || 1, br = fly.box.getBoundingClientRect();
@@ -2552,12 +2590,14 @@
       if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
       c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, br.width, br.height);
       var now = performance.now(), h = br.height, keep = [];
+      var fw = window.follow && follow.frame ? follow.frame(now) : null;
+      if (fw) fall(c, br, h, fw);
       fly.notes.forEach(function (n) {
         var el = keysEl.querySelector('[data-m="' + n.m + '"]');
         var top = h - (now - n.s) / 1000 * FLY_V, bot = n.e ? h - (now - n.e) / 1000 * FLY_V : h + 2;
         if (bot < -10) return;
         keep.push(n);
-        if (!el) return;                                    // key out of view (octave/zoom changed)
+        if (!el || fw) return;                              // key out of view (octave/zoom changed); a song is falling: only the glow below
         var kr = el.getBoundingClientRect(), black = el.classList.contains("bk");
         var w = kr.width * (black ? 1 : 0.86), x = kr.left - br.left + (kr.width - w) / 2, hh = Math.max(6, bot - top);
         var col = FLY_C[n.m < 60 ? "L" : "R"], g = c.createLinearGradient(0, top, 0, top + hh);

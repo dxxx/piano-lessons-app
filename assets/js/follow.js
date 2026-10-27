@@ -1,12 +1,16 @@
 // ---- Follow the keys: the song waits for him ----
-// The reverse of the video lessons: instead of copying a video, he plays a known song note by note. The next note glows on its key
-// and sits first in a row of note tiles; the song moves on only when he presses it (no timer, no penalty for being slow).
+// The reverse of the video lessons: instead of copying a video, he plays a known song note by note. The notes fall onto their keys
+// (the Piano only canvas, same bars as the notes he plays, run the other way); when a note reaches its key, the song waits there and
+// the key glows until he presses it (no timer, no penalty for being slow). Operator 2026-10-27: "make the notes fall to the keys
+// instead of showing keys to press, use the existing mechanism".
 // Same idea as Synthesia's "Melody practice" and the Claude Design prototype's Piano tab (design/claude-design-2026-10-27).
 //   - songs: our own note files (private: pushed by adb to the app's storage, served at songs/; never in the repo or the APK)
 //   - hand: both (default: Synthesia's beginner songs share the melody between the hands), right or left; in one-hand mode the other hand plays itself, softly, when he moves on
 //   - a step = the notes that start together; it is done when each of them has been pressed (any order)
 //   - a wrong key just sounds; the right key glows brighter; stars from how many steps were right first time
-//   - in the list: ONE tap plays the song to listen to (the first 20 s, both hands), TWO quick taps pick it and he plays along
+//   - Listen (in the song): the whole song plays from where he is, the notes falling in time, until he presses any key: that key
+//     is the pause signal (it does not count as a note) and the song waits again at the note he was on (operator 2026-10-27)
+//   - in the list: ONE tap plays the song to listen to (the whole song, both hands), TWO quick taps pick it and he plays along
 //     (operator: "single click makes songs play, double click selects it, so I can hear before I commit")
 //   - no lucky hits: a right key pressed in a flurry of wrong ones (3+ wrong keys in the last 1.5 s) does not move the song on,
 //     so banging keys never plays the song for him; one calm press of the right key does
@@ -17,6 +21,8 @@ var follow = (function () {
   var $ = function (id) { return document.getElementById(id); };
   var NN = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   var LV = ["", "⭐", "⭐⭐", "⭐⭐⭐"];
+  var SPEED = 0.8, LEAD = 2.2;                                   // song seconds per real second while falling; first notes start this far above
+  var pos = 0, lastF = 0, arrived = false, pops = [], lis = null;
   var index = null, loading = false, song = null, steps = [], si = 0, pressed = {}, firstTry = true, okFirst = 0, misses = 0, t0 = 0, tab = 1;
   var cfg = { hand: "RL", acc: 1 }, prog = {}, wrong = [];
   var LUCKY_N = 3, LUCKY_MS = 1500;
@@ -53,8 +59,8 @@ var follow = (function () {
         s.n + " " + L("notes", "notas") + (stars ? ' · <i class="st">' + stars + "</i>" : "") + "</span></button>";
     }).join("") || '<p class="songnone">—</p>';
   }
-  // ---- Listen first: one tap plays the start of the song; two quick taps (within 0.45 s) pick it ----
-  var PREVIEW_S = 20, DOUBLE_MS = 450, cache = {}, pv = { id: null, timers: [] }, lastTap = { id: null, t: 0 };
+  // ---- Listen first: one tap plays the song (all of it; a slow tap again, another song or closing the list stops it); two quick taps (within 0.45 s) pick it ----
+  var PREVIEW_S = 1e9, DOUBLE_MS = 450, cache = {}, pv = { id: null, timers: [] }, lastTap = { id: null, t: 0 };
   function getSong(id) {
     if (cache[id]) return Promise.resolve(cache[id]);
     return fetch("songs/" + id + ".json").then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) { cache[id] = d; return d; });
@@ -99,11 +105,12 @@ var follow = (function () {
       steps = [];
       mine.forEach(function (n) {                                // notes that start within 60 ms of each other = one step
         var s = steps[steps.length - 1];
-        if (s && n[1] - s.t < 0.06) { if (s.m.indexOf(n[0]) < 0) s.m.push(n[0]); } else steps.push({ t: n[1], m: [n[0]], h: n[3] });
+        if (s && n[1] - s.t < 0.06) { if (s.m.indexOf(n[0]) < 0) s.m.push(n[0]); s.n.push(n); } else steps.push({ t: n[1], m: [n[0]], h: n[3], n: [n] });
       });
       var other = cfg.hand === "RL" ? [] : d.notes.filter(function (n) { return cfg.hand.indexOf(n[3]) < 0; });
-      song = { id: id, t: meta.t, other: other };
+      song = { id: id, t: meta.t, other: other, all: d.notes };
       si = 0; pressed = {}; firstTry = true; okFirst = 0; misses = 0; wrong = []; t0 = Date.now();
+      pos = steps.length ? steps[0].t - LEAD : 0; lastF = 0; arrived = false; pops = []; lis = null; hintLabel();
       closeList(); document.body.classList.add("infollow"); $("follow").hidden = false;
       $("fwTitle").textContent = meta.t;
       show();
@@ -111,23 +118,39 @@ var follow = (function () {
     }).catch(function () { $("songList").innerHTML = '<p class="songnone">' + L("That song did not load.", "Esa canción no cargó.") + "</p>"; });
   }
   function clearKeys() { [].forEach.call(document.querySelectorAll("#keys .want, #keys .wantx"), function (k) { k.classList.remove("want", "wantx"); }); }
+  function want() {                                              // the note has reached its key: the key glows until he presses it
+    var s = steps[si]; if (!s) return;
+    s.m.forEach(function (m) { if (!pressed[m]) { var k = pianoKeys.el(m); if (k) k.classList.add("want"); } });
+  }
   function show() {
     clearKeys();
-    var st = steps[si]; if (!st) return;
-    var lo = Math.min.apply(null, st.m), hi = Math.max.apply(null, st.m);
-    if (window.pianoKeys) pianoKeys.show(lo, hi);
-    st.m.forEach(function (m) { if (!pressed[m]) { var k = pianoKeys.el(m); if (k) k.classList.add("want"); } });
-    var h = "";                                                  // the tile row: this step big, then the next 7
-    for (var i = si; i < Math.min(steps.length, si + 8); i++) {
-      var s = steps[i], top = Math.max.apply(null, s.m);
-      h += '<i class="' + (i === si ? "now " : "") + (s.h === "L" ? "lh" : "rh") + '">' + esc(NN[top % 12]) + (s.m.length > 1 ? "<sup>+" + (s.m.length - 1) + "</sup>" : "") + "</i>";
+    var cur = steps[si]; if (!cur) return;
+    var lo = Math.min.apply(null, cur.m), hi = Math.max.apply(null, cur.m);
+    if (window.pianoKeys) {                                      // keep the next few steps on the keyboard too, so it moves less often
+      var lo2 = lo, hi2 = hi;
+      for (var i = si + 1; i < Math.min(steps.length, si + 6); i++) { lo2 = Math.min(lo2, Math.min.apply(null, steps[i].m)); hi2 = Math.max(hi2, Math.max.apply(null, steps[i].m)); }
+      if (!pianoKeys.show(lo2, hi2) || !pianoKeys.el(lo) || !pianoKeys.el(hi)) pianoKeys.show(lo, hi);
     }
-    $("fwTiles").innerHTML = h;
+    arrived = pos >= cur.t - 0.001; if (arrived) want();
+    $("fwTiles").innerHTML = "";
     $("fwBar").style.width = Math.round(si / steps.length * 100) + "%";
     $("fwCount").textContent = si + " / " + steps.length;
   }
+  // Called by the Piano only canvas every frame: moves the song on (up to the note he has to play) and says what to draw
+  function frame(now) {
+    if (!song || !steps[si]) return null;
+    var dt = lastF ? Math.min(0.1, (now - lastF) / 1000) : 0; lastF = now;
+    pops = pops.filter(function (p) { return now - p.t < 450; });
+    if (lis) return listenFrame(now, dt);
+    var target = steps[si].t;
+    if (pos < target) { pos = Math.min(target, pos + dt * SPEED); if (pos >= target - 0.001 && !arrived) { arrived = true; want(); } }
+    var vis = [];
+    for (var i = si; i < steps.length && steps[i].t - pos < 6; i++) vis.push(steps[i]);
+    return { pos: pos, steps: vis, cur: steps[si], waiting: arrived, pops: pops, now: now };
+  }
   function note(m) {                                             // every key he presses (act.note)
     if (!song || !steps[si] || !solo()) return;
+    if (lis) { endListen(); return; }                            // any key while listening = pause; it is not a note of the song
     var st = steps[si];
     var now = Date.now();
     while (wrong.length && now - wrong[0] > LUCKY_MS) wrong.shift();
@@ -140,6 +163,7 @@ var follow = (function () {
     pressed[m] = true; var k = pianoKeys.el(m); if (k) k.classList.remove("want", "wantx");
     for (var i = 0; i < st.m.length; i++) if (!pressed[st.m[i]]) return;
     if (firstTry) okFirst++;
+    var tnow = performance.now(); st.m.forEach(function (x) { pops.push({ m: x, h: st.h, t: tnow }); });
     accompany(st.t, steps[si + 1] ? steps[si + 1].t : st.t + 2);
     si++; pressed = {}; firstTry = true;
     if (si >= steps.length) finish(); else show();
@@ -166,16 +190,35 @@ var follow = (function () {
   }
   function stop() {
     if (song && si > 0 && window.diary) diary.ev("song_stop", { id: song.id, at: si, steps: steps.length });
-    song = null; steps = []; clearKeys();
+    song = null; steps = []; lis = null; hintLabel(); clearKeys();
     $("follow").hidden = true; document.body.classList.remove("infollow");
     if (window.pianoKeys) pianoKeys.restore();
   }
-  function hint() {                                              // "Listen": the next few notes played for him, then it waits again
-    if (!song) return;
-    var t = steps[si] ? steps[si].t : 0;
-    for (var i = si; i < Math.min(steps.length, si + 6); i++) (function (s) {
-      setTimeout(function () { s.m.forEach(function (m) { pianoPlayNote(m, 0.7, 380); }); }, Math.min(4000, (s.t - t) * 1000));
-    })(steps[i]);
+  // ---- Listen: the whole song plays from his note on, falling in real time, until a key is pressed (or Listen again) ----
+  function hintLabel() { var b = $("fwHint"); if (b) b.innerHTML = lis ? "&#9208; " + L("Pause", "Pausa") : "&#128066; " + L("Listen", "Escuchar"); }
+  function hint() {
+    if (!song || !steps[si]) return;
+    if (lis) { endListen(); return; }
+    lis = { pos: steps[si].t - 0.4 }; clearKeys(); hintLabel();
+  }
+  function endListen() {
+    lis = null; pos = steps[si] ? steps[si].t - 1.2 : pos; arrived = false; hintLabel(); show();   // his note falls in again and waits
+  }
+  function listenFrame(now, dt) {
+    var from = lis.pos; lis.pos += dt;
+    song.all.forEach(function (n) {
+      if (n[1] > from && n[1] <= lis.pos) {
+        pianoPlayNote(n[0], n[3] === "R" ? 0.7 : 0.5, Math.max(120, Math.min(2000, (n[2] - n[1]) * 1000)));
+        pops.push({ m: n[0], h: n[3], t: now });
+      }
+    });
+    var vis = [];
+    for (var i = 0; i < steps.length && steps[i].t - lis.pos < 6; i++) {
+      var end = 0; steps[i].n.forEach(function (n) { end = Math.max(end, n[2]); });
+      if (end > lis.pos) vis.push(steps[i]);
+    }
+    if (!vis.length) { endListen(); return { pos: pos, steps: [], cur: steps[si], waiting: false, pops: pops, now: now }; }
+    return { pos: lis.pos, steps: vis, cur: null, waiting: false, pops: pops, now: now };
   }
 
   function init() {
@@ -194,6 +237,6 @@ var follow = (function () {
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 
-  return { note: note, open: openList, start: start, stop: stop, isOn: function () { return !!song; }, cfg: cfg,
+  return { note: note, open: openList, start: start, stop: stop, isOn: function () { return !!song; }, cfg: cfg, frame: frame, PX: 150,
            _state: function () { return { si: si, steps: steps.length, ok: okFirst, miss: misses, want: steps[si] && steps[si].m }; } };
 })();

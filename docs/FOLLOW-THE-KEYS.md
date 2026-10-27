@@ -2,7 +2,9 @@
 
 The second way to learn in the app. The video lessons are "watch, then copy"; Follow the keys is "play a song you know, one note at a time, and the song waits for you". It is Synthesia's *Melody practice* and the Piano tab of the Claude Design prototype (`design/claude-design-2026-10-27`, screen `A-app-07-piano.png`). Code: `assets/js/follow.js`.
 
-## How it works
+## How it works (1.30: falling notes)
+- The notes **fall onto their keys** on the Piano only canvas (`fall()` in `index.html`, fed each frame by `follow.frame(now)`): bar bottom = note start, `pos` = song time; `pos` moves at `SPEED` 0.8 song-s per real s, 150 px per song-second (`follow.PX`), starting `LEAD` 2.2 s before the first note. It never passes the current step's start: there the song **waits**, the bar pulses on the key line and the keys get `.want`. A caught step bursts (`pops`, 450 ms). Rising bars of his own notes are hidden while a song is on.
+- **Listen** (`lis`): from the current step, the whole song plays in real time (all notes, both hands, via `pianoPlayNote` from the frame loop), the falling bars move with it and burst on the line. Any key (`note()`) or the ⏸ button ends it without counting; `pos` goes back to 1.2 s before his step so it falls in again.
 - **In the list (1.29):** one tap = listen (the first 20 s, both hands, the card glows); two quick taps (< 0.45 s) = play along. A slow second tap on the playing song stops listening.
 - **No lucky hits (1.29):** a right key in a flurry of wrong ones (3+ wrong keys in the last 1.5 s) does not move the song on.
 - **🎵 Songs** in Play along / Piano only opens the list: Easy / Medium / Hard tabs, songs from his video lessons first (🎬), stars he got before. Hand: **Both hands** (default), Right, Left.
