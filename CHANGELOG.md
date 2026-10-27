@@ -4,6 +4,9 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.23.1 — 2026-10-27
+- **Home fits all five tiles**: in landscape the five activities sit in one row that fits the screen (they ran off both edges in 1.23); in portrait they wrap to two rows. A screen too narrow for them scrolls sideways instead of cutting tiles off.
+
 ## 1.23 — 2026-10-27
 - **New home tile: Bigger or smaller** (the 4th activity next to piano, maths and colouring). Teaches more / fewer / the same and the < = > signs the way UK schools do in Year 1–2 (see [docs/COMPARE-TEACHING.md](docs/COMPARE-TEACHING.md)):
   - **Stage 1 · Items**: two rows of the same thing lined up one to one, so the extras stick out; tap the row with more (or fewer), or "The same". 4 right in a row moves on.

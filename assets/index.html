@@ -586,8 +586,10 @@
   .wbar button:disabled { opacity: .35; }
   .wbar button.go { background: linear-gradient(#3fc77a, #27a25c); box-shadow: 0 4px 0 #17663a; animation: cgo 1s infinite alternate; }
   @keyframes cgo { to { transform: scale(1.12); } }
-  .home .opts { gap: 2vw; }
-  .home .opts button { width: min(22vw, 250px, 58vh); }
+  .home .opts { gap: 1.6vw; max-width: 100vw; padding: 2vh 2vw 4vh; box-sizing: border-box; overflow-x: auto; justify-content: safe center; }
+  .home .opts button { flex: 0 0 auto; width: min(17.6vw, 250px, 58vh); min-width: 150px; padding: 2vh 1vw; font-size: clamp(16px, min(4.6vh, 2.5vw), 34px); line-height: 1.1; }
+  .home .opts button span { overflow-wrap: anywhere; text-align: center; }
+  @media (orientation: portrait) { .home .opts { flex-wrap: wrap; overflow-x: visible; row-gap: 3vh; } .home .opts button { width: min(28vw, 250px, 30vh); font-size: clamp(16px, 3.4vw, 32px); } }
   .home .opts button:nth-child(4) { animation-delay: -1.6s; }
   .cgal { position: absolute; inset: 0; z-index: 2; overflow-y: auto; padding: 14px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; background: #fffdf5; }
   .cgal[hidden] { display: none; }
