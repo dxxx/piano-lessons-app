@@ -5,7 +5,7 @@ Every version, newest first. Each released version has a download on the
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
 ## 1.35 — 2026-10-28
-- **Fix: Menu and Close are always reachable.** The maths quiz between lessons (and the quick concept game and the calm screen) covered the whole screen, top bar included, so the 🔒 Menu and ✕ Close buttons could not be tapped until the sum was solved. Now both stay at the top right above any kid screen, and the PIN pad still opens over them. Maths-only mode shows ✕ Close too (before: Menu only).
+- **Fix: Menu and Close are always reachable.** The maths quiz between lessons (and the quick concept game and the calm screen) covered the whole screen, top bar included, so the 🔒 Menu and ✕ Close buttons could not be tapped until the sum was solved. Now both stay at the top right above any kid screen, and the PIN pad still opens over them. Maths-only, Writing, Colouring and Bigger or smaller show ✕ Close too (before: Menu only; found by the new on-tablet check).
 
 ## 1.34 — 2026-10-28
 - **Songs: one keyboard for the whole song.** When a song starts, the keyboard is set once to cover all of its notes (from the C below the lowest note, with the fewest keys that reach the highest, up to a full 85-key piano), and it never moves during the song: no jumps. His own zoom comes back when the song ends. Before, the keyboard showed 2 octaves and shifted; a song whose hands were further apart (Interstellar: left hand E2 under a right hand up to E5) left notes with no key, so they could not be played ("lots of fails"). Checked on all 250 songs: 0 jumps, every note has its key.

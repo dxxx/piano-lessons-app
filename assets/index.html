@@ -611,7 +611,7 @@
   .write { position: fixed; left: 10px; right: 10px; top: var(--wtop, 56px); bottom: 10px; z-index: 4; display: none; flex-direction: column; gap: 8px; }
   body.inwrite .write { display: flex; }
   body.inwrite .stage > :not(header), body.inwrite aside { display: none !important; }
-  body.inwrite header > :not(#lock):not(#homeBtn) { display: none !important; }
+  body.inwrite header > :not(#lock):not(#homeBtn):not(#quitBtn) { display: none !important; }
   .wbar { display: flex; align-items: center; gap: 10px; min-height: 44px; }
   .wlv { font-weight: 700; font-size: 17px; white-space: nowrap; color: var(--accent); }
   .wrow { flex: 1; min-width: 0; display: flex; gap: 4px; overflow: hidden; font-size: 20px; }
@@ -634,7 +634,7 @@
   .compare { position: fixed; left: 10px; right: 10px; top: var(--wtop, 56px); bottom: 10px; z-index: 4; display: none; flex-direction: column; gap: 6px; }
   body.incompare .compare { display: flex; }
   body.incompare .stage > :not(header), body.incompare aside { display: none !important; }
-  body.incompare header > :not(#lock):not(#homeBtn) { display: none !important; }
+  body.incompare header > :not(#lock):not(#homeBtn):not(#quitBtn) { display: none !important; }
   .cmask { text-align: center; font-size: 26px; font-weight: 800; min-height: 32px; }
   .cmstage { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
   .cmstage.shake { animation: wshake .35s; }
@@ -712,7 +712,7 @@
   .colour { position: fixed; left: 10px; right: 10px; top: var(--wtop, 56px); bottom: 10px; z-index: 4; display: none; flex-direction: column; gap: 8px; }
   body.incolour .colour { display: flex; }
   body.incolour .stage > :not(header), body.incolour aside { display: none !important; }
-  body.incolour header > :not(#lock):not(#homeBtn) { display: none !important; }
+  body.incolour header > :not(#lock):not(#homeBtn):not(#quitBtn) { display: none !important; }
   .cstars { font-size: 24px; color: #ffd21f; letter-spacing: 2px; }
   .cleft { flex: 1; min-width: 0; color: var(--muted); font-size: 16px; white-space: nowrap; overflow: hidden; }
   .cpal { display: flex; gap: 6px; }
