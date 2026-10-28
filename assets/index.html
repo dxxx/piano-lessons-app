@@ -325,11 +325,16 @@
   @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.14); } }
   .gate .note { color: var(--muted); font-size: 14px; min-height: 0; margin: -2px 4px 0; }
   .gate .note:empty { display: none; }
-  /* Math-only mode: no video, no piano; the quiz fills the screen and only the Menu button remains */
+  /* Math-only mode: no video, no piano; the quiz fills the screen and only the Menu and Close buttons remain */
   body.math .stage > :not(header), body.math aside { display: none !important; }
-  body.math header > :not(#lock):not(#homeBtn) { display: none !important; }
+  body.math header > :not(#lock):not(#homeBtn):not(#quitBtn) { display: none !important; }
   body.math #lock, body.athome #lock { position: fixed; top: 12px; right: 14px; z-index: 10; }
   body.math #homeBtn { position: fixed; top: 12px; left: 14px; z-index: 10; }
+  /* A full-screen kid layer (maths quiz, quick game, calm screen; body.kidtop) never hides the grown-up buttons
+     (2026-10-28: the quiz between lessons covered Menu and Close) */
+  body.math #lock, body.math #quitBtn, body.kidtop #lock, body.kidtop #quitBtn { position: fixed; top: 12px; z-index: 10; }
+  body.math #quitBtn, body.kidtop #quitBtn { right: 14px; }
+  body.math #lock, body.kidtop #lock { right: 118px; }
   body.fixedStart #homeBtn, body.athome #homeBtn { display: none !important; }
   /* Start screen: he picks what to do */
   .home { position: fixed; inset: 0; z-index: 8; display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -5171,6 +5176,11 @@
       eye.menu(false);
     }
     window.lockMenu = lock;
+    // body.kidtop while a full-screen kid layer is up, so the CSS keeps Menu and Close above it
+    var kidLayers = [$("quiz"), $("concept"), $("calm")];
+    function kidTop() { document.body.classList.toggle("kidtop", kidLayers.some(function (e) { return e && (e.classList.contains("open") || e.classList.contains("on")); })); }
+    var kidObs = new MutationObserver(kidTop);
+    kidLayers.forEach(function (e) { if (e) kidObs.observe(e, { attributes: true, attributeFilter: ["class"] }); });
     ["gate", "act", "res"].forEach(function (id) {
       $(id).addEventListener("pointerdown", function (e) {
         if (e.target === $(id)) { lock(); return; }          // a tap outside the card closes (and locks) the menu
