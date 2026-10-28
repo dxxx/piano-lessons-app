@@ -252,9 +252,9 @@ node tools/tabjs.mjs $(port get piano-player tablet-devtools) "document.body.cla
 | CON-11 | Menu → Maths → Quick concept games: how often, how many questions, other activities, move breaks, try one now, start again | 1.25 | done | – |
 | CON-12 | 3-picture checks once learned; counting sets; sound questions from his own song; the rest of the 127-pair map | – | idea | – |
 | CON-90 | Piano breaks (lessons and Play along) are a coin toss: a maths question or a concept game; colouring and writing no longer get concept pop-ups | 1.36 | done | – |
-| CON-91 | Every concept drawn by the research 08 drawing-spec (one dimension, a named anchor, depth by overlap+height+size, mine/yours said by a visible mascot) | – | idea | – |
-| CON-92 | New concepts: near/far from you, his/hers, yours/mine, whose?, later ours/theirs and dark/light room (research 08) | – | idea | – |
-| CON-93 | Fix the 5 flawed pictures (between always middle, front/behind on a ball, bright = on/off, heavy = elephant size, hot/cold different objects) | – | idea | – |
+| CON-91 | Every concept drawn by the research 08 drawing-spec (one dimension, a named anchor, depth by overlap+height+size, mine/yours said by a visible mascot) | 1.37 | partly | – |
+| CON-92 | New concepts: near/far from you (road from his feet), yours/mine (the owl says "mine" in a speech bubble), his/hers (boy/girl, identical items); later whose?, ours/theirs, dark/light room | 1.37 | done | ✅ 1.37 2026-10-28 |
+| CON-93 | The 5 flawed pictures fixed: between = 4 named animals, answer moves; in front/behind a house with a door (behind peeks out); brighter = same lamp both on; heavier = identical boxes, only the tilt; hot/cold = same mug, steam vs ice | 1.37 | done | ✅ 1.37 2026-10-28 |
 
 ## Writing (WRT)
 

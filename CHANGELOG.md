@@ -4,6 +4,11 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.37 — 2026-10-28
+- **Concept games drawn the way a 6-year-old reads them** (research/08): each picture changes one thing only, around a named anchor.
+  - Fixed 5 pictures that could be answered without knowing the word: *between* now names the two neighbours ("between the cat and the dog") and the answer moves; *in front of / behind* uses a house with a door (the one behind peeks out, partly hidden); *brighter / dimmer* is the same lamp, both on, with a big or small glow and lit floor; *heavier / lighter* puts two identical boxes on the see-saw, so only the tilt tells; *hot / cold* is the same mug with steam or with ice.
+  - New: **near you / far away** (a road from his feet: the far one is higher, smaller and half behind a hedge), **yours / mine** (the owl says "Mine!" in a speech bubble; his things sit at the bottom, by him), **his / hers** (a boy and a girl with identical things).
+
 ## 1.36 — 2026-10-28
 - **🎹 "Play the piano" on the start screen:** a sixth tile opens the piano straight in Piano only (his keyboard, Songs, Follow the keys). The six tiles sit in two rows of three. "Piano lessons" opens the video lessons as before.
 - **Follow the keys plays at his speed:** the notes fall as fast as he plays (0.45–1.5×, learned from his last notes); a right key pressed while its note is still falling counts at once, so a fluent run sounds like the real song. A chord counts once half its keys are down (the app plays the rest). It still waits at a note he doesn't know.

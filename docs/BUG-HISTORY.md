@@ -6,6 +6,12 @@ When a tablet test in [FEATURES.md](FEATURES.md) fails, add an entry here once i
 
 ---
 
+### 1.37 — Concept pictures that could be answered without knowing the word
+- **Symptom:** research 08 (drawing spec for 6-year-olds) found 5 pictures where a child can be right by guessing or wrong while knowing the word: *between* was always the middle one; *in front / behind* used a ball with no clear front; *brighter* was a lamp on vs off (that is on/off, not brighter); *heavier* compared an elephant and a mouse (size, not weight); *hot / cold* compared different objects.
+- **Cause:** each picture changed more than one thing, or had no named anchor.
+- **Fix:** one change per picture around a named anchor (see CHANGELOG 1.37); new near/far, yours/mine (spoken by a visible owl), his/hers. Device check CON-2 opens each new/fixed concept on both sides.
+- **Lesson / check next time:** before shipping a concept picture ask "could he get it right without the word? could he know the word and still get it wrong?"; a "behind" thing must still peek out.
+
 ### 1.36 — Follow the keys: the right key did not count (repeats + "lucky hit" rule)
 - **Symptom:** the operator, watching live on the tablet (Linkin Park – Crawling): after a right note he pressed the same key again several times, in the song's rhythm; then the right next key (G#) did not count twice, and the song felt stuck. With the fixed 0.8× fall and a stop at every note the song never sounded like the real song.
 - **Cause:** the anti-banging rule counted ANY wrong press, so repeating the last note 3× in 1.5 s blocked the right key; the fall speed was fixed.

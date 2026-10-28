@@ -30,6 +30,9 @@ var concepts = (function () {
   };
   var HUES = [0, 30, 120, 200, 260, 320];
   var THINGS = ["🐶", "🐱", "🐻", "🐸", "🦊", "🐰", "🐷", "🐵", "🦁", "🐼", "🐨", "🐯"];
+  var NAME = { "🐶": ["dog", "el perro"], "🐱": ["cat", "el gato"], "🐻": ["bear", "el oso"], "🐸": ["frog", "la rana"], "🦊": ["fox", "el zorro"],
+    "🐰": ["rabbit", "el conejo"], "🐷": ["pig", "el cerdo"], "🐵": ["monkey", "el mono"], "🦁": ["lion", "el león"], "🐼": ["panda", "el panda"],
+    "🐨": ["koala", "el koala"], "🐯": ["tiger", "el tigre"] };
   var TOYS = ["⚽", "🍎", "🎈", "🚗", "⭐", "🍓", "🧸", "🎁", "🍩", "🌼"];
   function card(inner, bg) { return VB + '<rect width="240" height="180" rx="18" fill="' + (bg || "#fffdf5") + '"/>' + inner + "</svg>"; }
 
@@ -74,20 +77,30 @@ var concepts = (function () {
             '<path d="M80 35 L90 150 L150 150 L160 35" fill="none" stroke="#1e1b2e" stroke-width="4"/>'); }); } },
     { id: "heavy", cat: "quantity", scene: true, w: [["heavier", "más pesado"], ["lighter", "más ligero"]],
       why: [["The heavy side goes down.", "El lado pesado baja."], ["The light side goes up.", "El lado ligero sube."]],
-      gen: function (side) {                                // a balance: the heavier thing sits lower
-        var pairs = [["🐘", "🐭"], ["🍉", "🍒"], ["🧱", "🪶"], ["🎃", "🍓"], ["🐻", "🐦"], ["🚗", "⚽"]], p = pick(pairs), hvLeft = rnd(0, 1);
-        var yL = hvLeft ? 118 : 62, yR = hvLeft ? 62 : 118, s = VB + '<rect width="240" height="180" rx="18" fill="#fffdf5"/>' +
-          '<path d="M120 116 L98 170 L142 170z" fill="#b08a5a" stroke="#1e1b2e" stroke-width="3"/>' +
-          '<line x1="40" y1="' + (yL + 26) + '" x2="200" y2="' + (yR + 26) + '" stroke="#1e1b2e" stroke-width="6" stroke-linecap="round"/>';
+      gen: function (side) {                                // research 08 #7: two IDENTICAL boxes on an equal-arm see-saw; only the tilt tells
+        var hvLeft = rnd(0, 1), h = pick(HUES), yL = hvLeft ? 112 : 58, yR = hvLeft ? 58 : 112;
+        var s = VB + '<rect width="240" height="180" rx="18" fill="#fffdf5"/>' +
+          '<path d="M120 112 L100 166 L140 166z" fill="#b08a5a" stroke="#1e1b2e" stroke-width="3"/>' +
+          '<line x1="30" y1="' + (yL + 26) + '" x2="210" y2="' + (yR + 26) + '" stroke="#1e1b2e" stroke-width="6" stroke-linecap="round"/>';
+        function box(x, y) { return '<rect x="' + (x - 24) + '" y="' + (y - 22) + '" width="48" height="44" rx="6" fill="' + hsl(h, 55, 62) + '" stroke="#1e1b2e" stroke-width="4"/><path d="M' + (x - 24) + ' ' + (y - 8) + ' H' + (x + 24) + '" stroke="#1e1b2e" stroke-width="3"/>'; }
+        s += '<g class="ccopt" data-i="0">' + box(50, yL) + "</g>" + '<g class="ccopt" data-i="1">' + box(190, yR) + "</g>";
         var heavyIdx = hvLeft ? 0 : 1;
-        s += '<g class="ccopt" data-i="0">' + emo(hvLeft ? p[0] : p[1], 52, yL, 44) + "</g>";
-        s += '<g class="ccopt" data-i="1">' + emo(hvLeft ? p[1] : p[0], 188, yR, 44) + "</g>";
         return { scene: s + "</svg>", ans: side === 0 ? heavyIdx : 1 - heavyIdx }; } },
     { id: "near", cat: "position", w: [["closer to the house", "más cerca de la casa"], ["further from the house", "más lejos de la casa"]], ask: true,
       why: [["It is only a few steps from the house.", "Está a pocos pasos de la casa."], ["It has a long way to walk to the house.", "Tiene que andar mucho hasta la casa."]],
       gen: function (side) { var a = pick(THINGS);
         return two(side, function (tg) { var x = (tg === (side === 0)) ? 92 : 205;
           return card('<line x1="10" y1="140" x2="230" y2="140" stroke="#6b5" stroke-width="5"/>' + emo("🏠", 40, 110, 62) + emo(a, x, 118, 40, ' transform="translate(' + (2 * x) + ',0) scale(-1,1)"')); }); } },
+    { id: "far", cat: "position", scene: true, w: [["near you", "cerca de ti"], ["far away", "lejos"]],
+      why: [["It is close to your feet: big, low down, in front.", "Está junto a tus pies: grande, abajo, delante."], ["It is a long way up the road: small, high up, a bit hidden.", "Está lejos en el camino: pequeño, arriba, un poco tapado."]],
+      gen: function (side) {                                // research 08 #9: a road from YOUR feet; far = higher AND smaller AND partly hidden (never size alone)
+        var a = pick(THINGS), nearLeft = rnd(0, 1), xn = nearLeft ? 82 : 158, xf = nearLeft ? 150 : 92;
+        var s = VB + '<rect width="240" height="180" rx="18" fill="#cdeefd"/><rect y="62" width="240" height="118" fill="#bfe6a0"/>' +
+          '<path d="M96 180 L114 62 L126 62 L144 180z" fill="#e6d3b0"/>' + emo("👣", 120, 166, 22);
+        s += '<g class="ccopt" data-i="' + (side === 0 ? 0 : 1) + '">' + emo(a, xn, 128, 58) + "</g>";
+        s += '<g class="ccopt" data-i="' + (side === 0 ? 1 : 0) + '">' + emo(a, xf, 70, 26) + "</g>";
+        s += '<path d="M' + (xf - 24) + ' 78 h48" stroke="#7cb35a" stroke-width="12" stroke-linecap="round"/>';   // a hedge hides its feet
+        return { scene: s + "</svg>", ans: 0, say: side === 0 ? ["Your feet are at the bottom. Tap the one that is near you.", "Tus pies están abajo. Toca el que está cerca de ti."] : ["Your feet are at the bottom. Tap the one that is far away.", "Tus pies están abajo. Toca el que está lejos."] }; } },
     { id: "above", cat: "position", w: [["above the shelf", "encima de la estantería"], ["below the shelf", "debajo de la estantería"]], ask: true,
       why: [["Above means higher up than the shelf.", "Encima es más arriba que la estantería."], ["Below means lower down than the shelf.", "Debajo es más abajo que la estantería."]],
       gen: function (side) { var a = pick(TOYS);
@@ -98,17 +111,17 @@ var concepts = (function () {
       gen: function (side) { var a = pick(TOYS);
         return two(side, function (tg) { var inn = tg === (side === 0);
           return card('<path d="M60 60 L60 150 L180 150 L180 60" fill="#f3d3a6" stroke="#1e1b2e" stroke-width="4"/>' + emo(a, inn ? 120 : 214, inn ? 112 : 128, inn ? 48 : 40) + '<path d="M60 60 L60 150 L180 150 L180 60" fill="none" stroke="#1e1b2e" stroke-width="4"/>'); }); } },
-    { id: "front", cat: "position", w: [["in front of the box", "delante de la caja"], ["behind the box", "detrás de la caja"]], ask: true,
-      why: [["We can see all of it.", "Lo vemos entero."], ["The box hides part of it.", "La caja tapa una parte."]],
-      gen: function (side) { var h = pick(HUES);
+    { id: "front", cat: "position", w: [["in front of the house", "delante de la casa"], ["behind the house", "detrás de la casa"]], ask: true,
+      why: [["We can see all of it, the house is behind it.", "Lo vemos entero, la casa queda detrás."], ["The house hides part of it.", "La casa tapa una parte."]],
+      gen: function (side) { var a = pick(THINGS);          // research 08 #12: an anchor WITH a front (door), the behind one >= 40 % hidden
+        var house = '<path d="M60 92 L120 46 L180 92z" fill="#e8705a" stroke="#1e1b2e" stroke-width="4" stroke-linejoin="round"/><rect x="70" y="90" width="100" height="62" fill="#f6e3b4" stroke="#1e1b2e" stroke-width="4"/><rect x="108" y="114" width="24" height="38" rx="3" fill="#8a5a3a" stroke="#1e1b2e" stroke-width="3"/>';
         return two(side, function (tg) { var front = tg === (side === 0);
-          var box = '<rect x="70" y="70" width="100" height="80" rx="6" fill="#d9a066" stroke="#1e1b2e" stroke-width="4"/>', ball = '<circle cx="' + (front ? 140 : 132) + '" cy="' + (front ? 130 : 66) + '" r="30" fill="' + hsl(h, 80, 58) + '" stroke="#1e1b2e" stroke-width="4"/>';
-          return card(front ? box + ball : ball + box); }); } },
+          return card('<line x1="10" y1="152" x2="230" y2="152" stroke="#6b5" stroke-width="5"/>' + (front ? house + emo(a, 152, 140, 50) : emo(a, 174, 108, 48) + house)); }); } },
     { id: "between", cat: "position", scene: true, w: [["between", "en medio"], ["at the end", "en la punta"]], one: true,
-      why: [["It has a friend on each side.", "Tiene un amigo a cada lado."], ["It has a friend on only one side.", "Tiene un amigo solo a un lado."]],
-      gen: function (side) { var an = shuffle(THINGS.slice()).slice(0, 3), s = VB + '<rect width="240" height="180" rx="18" fill="#fffdf5"/>';
-        for (var i = 0; i < 3; i++) s += '<g class="ccopt" data-i="' + i + '">' + emo(an[i], 50 + i * 70, 92, 54) + "</g>";
-        return { scene: s + "</svg>", ans: 1 }; } },
+      why: [["It has one friend on each side.", "Tiene un amigo a cada lado."], ["It has a friend on only one side.", "Tiene un amigo solo a un lado."]],
+      gen: function (side) { var an = shuffle(THINGS.slice()).slice(0, 4), k = rnd(1, 2), s = VB + '<rect width="240" height="180" rx="18" fill="#fffdf5"/>';
+        for (var i = 0; i < 4; i++) s += '<g class="ccopt" data-i="' + i + '">' + emo(an[i], 33 + i * 58, 96, 46) + "</g>";
+        return { scene: s + "</svg>", ans: k, say: ["Tap the one between the " + NAME[an[k - 1]][0] + " and the " + NAME[an[k + 1]][0] + ".", "Toca el que está entre " + NAME[an[k - 1]][1] + " y " + NAME[an[k + 1]][1] + "."] }; } },
     { id: "first", cat: "order", scene: true, w: [["first", "el primero"], ["last", "el último"]],
       why: [["It is at the front, nearest the flag.", "Va delante, más cerca de la bandera."], ["It is at the back, furthest from the flag.", "Va detrás, más lejos de la bandera."]],
       gen: function (side) { var an = shuffle(THINGS.slice()).slice(0, 4), s = VB + '<rect width="240" height="180" rx="18" fill="#fffdf5"/><line x1="8" y1="128" x2="232" y2="128" stroke="#6b5" stroke-width="5"/>' + emo("🚩", 218, 92, 40);
@@ -135,21 +148,45 @@ var concepts = (function () {
         return two(side, function (tg) { var w = (tg === (side === 0)) ? rnd(150, 180) : rnd(46, 60);
           return card('<rect x="' + (120 - w / 2) + '" y="40" width="' + w + '" height="110" rx="8" fill="' + hsl(h, 60, 62) + '" stroke="#1e1b2e" stroke-width="4"/><circle cx="' + (120 + w / 2 - 14) + '" cy="98" r="5" fill="#1e1b2e"/>'); }); } },
     { id: "hot", cat: "sense", w: [["hot", "caliente"], ["cold", "frío"]],
-      why: [["Hot things can burn: steam, fire, the sun.", "Lo caliente quema: vapor, fuego, el sol."], ["Cold things are icy: snow, ice, ice cream.", "Lo frío es helado: nieve, hielo, helado."]],
-      gen: function (side) { var HOT = ["☕", "🔥", "🌞", "🍲", "🌋"], COLD = ["🧊", "⛄", "🍦", "❄️", "🐧"];
-        var want = side === 0 ? HOT : COLD, other = side === 0 ? COLD : HOT;
-        return two(side, function (tg) { return card(emo(pick(tg ? want : other), 120, 92, 96)); }); } },
+      why: [["Steam is rising: it is hot.", "Sale vapor: está caliente."], ["Ice cubes and frost: it is cold.", "Cubitos de hielo y escarcha: está frío."]],
+      gen: function (side) { var h = pick(HUES);              // the SAME mug on both cards; only steam vs ice changes
+        var mug = '<rect x="78" y="70" width="76" height="80" rx="10" fill="' + hsl(h, 60, 62) + '" stroke="#1e1b2e" stroke-width="4"/><path d="M154 86 q26 0 26 22 q0 22 -26 22" fill="none" stroke="#1e1b2e" stroke-width="7"/>';
+        return two(side, function (tg) { var hot = tg === (side === 0);
+          var top = hot ? '<path d="M98 60 q-10 -14 0 -26 q10 -12 0 -24 M118 60 q-10 -14 0 -26 q10 -12 0 -24 M138 60 q-10 -14 0 -26 q10 -12 0 -24" fill="none" stroke="#9aa3ad" stroke-width="5" stroke-linecap="round"/>'
+            : '<rect x="88" y="54" width="22" height="22" rx="4" fill="#dff4ff" stroke="#5aa9d6" stroke-width="3" transform="rotate(-12 99 65)"/><rect x="118" y="52" width="22" height="22" rx="4" fill="#dff4ff" stroke="#5aa9d6" stroke-width="3" transform="rotate(10 129 63)"/>' +
+              '<path d="M84 100 l6 6 m-6 0 l6 -6 M146 120 l6 6 m-6 0 l6 -6 M100 136 l5 5 m-5 0 l5 -5" stroke="#8fd3ff" stroke-width="3"/>';
+          return card(top + mug); }); } },
     { id: "dark", cat: "colour", w: [["darker", "más oscuro"], ["lighter", "más claro"]],
       why: [["It has more black in it, like the sky at night.", "Tiene más negro, como el cielo de noche."], ["It has more white in it, like the sky in the day.", "Tiene más blanco, como el cielo de día."]],
       gen: function (side) { var h = pick(HUES), sh = SHAPES[pick(Object.keys(SHAPES))], d = rnd(24, 32), l = rnd(70, 80);
         return two(side, function (tg) { return card('<g transform="translate(120,90)">' + sh(hsl(h, 70, (tg === (side === 0)) ? d : l)) + "</g>"); }); } },
     { id: "bright", cat: "colour", w: [["brighter", "más brillante"], ["dimmer", "más apagada"]],
-      why: [["It shines more light.", "Da más luz."], ["It shines less light.", "Da menos luz."]],
-      gen: function (side) {
-        return two(side, function (tg) { var on = tg === (side === 0), rays = "";
-          if (on) for (var i = 0; i < 10; i++) { var a = i * Math.PI / 5; rays += '<line x1="' + (120 + Math.cos(a) * 48) + '" y1="' + (78 + Math.sin(a) * 48) + '" x2="' + (120 + Math.cos(a) * 70) + '" y2="' + (78 + Math.sin(a) * 70) + '" stroke="#ffe066" stroke-width="6" stroke-linecap="round"/>'; }
-          return card((on ? '<circle cx="120" cy="78" r="66" fill="#ffe06655"/>' : "") + rays +
-            '<circle cx="120" cy="78" r="38" fill="' + (on ? "#ffe94d" : "#8a8470") + '" stroke="#1e1b2e" stroke-width="4"/><rect x="104" y="112" width="32" height="26" rx="5" fill="#9aa" stroke="#1e1b2e" stroke-width="4"/>', "#1d1a3a"); }); } }
+      why: [["It shines more light: a big glow, lots of light on the floor.", "Da más luz: un brillo grande, mucha luz en el suelo."], ["It shines less light: a small glow.", "Da menos luz: un brillo pequeño."]],
+      gen: function (side) {                                // both lamps ON (it was on vs off); halo, rays and floor patch >= 2:1
+        return two(side, function (tg) { var hi = tg === (side === 0), r = hi ? 64 : 26, n = hi ? 12 : 0, rays = "";
+          for (var i = 0; i < n; i++) { var an = i * Math.PI / 6; rays += '<line x1="' + (120 + Math.cos(an) * 44) + '" y1="' + (70 + Math.sin(an) * 44) + '" x2="' + (120 + Math.cos(an) * 66) + '" y2="' + (70 + Math.sin(an) * 66) + '" stroke="#ffe066" stroke-width="5" stroke-linecap="round"/>'; }
+          return card('<ellipse cx="120" cy="160" rx="' + (hi ? 92 : 34) + '" ry="' + (hi ? 16 : 7) + '" fill="' + (hi ? "#ffe06699" : "#ffe06644") + '"/>' +
+            '<circle cx="120" cy="70" r="' + r + '" fill="#ffe066' + (hi ? "66" : "33") + '"/>' + rays +
+            '<circle cx="120" cy="70" r="30" fill="' + (hi ? "#fff6a8" : "#e8d27a") + '" stroke="#1e1b2e" stroke-width="4"/><rect x="106" y="98" width="28" height="22" rx="5" fill="#9aa" stroke="#1e1b2e" stroke-width="4"/><line x1="120" y1="120" x2="120" y2="158" stroke="#1e1b2e" stroke-width="5"/>', "#1d1a3a"); }); } },
+    // ---- whose is it? (research 08 #23-24). "mine" is only ever said by the OWL, shown speaking; "you" = the bottom of the screen ----
+    { id: "mine", cat: "owner", scene: true, w: [["yours", "tuyo"], ["mine (the owl's)", "mío (del búho)"]],
+      why: [["It is next to you, at the bottom, with your orange ring.", "Está a tu lado, abajo, con tu aro naranja."], ["The owl says mine: it is the owl's, up by the owl, with the purple ring.", "El búho dice mío: es del búho, arriba junto al búho, con el aro morado."]],
+      gen: function (side) { var t = pick(TOYS), xo = rnd(0, 1) ? 70 : 170, xy = 240 - xo;
+        var s = VB + '<rect width="240" height="180" rx="18" fill="#fffdf5"/>' + emo("🦉", 106, 28, 44) +
+          '<path d="M140 10 h80 a8 8 0 0 1 8 8 v18 a8 8 0 0 1 -8 8 h-70 l-10 8 v-8 a8 8 0 0 1 0 -34z" fill="#fff" stroke="#7c5cff" stroke-width="3"/>' +
+          '<text x="186" y="32" font-size="15" font-weight="700" text-anchor="middle" fill="#3a2a8a">' + (es() ? (side ? "¡Mío!" : "¿El tuyo?") : (side ? "Mine!" : "Yours?")) + "</text>" +
+          '<rect x="6" y="146" width="228" height="28" rx="10" fill="#ffe2c4"/>' + emo("🧒", 120, 160, 26);
+        s += '<g class="ccopt" data-i="1"><circle cx="' + xo + '" cy="74" r="30" fill="none" stroke="#7c5cff" stroke-width="6"/>' + emo(t, xo, 74, 38) + "</g>";
+        s += '<g class="ccopt" data-i="0"><circle cx="' + xy + '" cy="118" r="30" fill="none" stroke="#ff8a3d" stroke-width="6"/>' + emo(t, xy, 118, 38) + "</g>";
+        return { scene: s + "</svg>", ans: side, say: side ? ["The owl says: Tap mine!", "El búho dice: ¡Toca el mío!"] : ["The owl says: Tap yours!", "El búho dice: ¡Toca el tuyo!"] }; } },
+    { id: "his", cat: "owner", scene: true, w: [["his", "de él"], ["hers", "de ella"]],
+      why: [["The boy's hat is his.", "El sombrero del niño es de él."], ["The girl's hat is hers.", "El sombrero de la niña es de ella."]],
+      gen: function (side) { var it = pick(["🧢", "🎒", "🧸", "⚽", "🎈"]), boyLeft = rnd(0, 1), xb = boyLeft ? 64 : 176, xg = 240 - xb;
+        var s = VB + '<rect width="240" height="180" rx="18" fill="#fffdf5"/><line x1="10" y1="150" x2="230" y2="150" stroke="#6b5" stroke-width="5"/>' +
+          emo("👦", xb, 70, 56) + emo("👧", xg, 70, 56);
+        s += '<g class="ccopt" data-i="0"><circle cx="' + xb + '" cy="126" r="24" fill="#8fd3ff66"/>' + emo(it, xb, 126, 34) + "</g>";
+        s += '<g class="ccopt" data-i="1"><circle cx="' + xg + '" cy="126" r="24" fill="#ffa3cf66"/>' + emo(it, xg, 126, 34) + "</g>";
+        return { scene: s + "</svg>", ans: side, say: side ? ["Tap hers: the girl's one.", "Toca el de ella: el de la niña."] : ["Tap his: the boy's one.", "Toca el de él: el del niño."] }; } }
   ];
   var BY = {}; C.forEach(function (c, i) { c.n = i; BY[c.id] = c; });
   function askText(c, side) {
@@ -162,6 +199,7 @@ var concepts = (function () {
     if (c.ask || c.id === "full" || c.id === "hot") return es() ? "Toca el que está " + w + "." : "Tap the one that is " + w + ".";
     return es() ? "Toca el " + w + "." : "Tap the " + w + " one.";
   }
+  function askQ(c, side) { return q && q.say ? (es() ? q.say[1] : q.say[0]) : askText(c, side); }   // the question's own words, if it has them
   function teachText(c, side) {                             // first time a word comes: show it
     var w = W(c.w[side]), y = W(c.why[side]);
     if (c.sound) return (es() ? "Escucha. Este es " + w + ". " : "Listen. This one is " + w + ". ") + y;
@@ -243,11 +281,11 @@ var concepts = (function () {
     } else {
       q.opts.forEach(function (svg, i) { var b = document.createElement("button"); b.innerHTML = svg; b.onclick = function () { answer(i, b); }; box.appendChild(b); });
     }
-    $("ccAsk").textContent = it.teach ? teachText(c, it.side) : askText(c, it.side);
+    $("ccAsk").textContent = it.teach ? teachText(c, it.side) : askQ(c, it.side);
     dots(); enable(false);
     var my = ++seq;
     function go() { if (my !== seq || !open) return; enable(true); t0 = Date.now(); if (it.teach) glow(); }
-    function speak() { if (!voice.tell(it.teach ? teachText(c, it.side) + " " + (es() ? "¡Tócalo!" : "Tap it!") : askText(c, it.side), q.sound ? function () { playSounds(q.sound, go); } : go)) (q.sound ? playSounds(q.sound, go) : setTimeout(go, 500)); }
+    function speak() { if (!voice.tell(it.teach ? teachText(c, it.side) + " " + (es() ? "¡Tócalo!" : "Tap it!") : askQ(c, it.side), q.sound ? function () { playSounds(q.sound, go); } : go)) (q.sound ? playSounds(q.sound, go) : setTimeout(go, 500)); }
     if (it.teach && q.sound) { voice.tell(es() ? "Escucha." : "Listen.", function () { playSounds(q.sound, function () { if (my === seq) speak2(); }); }); }
     else speak();
     function speak2() { var s = teachText(c, it.side) + " " + (es() ? "Es el " + (q.ans + 1) + ". ¡Tócalo!" : "It was number " + (q.ans + 1) + ". Tap it!"); if (!voice.tell(s, go)) setTimeout(go, 500); }

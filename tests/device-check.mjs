@@ -110,6 +110,12 @@ add("FOL-1", "Follow the keys: a song opens on its own sound; pressing the note 
   const prev = a.want[0], b = follow._state(); for (let i = 0; i < 6; i++) follow.note(prev); const r = follow._state(); r.want.forEach(m => follow.note(m)); const c = follow._state();
   follow.stop(); await t.S(300); const back = pianoSound.now();
   return { ok: snd === (s.snd || "grand") && r.miss === b.miss && c.si === r.si + 1 && back === own, info: s.t + ": sound " + snd + " (want " + s.snd + "); 6 repeats of the last note: misses " + b.miss + " -> " + r.miss + ", then the right key: step " + r.si + " -> " + c.si + "; sound after " + back + " (was " + own + ")" }`);
+add("CON-2", "Concept pictures (research 08): the new and fixed concepts open, every answer is tappable inside the screen, the asked word is in the prompt",
+  T + `const ids = ["far", "front", "between", "heavy", "hot", "bright", "mine", "his"], bad = [];
+  for (const id of ids) for (const side of [0, 1]) { concepts._one(id, side, false); await t.S(500); const q = concepts._q().q, box = t.$("ccOpts");
+    const opts = q.scene ? [...box.querySelectorAll(".ccopt")] : [...box.querySelectorAll("button")]; const ask = t.$("ccAsk").textContent;
+    if (opts.length < 2 || opts.some(o => !t.inside(o)) || !ask || /undefined/.test(ask)) bad.push(id + "/" + side + ": " + opts.length + " opts, ask '" + ask.slice(0, 40) + "'"); }
+  t.clear(); await t.S(300); return { ok: !bad.length, info: bad.length ? bad.join("; ") : ids.length * 2 + " questions ok" }`);
 add("LES-2", "Next / previous lesson changes the lesson number",
   T + `const a = t.$("num").textContent; t.$("next").click(); await t.S(800); const b = t.$("num").textContent; t.$("prev").click(); await t.S(800); const c = t.$("num").textContent;
   const q = t.$("quiz").classList.contains("open"); return { ok: a !== b && (c === a || q), info: a + " -> " + b + " -> " + c + (q ? "; maths quiz came up first (expected: quiz after a lesson)" : "") }`);
