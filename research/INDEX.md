@@ -15,6 +15,7 @@ Written 2026-10-27 by seven parallel research agents (web search + reading sourc
 | 05 | [05-educational-app-design-for-kids.md](05-educational-app-design-for-kids.md) | Evidence-based kids' app design: four pillars, seductive details, dark patterns, gamification, error feedback, accessibility, parent view, ICO children's code | 15 | 24 | any UI / reward / feedback / privacy decision |
 | 06 | [06-music-concepts-and-piano.md](06-music-concepts-and-piano.md) | KS1 music + Model Music Curriculum Y1–2, pitch-direction naming, left-low/right-high on the keyboard, Kodály/Orff/Dalcroze, music and attention (honest) | 10 | 23 | sound questions, piano teaching features |
 | 07 | [07-uk-curriculum-concept-map.md](07-uk-curriculum-concept-map.md) | Every basic concept by end of Year 2 from EYFS + KS1 (maths, science, English, music, art): **master table of 127 concept pairs**, 11 teaching units | 13 | 17 | "what is still missing?", unit order, curriculum wording |
+| 08 | [08-visual-illustration-of-concepts.md](08-visual-illustration-of-concepts.md) | Drawing every concept at a glance: anchors, depth cues a 6-year-old reads (overlap + height > size), bright/dim, possessives mine/yours/his/hers/ours/theirs (perspective, visible speaker), does animation help (only when the change is the concept); **drawing-spec table for 26 concepts**; audit of current pictures (2026-10-28) | 17 | 30 | drawing or fixing any concept picture, adding near/far, possessives, deciding on animation |
 
 **Audit of what the app actually uses:** [APPLIED.md](APPLIED.md) — all 111 rules: 47 done, 39 partly, 24 not yet (2026-10-27, v1.26).
 
@@ -33,7 +34,13 @@ Written 2026-10-27 by seven parallel research agents (web search + reading sourc
 | Movement breaks: do they help? How long? | 02 (Mahar 2006 +8 % on-task, least-focused +20 %; Watson 2017; ~1 in 4 pop-ups, 20–60 s) |
 | Does the app "train attention"? | No — 02 and 06 (near transfer only; music → attention g ≈ 0–0.26). Do not claim it. |
 | How to draw darker/lighter safely for colour-blind boys? | 04 (same hue, lightness step ≥ 20 L*, greyscale test); 05 |
-| How to draw closer/further, heavier, full/empty, fast/slow, in front/behind? | 04 per-concept rules |
+| How to draw closer/further, heavier, full/empty, fast/slow, in front/behind? | 04 per-concept rules; 08 drawing-spec table (scene, anchor, what varies, trap) |
+| How to draw ANY concept (scene, anchor, what stays identical, prompt, trap)? Which are "now" vs "later"? | 08 drawing-spec table (26 rows) + top 10 rules |
+| Near/far from the viewer (not to a landmark): which depth cues work at 6? | 08 F1, R2, table row 9 (overlap + higher on a ground line + smaller; never size alone) |
+| Brighter/dimmer vs darker/lighter vs dark room: how to draw each? | 08 F15, R7, table rows 20–22; 04 R7 |
+| Possessives mine/yours, his/hers, ours/theirs: age, how SLTs teach them, how the app shows "mine" | 08 F8–F14, R8–R11, table rows 23–26 |
+| Should concept pictures move? Does animation help a 6-year-old? | 08 F3–F7, R4–R6 (only when the change is the concept; teach clip, still question; no animated positions) |
+| Which current concept pictures have known flaws? | 08 F17 (between always middle, ball/box front-behind, bright = on/off, heavy = size, hot/cold different objects) |
 | How to ask high/low, loud/quiet, long/short with real notes? | 06 rules (big gaps first: ≥ an octave, never < 2 semitones; one dimension at a time; tie to the keys); 04 sound section |
 | Which words have two meanings (light, short, high, soft)? | 07 (rule R4: one meaning per unit, with a context icon); 04 |
 | How big should answer targets be? Where on screen? | 04 (avoid top-left/edges, big cards, balanced correct side); 05 (≥ 2 cm) |
