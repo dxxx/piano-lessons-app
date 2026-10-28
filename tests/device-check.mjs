@@ -47,6 +47,7 @@ window.__t = {
     });
     if (document.documentElement.scrollWidth > innerWidth + 1) bad.push("page scrolls sideways");
     return bad; },
+  solo(on) { if (document.body.classList.contains("solo") !== on && this.vis("soloBtn")) this.$("soloBtn").click(); },
   grown() { const r = []; if (!this.tap("lock")) r.push("Menu not tappable"); if (!this.tap("quitBtn")) r.push("Close not tappable"); return r; },
   home() { if (this.vis("homeBtn")) this.$("homeBtn").click(); }
 };`;
@@ -61,16 +62,16 @@ add("SCR-1", "Start screen: 5 tiles visible, fit the screen, Menu + Close tappab
   const g = t.$("homeHi").textContent; const bad = t.layout("home");
   return { ok: tiles.length === 5 && !/undefined|null/.test(g) && !bad.length && t.tap("lock"), info: tiles.length + " tiles; greeting " + (g ? "set" : "EMPTY") + (bad.length ? "; " + bad.join(", ") : "") + (t.tap("lock") ? "" : "; Menu not tappable") }`, "01-home");
 add("LES-1", "Piano tile opens lessons: list built, video area, keyboard, top bar fits",
-  T + `t.$("homePiano").click(); await t.S(1500); const pop = t.vis("songPop"); if (pop) { t.$("songX").click(); await t.S(400); } const n = t.$("list").children.length, k = t.$("keys").querySelectorAll("[data-m]").length;
+  T + `t.$("homePiano").click(); await t.S(1500); t.solo(false); await t.S(700); const pop = t.vis("songPop"); if (pop) { t.$("songX").click(); await t.S(400); } const n = t.$("list").children.length, k = t.$("keys").querySelectorAll("[data-m]").length;
   const bad = t.layout(document.querySelector("header")).concat(t.grown());
-  return { ok: n > 0 && k > 0 && t.vis("player") && !bad.length, info: n + " lessons, " + k + " keys" + (pop ? "; song list was open on entry (closed it)" : "") + (bad.length ? "; " + bad.join(", ") : "") }`, "02-lessons");
+  return { ok: n > 0 && k > 0 && t.vis("player") && !bad.length, info: n + " lessons, " + k + " keys, video " + (t.vis("player") ? "shown" : "HIDDEN (" + document.body.className + ")") + (pop ? "; song list was open on entry (closed it)" : "") + (bad.length ? "; " + bad.join(", ") : "") }`, "02-lessons");
 add("LES-3", "Big video toggles on and off",
   T + `const c0 = document.body.className; t.$("mode").click(); await t.S(500); const c1 = document.body.className; t.$("mode").click(); await t.S(500);
   return { ok: c0 !== c1 && document.body.className === c0, info: "on: " + c1.replace(c0, "").trim() }`, null);
 add("PNO-1", "Zoom in / out changes the number of keys, octave buttons work",
   T + `const n = () => t.$("keys").querySelectorAll("[data-m]").length, a = n(); t.$("zoomIn").click(); await t.S(300); const b = n(); t.$("zoomOut").click(); await t.S(300); const c = n();
-  const lo = () => Math.min(...[...t.$("keys").querySelectorAll("[data-m]")].map(k => +k.dataset.m)), o0 = lo(); t.$("octUp").click(); await t.S(300); const o1 = lo(); t.$("octDown").click(); await t.S(300);
-  return { ok: a !== b && c === a && o1 !== o0 && lo() === o0, info: "keys " + a + "/" + b + "/" + c + ", lowest " + o0 + "->" + o1 + (window.pianoZoomLock && window.pianoZoomLock() ? " (keyboard locked by a song)" : "") }`);
+  const lo = () => Math.min(...[...t.$("keys").querySelectorAll("[data-m]")].map(k => +k.dataset.m)), o0 = lo(); t.$("octUp").click(); await t.S(300); let o1 = lo(); const up = o1 !== o0; if (up) { t.$("octDown").click(); await t.S(300); } else { t.$("octDown").click(); await t.S(300); o1 = lo(); t.$("octUp").click(); await t.S(300); }
+  return { ok: a !== b && c === a && o1 !== o0 && lo() === o0, info: "keys " + a + "/" + b + "/" + c + ", lowest " + o0 + "->" + o1 + ", octave buttons " + (t.vis("octUp") ? "shown" : "hidden") + (t.$("octUp").disabled ? " (up disabled)" : "") + (window.pianoZoomLock && window.pianoZoomLock() ? " (keyboard locked by a song)" : "") }`);
 add("PNO-2", "Key names shown on the keys",
   T + `const ks = [...t.$("keys").querySelectorAll("[data-m]")]; const named = ks.filter(k => k.textContent.trim()).length;
   return { ok: named > 0, info: named + " of " + ks.length + " keys labelled (" + localStorage.getItem("noteNames") + ")" }`);
@@ -85,11 +86,11 @@ add("PLY-1", "Piano only and Play along modes switch",
   T + `const c0 = document.body.className; t.$("soloBtn").click(); await t.S(600); const c1 = document.body.className; t.$("soloBtn").click(); await t.S(600);
   return { ok: c1 !== c0, info: "piano only adds: " + c1.split(" ").filter(x => !c0.split(" ").includes(x)).join(" ") }`, null);
 add("BEAT-1", "Beat: panel opens in Piano only, tempo + / - change the BPM",
-  T + `t.$("soloBtn").click(); await t.S(600); const shown = t.vis("beatBtn"); t.$("beatBtn").click(); await t.S(500); const p = t.vis("beatPanel") || t.vis("beatFly");
+  T + `t.solo(true); await t.S(700); const shown = t.vis("beatBtn"); t.$("beatBtn").click(); await t.S(500); const p = t.vis("beatPanel") || t.vis("beatFly");
   const b0 = t.$("beatBpm").textContent; t.$("beatPlus").click(); await t.S(200); const b1 = t.$("beatBpm").textContent; t.$("beatMinus").click(); await t.S(200); const b2 = t.$("beatBpm").textContent;
   const bad = t.vis("beatPanel") ? t.layout("beatPanel") : []; ${""}
-  if (t.vis("beatX")) t.$("beatX").click(); await t.S(300); t.$("soloBtn").click(); await t.S(600);
-  return { ok: shown && p && b0 !== b1 && b2 === b0 && !bad.length, info: "bpm " + b0 + "/" + b1 + "/" + b2 + (bad.length ? "; " + bad.join(", ") : "") }`, "04-beat");
+  if (t.vis("beatX")) t.$("beatX").click(); await t.S(300); t.solo(false); await t.S(600);
+  return { ok: shown && p && b0 !== b1 && b2 === b0 && !bad.length, info: "Beat button " + shown + ", panel " + p + ", bpm " + b0 + "/" + b1 + "/" + b2 + (bad.length ? "; " + bad.join(", ") : "") }`, "04-beat");
 add("SNG-1", "Songs: list opens with 5 tabs, songs in each, favourite hearts",
   T + `t.$("songBtn").click(); await t.S(800); const tabs = [...t.$("songTabs").querySelectorAll("button")]; const per = [];
   for (const b of tabs) { b.click(); await t.S(300); per.push(b.textContent.trim().slice(0, 14) + ":" + t.$("songList").children.length); }
@@ -107,9 +108,9 @@ add("MTH-1", "Maths quiz between lessons: question + 3 answers + hearts, Menu an
 add("MTH-2", "Maths quiz: the Menu PIN pad opens above the quiz and covers the buttons",
   T + `t.$("lock").click(); await t.S(500); const g = t.$("gate").classList.contains("open"); const b = t.$("lock").getBoundingClientRect(); const top = document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2);
   const ok = g && !!top.closest("#gate"); window.lockMenu(); await t.S(300); return { ok, info: g ? "gate open, on top: " + ok : "gate did not open" }`);
-add("MTH-3", "Maths quiz: 'Show me the trick' plays and ends",
-  T + `const tb = t.$("qtbtn"); if (!t.vis(tb)) return { ok: true, info: "no trick button for this question (fine)" }; tb.click(); await t.S(800); const on = t.$("qtrick").classList.contains("on");
-  if (t.vis("tSkip")) t.$("tSkip").click(); await t.S(600); return { ok: on, info: "trick shown " + on + ", closed " + !t.$("qtrick").classList.contains("on") }`, null);
+add("MTH-3", "Maths quiz: 'Show me (the trick)' opens the hint for this sum",
+  T + `const tb = t.$("qtbtn"); if (!t.vis(tb)) return { ok: true, info: "hints are off in the Menu (fine)" }; tb.click(); await t.S(1200);
+  const h = t.$("quiz").classList.contains("hinting") || t.$("qtrick").classList.contains("on"); return { ok: h, info: "hint shown " + h }`, "06b-hint");
 add("MTH-4", "Red mistake screen: Menu reachable or the screen has its own way out",
   T + `t.$("qred").classList.add("on"); await t.S(300); const g = t.tap("lock"), stop = t.vis("qredStop"); t.$("qred").classList.remove("on"); await t.S(200);
   return { ok: g || stop, info: "Menu tappable " + g + ", own stop button " + stop }`);
@@ -134,6 +135,19 @@ add("EYE-1", "Eye guard cover: Menu reachable or the cover has its own way out",
   t.$("eyecov").classList.remove("on"); await t.S(200); return { ok: true, info: "Menu tappable " + g + ", own button " + own + " (cover is meant to block; noted)" }`);
 add("TIM-1", "Screen time: summary readable",
   T + `return { ok: typeof guard.summary() === "string" && !/NaN|undefined/.test(guard.summary() + guard.note()), info: guard.summary() }`);
+add("BAR-1", "Grown-up corner: Menu + Close tappable on every screen (start, lessons, piano only, quiz, maths-only, writing, colouring, bigger or smaller, lock screen)",
+  T + `const out = []; const at = async (name, go) => { await go(); await t.S(900); const g = t.grown(); out.push(name + (g.length ? ":" + g.join("+") : ":ok")); };
+  await at("start", async () => t.home());
+  await at("lessons", async () => { t.$("homePiano").click(); await t.S(900); t.solo(false); });
+  await at("piano only", async () => t.solo(true));
+  await at("quiz", async () => { t.solo(false); await t.S(500); quiz.show(true); });
+  await at("maths only", async () => { t.$("quiz").classList.remove("open"); t.home(); await t.S(500); t.$("homeMath").click(); });
+  await at("writing", async () => { t.home(); await t.S(500); t.$("homeWrite").click(); });
+  await at("colouring", async () => { t.home(); await t.S(500); t.$("homeColour").click(); });
+  await at("bigger or smaller", async () => { t.home(); await t.S(500); t.$("homeCompare").click(); });
+  await at("lock screen", async () => { t.home(); await t.S(500); document.body.classList.add("locked"); t.$("lockscr").style.display = "flex"; });
+  document.body.classList.remove("locked"); t.$("lockscr").style.display = ""; t.home();
+  return { ok: out.every(x => x.endsWith(":ok")), info: out.join(" | ") }`, "13-corner");
 add("PIN-1", "Menu: wrong PIN is refused",
   T + `t.$("lock").click(); await t.S(400); const k = d => [...t.$("pad").children].find(b => b.textContent === d).dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
   for (const d of "0000") { k(d); await t.S(80); } await t.S(400); const err = t.$("ge").textContent, menu = t.$("choices").hidden === false;

@@ -327,14 +327,16 @@
   .gate .note:empty { display: none; }
   /* Math-only mode: no video, no piano; the quiz fills the screen and only the Menu and Close buttons remain */
   body.math .stage > :not(header), body.math aside { display: none !important; }
-  body.math header > :not(#lock):not(#homeBtn):not(#quitBtn) { display: none !important; }
-  body.math #lock, body.athome #lock { position: fixed; top: 12px; right: 14px; z-index: 10; }
   body.math #homeBtn { position: fixed; top: 12px; left: 14px; z-index: 10; }
-  /* A full-screen kid layer (maths quiz, quick game, calm screen; body.kidtop) never hides the grown-up buttons
-     (2026-10-28: the quiz between lessons covered Menu and Close) */
-  body.math #lock, body.math #quitBtn, body.kidtop #lock, body.kidtop #quitBtn { position: fixed; top: 12px; z-index: 10; }
-  body.math #quitBtn, body.kidtop #quitBtn { right: 14px; }
-  body.math #lock, body.kidtop #lock { right: 118px; }
+  /* GLOBAL grown-up corner: 🔒 Menu + ✕ Close are one fixed pair at the top right on EVERY screen, above every kid layer
+     (start screen 8, quiz / quick game / calm / lock screen 9), under the PIN gate (10, later in the page). Screens never
+     list them one by one: that is how Close got lost (bug 1.35). Only the red mistake screen (12), the 5-min banner (12)
+     and the eye-guard cover (13) sit above them, on purpose. The top bar keeps their room free. */
+  #lock, #quitBtn { position: fixed !important; top: 12px; z-index: 10; display: inline-flex !important; align-items: center; }
+  #quitBtn { right: 14px; }
+  #lock { right: 118px; }
+  header { padding-right: 222px; }
+  header > .offbar { display: none !important; }   /* set by topBar() from the BAR table: the ONE place that says what each screen shows */
   body.fixedStart #homeBtn, body.athome #homeBtn { display: none !important; }
   /* Start screen: he picks what to do */
   .home { position: fixed; inset: 0; z-index: 8; display: none; flex-direction: column; align-items: center; justify-content: center;
@@ -456,8 +458,6 @@
   body.locked .lockscr { display: flex; } body.locked.earning .lockscr { display: none; }
   .lockscr .big { font-size: 110px; line-height: 1; } .lockscr .msg { font-size: 50px; font-weight: 800; } .lockscr .sub { font-size: 28px; color: #c7d0f0; }
   .lockscr button { margin-top: 12px; font-size: 28px; font-weight: 800; padding: 18px 34px; border: 0; border-radius: 18px; background: var(--accent); color: var(--accent-ink); }
-  body.locked header > :not(#lock) { display: none !important; }
-  body.locked #lock { position: fixed; top: 12px; right: 14px; z-index: 10; }
   .tbanner { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 12; background: #ffd166; color: #14121f;
     font-weight: 800; font-size: 22px; padding: 8px 20px; border-radius: 14px; display: none; }
   .tbanner.on { display: block; }
@@ -611,7 +611,6 @@
   .write { position: fixed; left: 10px; right: 10px; top: var(--wtop, 56px); bottom: 10px; z-index: 4; display: none; flex-direction: column; gap: 8px; }
   body.inwrite .write { display: flex; }
   body.inwrite .stage > :not(header), body.inwrite aside { display: none !important; }
-  body.inwrite header > :not(#lock):not(#homeBtn):not(#quitBtn) { display: none !important; }
   .wbar { display: flex; align-items: center; gap: 10px; min-height: 44px; }
   .wlv { font-weight: 700; font-size: 17px; white-space: nowrap; color: var(--accent); }
   .wrow { flex: 1; min-width: 0; display: flex; gap: 4px; overflow: hidden; font-size: 20px; }
@@ -634,7 +633,6 @@
   .compare { position: fixed; left: 10px; right: 10px; top: var(--wtop, 56px); bottom: 10px; z-index: 4; display: none; flex-direction: column; gap: 6px; }
   body.incompare .compare { display: flex; }
   body.incompare .stage > :not(header), body.incompare aside { display: none !important; }
-  body.incompare header > :not(#lock):not(#homeBtn):not(#quitBtn) { display: none !important; }
   .cmask { text-align: center; font-size: 26px; font-weight: 800; min-height: 32px; }
   .cmstage { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
   .cmstage.shake { animation: wshake .35s; }
@@ -712,7 +710,6 @@
   .colour { position: fixed; left: 10px; right: 10px; top: var(--wtop, 56px); bottom: 10px; z-index: 4; display: none; flex-direction: column; gap: 8px; }
   body.incolour .colour { display: flex; }
   body.incolour .stage > :not(header), body.incolour aside { display: none !important; }
-  body.incolour header > :not(#lock):not(#homeBtn):not(#quitBtn) { display: none !important; }
   .cstars { font-size: 24px; color: #ffd21f; letter-spacing: 2px; }
   .cleft { flex: 1; min-width: 0; color: var(--muted); font-size: 16px; white-space: nowrap; overflow: hidden; }
   .cpal { display: flex; gap: 6px; }
@@ -5176,11 +5173,23 @@
       eye.menu(false);
     }
     window.lockMenu = lock;
-    // body.kidtop while a full-screen kid layer is up, so the CSS keeps Menu and Close above it
-    var kidLayers = [$("quiz"), $("concept"), $("calm")];
-    function kidTop() { document.body.classList.toggle("kidtop", kidLayers.some(function (e) { return e && (e.classList.contains("open") || e.classList.contains("on")); })); }
-    var kidObs = new MutationObserver(kidTop);
-    kidLayers.forEach(function (e) { if (e) kidObs.observe(e, { attributes: true, attributeFilter: ["class"] }); });
+    // TOP BAR: the single source of truth for which top-bar items each screen shows ("*" = all). 🔒 Menu and ✕ Close are
+    // not in the table: they are the fixed grown-up corner, on every screen (CSS #lock, #quitBtn). A new screen = one row here.
+    var BAR = { lesson: "*", home: "", math: "homeBtn", write: "homeBtn", colour: "homeBtn", compare: "homeBtn", locked: "" };
+    function screenNow() {
+      var c = document.body.classList;
+      return c.contains("locked") ? "locked" : c.contains("athome") ? "home" : c.contains("math") ? "math" : c.contains("inwrite") ? "write"
+        : c.contains("incolour") ? "colour" : c.contains("incompare") ? "compare" : "lesson";
+    }
+    function topBar() {
+      var show = BAR[screenNow()];
+      [].forEach.call($("title").children, function (el) {
+        var keep = el.id === "lock" || el.id === "quitBtn" || show === "*" || (el.id && (" " + show + " ").indexOf(" " + el.id + " ") >= 0);
+        if (el.classList.contains("offbar") === keep) el.classList.toggle("offbar", !keep);
+      });
+    }
+    new MutationObserver(topBar).observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    topBar();
     ["gate", "act", "res"].forEach(function (id) {
       $(id).addEventListener("pointerdown", function (e) {
         if (e.target === $(id)) { lock(); return; }          // a tap outside the card closes (and locks) the menu
