@@ -677,6 +677,10 @@
   .cmans button.yes { background: var(--accent); transform: scale(1.1); } .cmans button.no { background: #ff6b6b; }
   .cmans button:active { transform: translateY(4px); box-shadow: 0 1px 0 rgba(0,0,0,.35); }
   .cmmsg { text-align: center; font-size: 22px; font-weight: 800; min-height: 60px; }
+  #homePlay { --edge: #a3285e; background: linear-gradient(160deg, #ffa3cf, #e9488c 70%); }
+  .home .opts button[hidden] { display: none !important; }   /* a tile the grown-up hid is GONE (display:flex above beat [hidden]: 1.36 device check) */
+  .home .opts.many { flex-wrap: wrap; row-gap: 2.5vh; max-width: 88vw; overflow-x: visible; }   /* 6 tiles: two rows of three */
+  .home .opts.many button { width: min(25vw, 250px, 33vh); min-width: 0; }
   #homeCompare { --edge: #7a3d9c; background: linear-gradient(160deg, #d9a6ff, #8b5cf6 70%); }
   /* Concepts: quick games that pop up (js/concepts.js) */
   .concept { position: fixed; inset: 0; z-index: 9; display: none; align-items: center; justify-content: center; background: radial-gradient(ellipse at 20% 0, #4a35a8 0, transparent 55%), rgba(14,12,32,.97); }
@@ -902,6 +906,7 @@
         <h4>Activities he can pick</h4>
         <div class="mlist">
           <button class="set" id="hPiano"></button>
+          <button class="set" id="hPlay"></button>
           <button class="set" id="hMath"></button>
           <button class="set" id="hWrite"></button>
           <button class="set" id="hColour"></button>
@@ -927,6 +932,7 @@
         <h4>Quiz between lessons</h4>
         <div class="mlist">
           <button class="set" id="qOn"></button>
+          <button class="set dep" id="qFirst"></button>
           <button class="set dep" id="qEvery"></button>
           <button class="set dep" id="qNeed"></button>
           <button class="set dep" id="qLevel"></button>
@@ -940,7 +946,6 @@
         <div class="mlist">
           <button class="set" id="ccEverySet"></button>
           <button class="set" id="ccNumSet"></button>
-          <button class="set" id="ccOtherSet"></button>
           <button class="set" id="ccMoveSet"></button>
           <button class="set" id="ccTrySet"></button>
           <button class="set" id="ccResetSet"></button>
@@ -1030,7 +1035,12 @@
       <rect x="10" y="56" width="180" height="80" rx="16" fill="#2b2160"/><rect x="10" y="56" width="180" height="14" rx="7" fill="#ff6fa8"/>
       <g fill="#fff"><rect x="18" y="72" width="22" height="58" rx="6"/><rect x="42" y="72" width="22" height="58" rx="6"/><rect x="66" y="72" width="22" height="58" rx="6"/><rect x="90" y="72" width="22" height="58" rx="6"/><rect x="114" y="72" width="22" height="58" rx="6"/><rect x="138" y="72" width="22" height="58" rx="6"/><rect x="162" y="72" width="22" height="58" rx="6"/></g>
       <g fill="#2b2160"><rect x="33" y="72" width="14" height="34" rx="4"/><rect x="57" y="72" width="14" height="34" rx="4"/><rect x="105" y="72" width="14" height="34" rx="4"/><rect x="129" y="72" width="14" height="34" rx="4"/><rect x="153" y="72" width="14" height="34" rx="4"/></g>
-      <rect x="90" y="108" width="22" height="22" rx="6" fill="#ffd86b"/></svg><span></span></button><button id="homeMath"><svg class="art" viewBox="0 0 200 140" aria-hidden="true">
+      <rect x="90" y="108" width="22" height="22" rx="6" fill="#ffd86b"/></svg><span></span></button><button id="homePlay"><svg class="art" viewBox="0 0 200 140" aria-hidden="true">
+      <rect x="62" y="12" width="16" height="44" rx="5" fill="#ffd86b"/><rect x="104" y="26" width="16" height="30" rx="5" fill="#ff8fb1"/><rect x="128" y="4" width="16" height="40" rx="5" fill="#8fd3ff"/>
+      <rect x="18" y="66" width="164" height="62" rx="10" fill="#fff"/>
+      <g fill="#2b2160"><rect x="40" y="66" width="12" height="36" rx="3"/><rect x="64" y="66" width="12" height="36" rx="3"/><rect x="100" y="66" width="12" height="36" rx="3"/><rect x="124" y="66" width="12" height="36" rx="3"/><rect x="148" y="66" width="12" height="36" rx="3"/></g>
+      <g stroke="#2b216055" stroke-width="2"><path d="M41 104v24M64 104v24M87 104v24M110 104v24M133 104v24M156 104v24"/></g>
+      <rect x="64" y="104" width="22" height="24" fill="#ffd86b"/></svg><span></span></button><button id="homeMath"><svg class="art" viewBox="0 0 200 140" aria-hidden="true">
       <g class="star"><path d="M100 6 l9 19 21 3 -15 14 4 21 -19 -10 -19 10 4 -21 -15 -14 21 -3z" fill="#ffd86b" stroke="#e0a800" stroke-width="3" stroke-linejoin="round"/></g>
       <g><rect x="14" y="76" width="54" height="54" rx="12" fill="#ff6fa8"/><rect x="14" y="76" width="54" height="10" rx="5" fill="#fff4"/><text x="41" y="118" font-size="38" fill="#fff" text-anchor="middle">2</text></g>
       <g><circle cx="100" cy="103" r="20" fill="#ffd86b"/><text x="100" y="116" font-size="34" fill="#7a4a00" text-anchor="middle">+</text></g>
@@ -1354,10 +1364,11 @@
     }
     return mastered;
   }
-  // The review to ask now, or null: one is due, REVIEW_GAP questions passed since the last one, and it is not the question just asked.
-  function reviewDue(q, since, lastKey) {
+  // The review to ask now, or null: one is due, REVIEW_GAP questions passed since the last one, it is not the question just asked,
+  // and it is not above the current level (maxLv): a parent who lowers the level must not get the hard ones he missed back (1.36).
+  function reviewDue(q, since, lastKey, maxLv) {
     if (since < REVIEW_GAP) return null;
-    for (var i = 0; i < q.length; i++) if (q[i].w <= 0 && qKey(q[i].a, q[i].b, q[i].plus) !== lastKey) return q[i];
+    for (var i = 0; i < q.length; i++) if (q[i].w <= 0 && qKey(q[i].a, q[i].b, q[i].plus) !== lastKey && !(maxLv && q[i].lv > maxLv)) return q[i];
     return null;
   }
   // Column sums that need a carry (59 + 67) or a trade (84 - 39), and the classic wrong answers they invite:
@@ -2485,11 +2496,16 @@
       instrument = id;
       var x = INSTR.filter(function (i) { return i[0] === id; })[0];
       instBtn.innerHTML = icon(x) + " " + iname(x);
-      if (save) { try { localStorage.setItem("instrument", id); } catch (e) {} diary.ev("sound", { id: id }); }
+      if (save) { if (!(window.followSound && followSound(id))) try { localStorage.setItem("instrument", id); } catch (e) {} diary.ev("sound", { id: id }); }
       if (SETS[id] && document.body.classList.contains("play")) loadSet(id);
       hint();
     }
 
+    // Follow the keys switches to each song's own sound and back (follow.js); set() does not touch his saved everyday sound
+    window.pianoSound = {
+      now: function () { return instrument; },
+      set: function (id) { if (id !== instrument && INSTR.some(function (x) { return x[0] === id; })) setInstrument(id, false); }
+    };
     window.pianoStopAll = function () { releaseAll(); };
     function releaseAll() { Object.keys(held).forEach(function (k) { release(k); }); try { if (natOk) NPiano.allOff(); } catch (e) {} }
 
@@ -2653,6 +2669,8 @@
       if (on && !fly.run) { fly.run = true; requestAnimationFrame(flyFrame); } else if (!on) fly.run = false;
     }
     soloBtn.onclick = function () { setSolo(!document.body.classList.contains("solo")); };
+    window.pianoLessons = function () { if (document.body.classList.contains("solo")) setSolo(false); };   // "Piano lessons" tile = the video again
+    window.pianoOnly = function () { audio(); if (!document.body.classList.contains("play")) apply(true); setSolo(true); };   // the "Play the piano" start tile
 
     // Touch lag log for the grown-up's computer: ms from the finger touching the glass to our code running (w = waited) and to the sound being started (t = total)
     var lag = window.pianoLag = [];
@@ -3358,14 +3376,15 @@
     if (get("quizCapV", "") !== "2") { cap = Math.min(cap, 4); gateRun = 0; put("quizCap", cap); put("quizGateRun", 0); put("quizCapV", "2"); }   // one-time: 1.25's top of 5 -> 4
     if (level > cap) { level = cap; put("quizLevel", level); }
     var cfg = { on: get("quizOn", "1") === "1", review: get("quizRepeat", "1") === "1", hint: [0, 20, 30, 45].indexOf(parseInt(get("hintAfter", "20"), 10)) >= 0 ? parseInt(get("hintAfter", "20"), 10) : 20,
-               style: /^(test|A|B|C)$/.test(get("hintStyle", "test")) ? get("hintStyle", "test") : "test", every: clamp(+get("quizEvery", "2") || 2, 1, 4), need: clamp(+get("quizNeed", "1") || 1, 1, 3) };
+               style: /^(test|A|B|C)$/.test(get("hintStyle", "test")) ? get("hintStyle", "test") : "test", every: clamp(+get("quizEvery", "2") || 2, 1, 4), need: clamp(+get("quizNeed", "1") || 1, 1, 3),
+               first: clamp(+get("quizFirst", "3") || 3, 2, 4) };   // lessons he plays freely before the first question of a session
     Object.defineProperty(cfg, "gate", { enumerable: false, get: function () { return { cap: cap, run: gateRun, need: GATE_RUN }; } });
     Object.defineProperty(cfg, "level", {
       enumerable: true,
       get: function () { return level; },
       set: function (v) { level = clamp(v, 1, MAX_LEVEL); if (level > cap) { cap = level; put("quizCap", cap); } put("quizLevel", level); act.level(level); run = 0; miss = 0; put("quizRun", 0); put("quizMiss", 0); guard.base(level); }
     });
-    var count = +get("quizCount", "1"), open = false, answer = 0, curQ = "", lastQ = "", curA = 0, curB = 0;
+    var count = +get("quizCount", "1"), played = 0, open = false, answer = 0, curQ = "", lastQ = "", curA = 0, curB = 0;
     var curPlus = true, curLv = 1, curRv = false, manual = false, earnOnly = false, cont = null, lastPraise = -1, sinceRv = REVIEW_GAP;
     var CHEER = '<div class="qcheer">&#127881;&#11088;&#127881;</div>';
     var hintT = null, hintN = 0, trickUsed = false, paused = false, trickTok = 0, redT = [];   // hints: the timer, the step shown; the mini-lesson token
@@ -3626,7 +3645,7 @@
     function ask() {
       var q, tries = 0, rv = null;
       sinceRv++;
-      if (cfg.review) rv = reviewDue(review, sinceRv, qKey(curA, curB, curPlus));
+      if (cfg.review && !earnOnly) rv = reviewDue(review, sinceRv, qKey(curA, curB, curPlus), level);
       if (rv) {                                                 // a missed question comes back, at its own level
         q = { a: rv.a, b: rv.b, plus: rv.plus, ans: rv.plus ? rv.a + rv.b : rv.a - rv.b };
         curQ = q.a + (q.plus ? " + " : " − ") + q.b; sinceRv = 0; curLv = rv.lv;
@@ -3898,6 +3917,13 @@
       put("quizLog", "[]"); put("quizRun", 0); put("quizMiss", 0); put("quizReview", "[]"); put("quizMastered", "{}");
     }
 
+    // The lesson-end break: a coin between this maths quiz and a quick concept game (both teach while he is focused on the
+    // piano). A concept game counts as the break, so the maths turn starts again after it.
+    function pianoBreak() {
+      if (window.concepts && concepts.ready() && Math.random() < 0.5 &&
+          concepts.show("piano", function () { count = 1; put("quizCount", 1); })) return;
+      show();
+    }
     return {
       isOpen: function () { return open; },
       show: show,
@@ -3913,16 +3939,18 @@
       },
       lessonChanged: function (firstLoad) {
         if (!cfg.on || open) return;
-        if (firstLoad) { if (get("quizPending", "0") === "1") show(); return; }   // closed mid-quiz: ask again
-        count++; put("quizCount", count);
-        if (count > cfg.every) show();
+        // Opening the app (or Piano) never starts with maths: a quiz left over from last time is dropped, and the first
+        // question comes after cfg.first lessons played this session (operator 1.36: "let him play 2-3-4 songs first").
+        if (firstLoad) { put("quizPending", 0); played = 0; return; }
+        played++; count++; put("quizCount", count);
+        if (played > cfg.first && count > cfg.every) pianoBreak();
       },
       cfg: cfg,
       results: results,
       hintStats: function () { return hintStats(log); },
       clearRecords: clearRecords,
       save: function () {
-        put("quizOn", cfg.on ? 1 : 0); put("quizEvery", cfg.every); put("quizNeed", cfg.need); put("quizRepeat", cfg.review ? 1 : 0); put("hintAfter", cfg.hint); put("hintStyle", cfg.style);
+        put("quizOn", cfg.on ? 1 : 0); put("quizEvery", cfg.every); put("quizNeed", cfg.need); put("quizFirst", cfg.first); put("quizRepeat", cfg.review ? 1 : 0); put("hintAfter", cfg.hint); put("hintStyle", cfg.style);
         if (!cfg.on) { count = 1; put("quizCount", 1); put("quizPending", 0); }
       }
     };
@@ -4283,7 +4311,7 @@
       ["sandcastle", "el castillo de arena"], ["unicorn", "el unicornio"], ["elephant", "el elefante"], ["tiger", "el tigre"], ["dog", "el perro"], ["dragon", "el dragón"],
       ["big butterfly", "la mariposa grande"], ["tortoise", "la tortuga"], ["lion", "el león"], ["footballer", "el futbolista"], ["astronaut", "el astronauta"],
       ["crocodile", "el cocodrilo"], ["horse", "el caballo"], ["baby unicorn", "el unicornio bebé"], ["pirate", "el pirata"], ["flying unicorn", "el unicornio volador"],
-      ["mermaid", "la sirena"], ["rescue team", "los vehículos de rescate"], ["under the sea", "el fondo del mar"]].map(function (p, i) {
+      ["mermaid", "la sirena"], ["rescue team", "los vehículos de rescate"], ["under the sea", "el fondo del mar"], ["polar bear", "el oso polar"]].map(function (p, i) {
         return { src: "colour/" + (i < 9 ? "0" : "") + (i + 1) + ".png", id: "b" + (i + 1), en: p[0], es: p[1] };
       });
     var PICS = BUILTIN.slice();
@@ -4715,14 +4743,14 @@
       bar();
       if (!finished()) return;
       done = true;
-      var n = stars(), id = pic().id;
+      var n = stars(), id = pic().id, first = !prog.stars[id];
       prog.stars[id] = Math.max(prog.stars[id] || 0, n);
-      if (!pic().own) prog.open = Math.max(prog.open, Math.min(BUILTIN.length - 1, prog.pic + 1));
+      // a NEW picture finished opens one more (pictures come in a random order now, so "the next one" is no longer pic + 1)
+      if (!pic().own) prog.open = Math.max(prog.open, Math.min(BUILTIN.length - 1, first ? prog.open + 1 : prog.pic + 1));
       memRes = memOn() ? memCheck() : null;
       save();
       logIt({ stars: n, mem: memRes ? memRes.ok + "/" + memRes.n : undefined, peeks: memRes ? peeks : undefined });
       confetti(n === 3 ? 140 : 80); bar();
-      setTimeout(function () { if (window.concepts && document.body.classList.contains("incolour")) concepts.maybe("colour", null, 0.6); }, 9000);
       var say = n === 3 ? pick("s3", [L("Perfect! You stayed inside the lines. Three stars!", "¡Perfecto! No te saliste de las líneas. ¡Tres estrellas!"),
           L("Amazing! So neat. Three stars!", "¡Increíble! Muy limpio. ¡Tres estrellas!"), L("Wow, a careful artist! Three stars!", "¡Qué artista tan cuidadoso! ¡Tres estrellas!")])
         : n === 2 ? pick("s2", [L("Great colouring! Two stars!", "¡Muy bien coloreado! ¡Dos estrellas!"), L("Lovely! Two stars. A bit slower at the lines for three.", "¡Precioso! Dos estrellas. Un poco más despacio en las líneas para tres.")])
@@ -4751,7 +4779,7 @@
       if (!looking) document.getElementById("cLeft").textContent = done ? (memRes ? "🧠 " + memRes.ok + "/" + memRes.n : "") : Math.min(100, Math.round(s.pct / 0.85 * 100)) + "%" + (crosses ? "  ·  " + L("over the line: ", "fuera: ") + crosses + (opt.limit ? "/" + opt.limit : "") : "");
       var pk = document.getElementById("cPeek"); pk.hidden = !memOn() || done || looking; pk.disabled = peeks >= 2;
       document.getElementById("cPrev").disabled = prog.pic === 0;
-      document.getElementById("cNext").disabled = !unlocked(prog.pic + 1);
+      document.getElementById("cNext").disabled = nextPic() >= PICS.length || !unlocked(nextPic());
       document.getElementById("cNext").classList.toggle("go", done && !restLeft() && prog.pic < PICS.length - 1);
     }
     function load(i) {
@@ -4788,7 +4816,14 @@
     });
     document.getElementById("cUndo").onclick = function () { if (done || !strokes.length) return; strokes.pop(); replay(true); };
     document.getElementById("cPrev").onclick = function () { load(prog.pic - 1); };
-    document.getElementById("cNext").onclick = function () { load(prog.pic + 1); };
+    // ▶ = a RANDOM open picture he has not coloured yet (operator 2026-10-28: "randomize drawing images"); all coloured: any other open one
+    function nextPic() {
+      var open = [], fresh = [];
+      for (var i = 0; i < PICS.length; i++) if (i !== prog.pic && unlocked(i)) { open.push(i); if (!prog.stars[PICS[i].id]) fresh.push(i); }
+      var from = fresh.length ? fresh : open;
+      return from.length ? from[Math.floor(Math.random() * from.length)] : prog.pic + 1;
+    }
+    document.getElementById("cNext").onclick = function () { load(nextPic()); };
     onLang(function () { bar(); });
     function top() { var h = document.querySelector("header"); if (h) document.documentElement.style.setProperty("--wtop", Math.round(h.getBoundingClientRect().bottom + 8) + "px"); }
     window.addEventListener("resize", function () { if (on) top(); });
@@ -4845,20 +4880,26 @@
       atHome = true; document.body.classList.remove("math", "inwrite", "incolour", "incompare"); document.body.classList.add("athome"); homeEl.classList.add("on");
     }
     function fixed() { document.body.classList.toggle("fixedStart", start !== "choose"); }
-    var CARD = { piano: "homePiano", math: "homeMath", write: "homeWrite", colour: "homeColour", compare: "homeCompare" }, hide = [];
+    var CARD = { piano: "homePiano", play: "homePlay", math: "homeMath", write: "homeWrite", colour: "homeColour", compare: "homeCompare" }, hide = [];
     try { hide = JSON.parse(localStorage.getItem("homeHide") || "[]").filter(function (k) { return CARD[k]; }); } catch (e) { hide = []; }
-    if (hide.length > 4) hide = [];
-    function cards() { Object.keys(CARD).forEach(function (k) { document.getElementById(CARD[k]).hidden = hide.indexOf(k) >= 0; }); }
+    if (hide.length > 5) hide = [];
+    function cards() {
+      Object.keys(CARD).forEach(function (k) { document.getElementById(CARD[k]).hidden = hide.indexOf(k) >= 0; });
+      homeEl.querySelector(".opts").classList.toggle("many", Object.keys(CARD).length - hide.length > 5);
+    }
     cards();
     onLang(function () {
       document.getElementById("homeHi").textContent = L("Hi! What do you want to do?", "¡Hola! ¿Qué quieres hacer?");
       document.querySelector("#homePiano span").textContent = L("Piano lessons", "Lecciones de piano");
+      document.querySelector("#homePlay span").textContent = L("Play the piano", "Tocar el piano");
       document.querySelector("#homeMath span").textContent = L("Maths", "Mates");
       document.querySelector("#homeWrite span").textContent = L("Writing", "Escritura");
       document.querySelector("#homeColour span").textContent = L("Colouring", "Colorear");
       document.querySelector("#homeCompare span").textContent = L("Bigger or smaller", "Mayor o menor");
     });
-    document.getElementById("homePiano").onclick = function () { apply("piano"); };
+    document.getElementById("homePiano").onclick = function () { apply("piano"); if (window.pianoLessons) pianoLessons(); };
+    // Play along on its own (operator 2026-10-28): the piano screen straight in Piano only - his keyboard, songs, Follow the keys
+    document.getElementById("homePlay").onclick = function () { apply("piano"); if (window.pianoOnly) pianoOnly(); };
     document.getElementById("homeMath").onclick = function () { apply("math"); };
     document.getElementById("homeWrite").onclick = function () { apply("write"); };
     document.getElementById("homeColour").onclick = function () { apply("colour"); };
@@ -4875,7 +4916,7 @@
       shown: function (k) { return hide.indexOf(k) < 0; },
       toggleShown: function (k) {                                   // never hides the last one; a hidden fixed start falls back to the choice
         var i = hide.indexOf(k);
-        if (i >= 0) hide.splice(i, 1); else if (hide.length < 4) hide.push(k); else return false;
+        if (i >= 0) hide.splice(i, 1); else if (hide.length < Object.keys(CARD).length - 1) hide.push(k); else return false;
         try { localStorage.setItem("homeHide", JSON.stringify(hide)); } catch (e) {}
         cards();
         if (hide.indexOf(start) >= 0) { start = "choose"; try { localStorage.setItem("startMode", start); } catch (e) {} fixed(); }
@@ -5235,6 +5276,7 @@
     function label() {
       var c = quiz.cfg;
       $("qOn").textContent = "Maths quiz: " + (c.on ? "ON" : "OFF");
+      $("qFirst").textContent = "First question after: " + c.first + " lessons (he plays freely first)";
       $("qEvery").textContent = "Quiz after: every " + (c.every > 1 ? c.every + " lessons" : "lesson");
       $("qNeed").textContent = "Correct answers needed: " + c.need;
       $("qLevel").textContent = "Level: " + c.level + (c.gate.cap < 7 ? " (level " + (c.gate.cap + 1) + " opens after " + c.gate.need + " right in a row with no hint: " + c.gate.run + " of " + c.gate.need + ")" : "");
@@ -5242,7 +5284,6 @@
       $("cmResetSet").textContent = "Start Bigger or smaller again: " + compare.stars() + " stars so far";
       $("ccEverySet").textContent = "⏱ A quick game every: " + (concepts.cfg.every ? concepts.cfg.every + " min of piano" : "off");
       $("ccNumSet").textContent = "Questions each time: " + concepts.cfg.n;
-      $("ccOtherSet").textContent = "Also in colouring and Bigger or smaller: " + (concepts.cfg.other ? "yes" : "no");
       $("ccMoveSet").textContent = "Move breaks (hands up, touch the floor…): " + (concepts.cfg.move ? "yes" : "no");
       $("ccTrySet").textContent = "▶ Try one now (learned " + concepts.count() + " of " + concepts.total + ")" + (concepts.current() ? " – learning: " + concepts.current() : "");
       $("ccResetSet").textContent = "Start the concept games again: " + concepts.stars() + " stars so far";
@@ -5263,7 +5304,7 @@
       $("pCalm").textContent = "Slow-down pause after random key mashing: " + (calm.isOn() ? "ON" : "OFF");
       $("pZoom").textContent = "He can change the key size (+ / −): " + (window.pianoZoomLock() ? "OFF (size stays as set)" : "ON");
       $("cClear").textContent = "Remove my own pictures: " + colouring.ownCount(); $("cClear").disabled = !colouring.ownCount();
-      $("qEvery").disabled = $("qNeed").disabled = $("qLevel").disabled = !c.on;
+      $("qFirst").disabled = $("qEvery").disabled = $("qNeed").disabled = $("qLevel").disabled = !c.on;
     }
     function vlabel() {
       if (!$("vOn")) return;                    // the menu is not rendered while locked
@@ -5276,7 +5317,7 @@
     }
     function mlabel() {
       $("qMode").textContent = "Opens with: " + { choose: "he chooses", piano: "Piano lessons", math: "Maths only", write: "Writing only", colour: "Colouring only", compare: "Bigger or smaller only" }[appMode.startMode()];
-      [["hPiano", "piano", "Piano lessons"], ["hMath", "math", "Maths"], ["hWrite", "write", "Writing"], ["hColour", "colour", "Colouring"], ["hCompare", "compare", "Bigger or smaller"]].forEach(function (x) {
+      [["hPiano", "piano", "Piano lessons"], ["hPlay", "play", "Play the piano"], ["hMath", "math", "Maths"], ["hWrite", "write", "Writing"], ["hColour", "colour", "Colouring"], ["hCompare", "compare", "Bigger or smaller"]].forEach(function (x) {
         $(x[0]).textContent = x[2] + ": " + (appMode.shown(x[1]) ? "ON" : "OFF");
       });
       $("qTry").disabled = appMode.math();
@@ -5326,6 +5367,7 @@
       appMode.setStart(order[(order.indexOf(appMode.startMode()) + 1) % order.length]); mlabel();
     };
     $("hPiano").onclick = function () { appMode.toggleShown("piano"); mlabel(); };
+    $("hPlay").onclick = function () { appMode.toggleShown("play"); mlabel(); };
     $("hMath").onclick = function () { appMode.toggleShown("math"); mlabel(); };
     $("hWrite").onclick = function () { appMode.toggleShown("write"); mlabel(); };
     $("hColour").onclick = function () { appMode.toggleShown("colour"); mlabel(); };
@@ -5361,6 +5403,7 @@
     $("cLimit").onclick = function () { colouring.opt("limit"); label(); };
     function cycle(list, v) { return list[(list.indexOf(v) + 1) % list.length]; }
     $("qOn").onclick = function () { quiz.cfg.on = !quiz.cfg.on; quiz.save(); label(); };
+    $("qFirst").onclick = function () { quiz.cfg.first = cycle([2, 3, 4], quiz.cfg.first); quiz.save(); label(); };
     $("qEvery").onclick = function () { quiz.cfg.every = cycle([1, 2, 3, 4], quiz.cfg.every); quiz.save(); label(); };
     $("qNeed").onclick = function () { quiz.cfg.need = cycle([1, 2, 3], quiz.cfg.need); quiz.save(); label(); };
     $("qLevel").onclick = function () { quiz.cfg.level = cycle([1, 2, 3, 4, 5, 6, 7], quiz.cfg.level); label(); };
@@ -5368,7 +5411,6 @@
     $("cmResetSet").onclick = function () { compare.reset(); label(); };
     $("ccEverySet").onclick = function () { var E = concepts.EVERY; concepts.set("every", E[(E.indexOf(concepts.cfg.every) + 1) % E.length]); label(); };
     $("ccNumSet").onclick = function () { concepts.set("n", concepts.cfg.n % 3 + 1); label(); };
-    $("ccOtherSet").onclick = function () { concepts.set("other", concepts.cfg.other ? 0 : 1); label(); };
     $("ccMoveSet").onclick = function () { concepts.set("move", concepts.cfg.move ? 0 : 1); label(); };
     $("ccTrySet").onclick = function () { closeGate(); setTimeout(function () { concepts.show("menu"); }, 300); };
     $("ccResetSet").onclick = function () { concepts.reset(); label(); };

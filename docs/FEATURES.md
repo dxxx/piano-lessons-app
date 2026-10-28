@@ -44,6 +44,9 @@ node tools/tabjs.mjs $(port get piano-player tablet-devtools) "document.body.cla
 | SCR-8 | Every screen fits the tablet with no page scroll (quiz, mistake screen, mini-lessons shrink to fit) | 1.11 | done | – |
 | SCR-9 | Tiles show progress ("Lesson 3 of 12", "Level 2 · 14 stars") and a 1.5 s splash per activity (roadmap A9) | – | idea | – |
 | SCR-10 | Drawn line icons instead of emoji on buttons (lock, clock, star, play, speaker…) (roadmap A11) | – | idea | – |
+| SCR-11 | Six tiles: a 🎹 "Play the piano" tile opens the piano straight in Piano only (keyboard, Songs, Follow the keys); "Piano lessons" goes back to the video | 1.36 | done | ✅ 1.36 2026-10-28 |
+| SCR-12 | With 6 tiles in landscape they sit in two rows of three that fit 1024×640, no sideways scroll | 1.36 | done | – |
+| SCR-13 | Menu → Start screen can hide "Play the piano" like any tile; at least one always stays | 1.36 | done | – |
 
 ## Lessons and video (LES)
 
@@ -155,6 +158,14 @@ node tools/tabjs.mjs $(port get piano-player tablet-devtools) "document.body.cla
 | SNG-19 | Modern music: the playlist songs (not Synthesia), level stars on the cards, easier first | 1.33 | done | – |
 | SNG-20 | My lessons: the songs of his YouTube lesson videos, in lesson order; songs from his lessons also come first in the other tabs | 1.33 | done | – |
 | SNG-21 | One keyboard for the whole song: set once at start to cover every note (up to 85 keys), never moves; his zoom comes back at the end | 1.34 | done | – |
+| SNG-27 | Every song opens on its own sound (index.json `snd`: carols celesta, Bach harpsichord, Linkin Park rock guitar, lullabies music box…; else grand) | 1.36 | done | ✅ 1.36 2026-10-28 |
+| SNG-28 | He can change the sound inside a song; that pick is remembered for that song only (songSnd); leaving the song gives his own sound back | 1.36 | done | ✅ 1.36 2026-10-28 |
+| SNG-29 | The song falls at HIS speed: each finished step nudges the speed (0.45–1.5×) toward his pace; a long pause does not count | 1.36 | done | ✅ 1.36 2026-10-28 |
+| SNG-30 | A right key pressed while its note is still falling counts at once and the song jumps there (no stop for a fluent player) | 1.36 | done | ✅ 1.36 2026-10-28 |
+| SNG-31 | A chord counts once half its keys are down; the app plays the rest softly | 1.36 | done | – |
+| SNG-32 | Pressing the note he just played again (in rhythm) is just a sound: no miss, never blocks the right key; a flurry = 3+ DIFFERENT wrong keys in 1.5 s | 1.36 | done | ✅ 1.36 2026-10-28 |
+| SNG-33 | No sponsor/intro jingle in a song (Skoove screens): the first notes are the song itself | 1.36 | done | ✅ 1.36 2026-10-28 |
+| SNG-34 | One version per song on the tablet (duplicates removed by the grown-up: drop.txt) | 1.36 | done | ✅ 1.36 2026-10-28 |
 | SNG-22 | Song parts: split songs into 8–12-note parts with stars, then joined | – | parked | – |
 | SNG-23 | Play in time: 50 / 75 / 100 % speed, unlocked after ⭐⭐ | – | parked | – |
 | SNG-24 | A path / unlock order through the songs | – | parked | – |
@@ -206,6 +217,8 @@ node tools/tabjs.mjs $(port get piano-player tablet-devtools) "document.body.cla
 | MTH-39 | Divide by sharing onto plates (roadmap A7, levels 10–11) | – | idea | – |
 | MTH-40 | Maths path strip across the top with the current level marked (roadmap A8) | – | idea | – |
 | MTH-41 | Quiz rules written down (`docs/QUIZ-RULES.md`) and a 500-answer simulator (`tools/quiz-sim.js`) (roadmap B6) | – | idea | – |
+| MTH-90 | Opening Piano lessons never starts in a maths question: a quiz left pending is dropped; he plays 2–4 lessons first (Menu: "First question after", default 3) | 1.36 | done | – |
+| MTH-91 | Review questions above the current level are never asked (a grown-up who lowers the level does not get the hard misses back) | 1.36 | done | – |
 
 ## Bigger or smaller (CMP)
 
@@ -238,6 +251,10 @@ node tools/tabjs.mjs $(port get piano-player tablet-devtools) "document.body.cla
 | CON-10 | Never opens over the Menu, quiz, mistake screen, sound picker, eye cover or a lock; closes quietly if a lock or the eye cover comes | 1.26 | done | – |
 | CON-11 | Menu → Maths → Quick concept games: how often, how many questions, other activities, move breaks, try one now, start again | 1.25 | done | – |
 | CON-12 | 3-picture checks once learned; counting sets; sound questions from his own song; the rest of the 127-pair map | – | idea | – |
+| CON-90 | Piano breaks (lessons and Play along) are a coin toss: a maths question or a concept game; colouring and writing no longer get concept pop-ups | 1.36 | done | – |
+| CON-91 | Every concept drawn by the research 08 drawing-spec (one dimension, a named anchor, depth by overlap+height+size, mine/yours said by a visible mascot) | – | idea | – |
+| CON-92 | New concepts: near/far from you, his/hers, yours/mine, whose?, later ours/theirs and dark/light room (research 08) | – | idea | – |
+| CON-93 | Fix the 5 flawed pictures (between always middle, front/behind on a ball, bright = on/off, heavy = elephant size, hot/cold different objects) | – | idea | – |
 
 ## Writing (WRT)
 
@@ -272,6 +289,8 @@ node tools/tabjs.mjs $(port get piano-player tablet-devtools) "document.body.cla
 | COL-11 | Menu → Add a colouring picture from the tablet (stays on the tablet); Remove my own pictures | 1.11 | done | – |
 | COL-12 | Menu: quiet mode (no shake or buzz), All pictures open, look time Short / Normal / Long | 1.11 | done | – |
 | COL-13 | Crayons in a 4×3 grid, "Done at 85 %" progress bar, gallery strip (roadmap A15) | – | idea | – |
+| COL-14 | ▶ Next picks a RANDOM open picture he has not coloured yet (all coloured: any other open one); each new picture finished opens one more | 1.36 | done | – |
+| COL-15 | 37 built-in pictures (polar bear added); more CC0 line art from Wikimedia Commons | 1.36 | partly | – |
 
 ## Eye guard (EYE)
 
@@ -385,3 +404,21 @@ node tools/tabjs.mjs $(port get piano-player tablet-devtools) "document.body.cla
 Items 1–4 are inspired by Yousician's design only; never take their licensed songs.
 
 **Ideas (roadmap, not built):** SCR-9, SCR-10, PLY-10, SND-22, SND-23, MTH-34 … MTH-41, CON-12, WRT-10, WRT-11, COL-13, TIM-8, MNU-15, MNU-16, BLD-10 … BLD-15.
+
+## UX review ideas (2026-10-28, agent review of the whole app; not built yet)
+
+| ID | Feature (what it must do, testable, one line) | Since | Status | Tablet test |
+|---|---|---|---|---|
+| UX-1 | One quiet 🔒 grown-up button (long-press to close) instead of Menu + Close | – | idea | – |
+| UX-2 | Lesson top bar cut to 3–4 controls | – | idea | – |
+| UX-3 | Every label spoken (start greeting, card names, 🔊 replay everywhere) | – | idea | – |
+| UX-4 | One predictable interruption pattern: "coming up" card, then a "back to piano" card | – | idea | – |
+| UX-5 | Calm screen as the default mistake screen; freeze capped at 10 s; hearts OR lock, not both | – | idea | – |
+| UX-6 | Quiz cleanup: one meter, coloured think-ring, no columns for one-digit sums | – | idea | – |
+| UX-7 | 🏠 fixed top-left on every screen; Menu "Back" wording | – | idea | – |
+| UX-8 | Kid-readable break screen (sand timer, spoken) | – | idea | – |
+| UX-9 | Sound picker: 12 big spoken tiles by default; Surround moves to the Menu | – | idea | – |
+| UX-10 | One star currency; progress shown on the start tiles | – | idea | – |
+| UX-11 | Menu restructure + first-run setup (name, language, time, start screen) | – | idea | – |
+| UX-12 | Same words everywhere ("Maths"; the Compare header) | – | idea | – |
+| UX-13 | Never an empty pad on Writing/Colouring open | – | idea | – |

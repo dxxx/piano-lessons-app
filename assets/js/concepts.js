@@ -203,7 +203,7 @@ var concepts = (function () {
 
   // ---- Settings (grown-ups' Menu) ----
   var EVERY = [0, 3, 5, 8, 10];                             // research/02 R: at most one pop-up per ~5 min and ~4 an hour
-  var cfg = { every: 5, n: 2, move: 1, other: 1 };
+  var cfg = { every: 5, n: 2, move: 1 };
   var HOUR_MAX = 4, popTimes = [];
   try { var c0 = JSON.parse(localStorage.getItem("conceptCfg") || "null"); if (c0) for (var k in cfg) if (k in c0) cfg[k] = c0[k]; } catch (e) {}
   function saveCfg() { try { localStorage.setItem("conceptCfg", JSON.stringify(cfg)); } catch (e) {} }
@@ -344,7 +344,9 @@ var concepts = (function () {
     // A time lock or the eye cover while a game is open: close it quietly (nothing counted), the lock screen must be the only thing showing
     if (open && where !== "test" && (document.body.classList.contains("locked") || ($("eyecov") && $("eyecov").classList.contains("on")))) { finish(); return; }
     if (!cfg.every || !pianoMode() || !free()) return;
-    if (playMs >= cfg.every * 60000 && Date.now() - lastNote > 1500) { playMs = 0; show("piano"); }
+    // The piano break is a coin: this quick game or a maths question (operator 1.36: piano time is focus time, mix them;
+    // colouring and writing are never interrupted, he picks them himself).
+    if (playMs >= cfg.every * 60000 && Date.now() - lastNote > 1500) { playMs = 0; if (window.quiz && quiz.cfg.on && Math.random() < 0.5) quiz.show(); else show("piano"); }
   }, 400);
   return {
     note: function () {                                     // every note he plays (index.html act.note)
@@ -352,13 +354,8 @@ var concepts = (function () {
       if (lastNote && now - lastNote < 4000) playMs += now - lastNote;   // gaps over 4 s are not playing
       lastNote = now;
     },
-    // Other activities call this at a natural break; true = a game is showing and cont() runs after it
-    maybe: function (at, cont, chance) {
-      if (!cfg.every || !cfg.other || !free()) return false;
-      if (Date.now() - lastPop < cfg.every * 60000 || Math.random() > (chance == null ? 0.5 : chance)) return false;
-      return show(at, cont);
-    },
-    show: function (at) { return !open && show(at || "menu"); },   // the grown-up's "try one now"
+    show: function (at, done) { return !open && show(at || "menu", done); },   // the grown-up's "try one now", or the lesson-end break
+    ready: function () { return !!cfg.every && free(); },
     isOpen: function () { return open; },
     again: function () { if (q && q.sound && !locked) { enable(false); playSounds(q.sound, function () { enable(true); }); } },
     // Menu

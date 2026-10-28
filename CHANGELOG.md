@@ -4,6 +4,16 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.36 — 2026-10-28
+- **🎹 "Play the piano" on the start screen:** a sixth tile opens the piano straight in Piano only (his keyboard, Songs, Follow the keys). The six tiles sit in two rows of three. "Piano lessons" opens the video lessons as before.
+- **Follow the keys plays at his speed:** the notes fall as fast as he plays (0.45–1.5×, learned from his last notes); a right key pressed while its note is still falling counts at once, so a fluent run sounds like the real song. A chord counts once half its keys are down (the app plays the rest). It still waits at a note he doesn't know.
+- **Fix: the right key sometimes didn't count.** Pressing the note he just played again (in rhythm) counted as a "wrong key" and, after three, blocked the right one. Now only 3+ *different* wrong keys in 1.5 s count as banging, and the note just played is only a sound.
+- **Every song opens on its own sound** (carols on celesta, Bach on harpsichord, Linkin Park on rock guitar, lullabies on music box, anthems on trumpet…). He can still change it; the app remembers his pick for that song, and his own sound comes back when he leaves the song.
+- **No more maths straight away:** a question left over is dropped when the app opens, and he plays 2–4 lessons (Menu → Maths → "First question after", default 3) before the first one. Review questions above the current level are not asked after the grown-up lowers the level.
+- **Piano breaks mix things up:** a break while he plays is a maths question or a quick concept game (a coin toss). Colouring and Bigger or smaller are no longer interrupted.
+- **Colouring:** ▶ picks a random picture he hasn't coloured yet; a polar bear picture was added.
+- Songs (private, on the tablet only): the Skoove sponsor jingle is gone from Faint and One More Light; the duplicate Sky Full of Stars and the video Für Elise were removed.
+
 ## 1.35 — 2026-10-28
 - **Fix: Menu and Close are always reachable.** The maths quiz between lessons (and the quick concept game and the calm screen) covered the whole screen, top bar included, so the 🔒 Menu and ✕ Close buttons could not be tapped until the sum was solved. Now both stay at the top right above any kid screen, and the PIN pad still opens over them. Maths-only, Writing, Colouring, Bigger or smaller, the lock screen and the start screen show ✕ Close too (before: Menu only; found by the new on-tablet check).
 - **One top bar, one table.** Which top-bar buttons each screen shows is now one table (`BAR`) read by one function, instead of a separate hide rule per screen (that duplication is what kept losing Close). 🔒 Menu + ✕ Close are one fixed grown-up corner on every screen.

@@ -1,0 +1,193 @@
+{
+ "when": "2026-10-28T09:02:11.055Z",
+ "version": null,
+ "size": "1024x640",
+ "results": [
+  {
+   "id": "SCR-1",
+   "what": "Start screen: every tile the grown-up left on (of 6) is visible and inside the screen, hidden ones are gone, Menu + Close tappable",
+   "ok": true,
+   "info": "5/5 tiles; greeting set"
+  },
+  {
+   "id": "LES-1",
+   "what": "Piano tile opens lessons: list built, video area, keyboard, top bar fits",
+   "ok": true,
+   "info": "43 lessons, 49 keys, video shown"
+  },
+  {
+   "id": "LES-3",
+   "what": "Big video toggles on and off",
+   "ok": true,
+   "info": "on: big"
+  },
+  {
+   "id": "PNO-1",
+   "what": "Zoom in / out changes the number of keys, octave buttons work",
+   "ok": true,
+   "info": "keys 49/37/49, lowest 60->48, octave buttons shown (keyboard locked by a song)"
+  },
+  {
+   "id": "PNO-2",
+   "what": "Key names shown on the keys",
+   "ok": true,
+   "info": "49 of 49 keys labelled (both)"
+  },
+  {
+   "id": "SND-1",
+   "what": "Sound picker opens full screen with all sounds, closes on tap outside",
+   "ok": true,
+   "info": "88 sounds"
+  },
+  {
+   "id": "SND-2",
+   "what": "Notes play: pressing a key sounds (audio engine up)",
+   "ok": true,
+   "info": "native engine"
+  },
+  {
+   "id": "PLY-1",
+   "what": "Piano only and Play along modes switch",
+   "ok": true,
+   "info": "piano only adds: solo"
+  },
+  {
+   "id": "BEAT-1",
+   "what": "Beat: panel opens in Piano only, tempo + / - change the BPM",
+   "ok": true,
+   "info": "Beat button true, panel true, bpm 100 beats a minute🐇 Rabbit/104 beats a minute/100 beats a minute🐇 Rabbit"
+  },
+  {
+   "id": "SNG-1",
+   "what": "Songs: list opens with 5 tabs, songs in each, favourite hearts",
+   "ok": true,
+   "info": "⭐ Easy:19 | ⭐⭐ Medium:32 | ⭐⭐⭐ Hard:156 | 🎸 Modern musi:51 | 🎬 My lessons:37; hearts 62"
+  },
+  {
+   "id": "SNG-2",
+   "what": "Songs: close the list",
+   "ok": true,
+   "info": ""
+  },
+  {
+   "id": "FOL-1",
+   "what": "Follow the keys: a song opens on its own sound; pressing the note just played again (rhythm) never blocks the right key; leaving gives his sound back",
+   "ok": true,
+   "info": "Mexican Hat Dance: sound accordion (want accordion); 6 repeats of the last note: misses 0 -> 0, then the right key: step 4 -> 5; sound after grand (was grand)"
+  },
+  {
+   "id": "LES-2",
+   "what": "Next / previous lesson changes the lesson number",
+   "ok": true,
+   "info": "Lesson 22 of 43 -> Lesson 23 of 43 -> Lesson 22 of 43; maths quiz came up first (expected: quiz after a lesson)"
+  },
+  {
+   "id": "MTH-1",
+   "what": "Maths quiz between lessons: question + 3 answers + hearts, Menu and Close tappable above it",
+   "ok": true,
+   "info": "3 answers, hearts 5; kidtop false"
+  },
+  {
+   "id": "MTH-2",
+   "what": "Maths quiz: the Menu PIN pad opens above the quiz and covers the buttons",
+   "ok": true,
+   "info": "gate open, on top: true"
+  },
+  {
+   "id": "MTH-3",
+   "what": "Maths quiz: 'Show me (the trick)' opens the hint for this sum",
+   "ok": true,
+   "info": "hint shown true"
+  },
+  {
+   "id": "MTH-4",
+   "what": "Red mistake screen: Menu reachable or the screen has its own way out",
+   "ok": true,
+   "info": "Menu tappable true, own stop button true"
+  },
+  {
+   "id": "MTH-5",
+   "what": "Calm screen: Menu and Close tappable above it",
+   "ok": true,
+   "info": ""
+  },
+  {
+   "id": "MTH-6",
+   "what": "Quiz closes again (lessons back) and kidtop is cleared",
+   "ok": true,
+   "info": ""
+  },
+  {
+   "id": "MTH-7",
+   "what": "Maths-only mode: quiz fills the screen, Home + Menu + Close tappable",
+   "ok": true,
+   "info": "math true, quiz true, home true"
+  },
+  {
+   "id": "WRT-1",
+   "what": "Writing: opens, drawing pad and buttons fit, Menu + Close tappable",
+   "ok": true,
+   "info": "level Level 9 · Days and months"
+  },
+  {
+   "id": "COL-1",
+   "what": "Colouring: opens with pictures and palette, Menu + Close tappable",
+   "ok": true,
+   "info": "0 pictures, 12 colours"
+  },
+  {
+   "id": "CMP-1",
+   "what": "Bigger or smaller: opens with a question and answers, Menu + Close tappable",
+   "ok": true,
+   "info": "2 answers, stage 105"
+  },
+  {
+   "id": "EYE-1",
+   "what": "Eye guard cover: Menu reachable or the cover has its own way out",
+   "ok": true,
+   "info": "Menu tappable false, own button false (cover is meant to block; noted)"
+  },
+  {
+   "id": "TIM-1",
+   "what": "Screen time: summary readable",
+   "ok": true,
+   "info": "103 min / 130 min (no limit today)"
+  },
+  {
+   "id": "BAR-1",
+   "what": "Grown-up corner: Menu + Close tappable on every screen (start, lessons, piano only, quiz, maths-only, writing, colouring, bigger or smaller, lock screen)",
+   "ok": true,
+   "info": "start:ok | lessons:ok | piano only:ok | quiz:ok | maths only:ok | writing:ok | colouring:ok | bigger or smaller:ok | lock screen:ok"
+  },
+  {
+   "id": "PIN-1",
+   "what": "Menu: wrong PIN is refused",
+   "ok": true,
+   "info": "Wrong PIN"
+  },
+  {
+   "id": "MENU-1",
+   "what": "Menu: right PIN opens it; every section renders, fits, no 'undefined'",
+   "ok": true,
+   "info": "Today:8 | Start screen:7 | Piano:8 | Maths:15 | Writing:2 | Colouring:7 | Voice & language:5 | Screen time:10 | Eye guard:4 | General:1"
+  },
+  {
+   "id": "MENU-2",
+   "what": "Menu: Activity and Maths results panels open and close",
+   "ok": true,
+   "info": ""
+  },
+  {
+   "id": "MENU-3",
+   "what": "Menu: tap outside the card closes and locks it",
+   "ok": true,
+   "info": ""
+  },
+  {
+   "id": "LAY-1",
+   "what": "Back on the start screen at the end; no sideways scroll",
+   "ok": true,
+   "info": "1024x640"
+  }
+ ]
+}

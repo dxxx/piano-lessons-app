@@ -38,3 +38,4 @@ All from [Openclipart](https://openclipart.org) - public domain (CC0). Thank you
 - `34.png` mermaid - https://openclipart.org/detail/312542/large-eyed-mermaid-line-art
 - `35.png` rescue team - https://openclipart.org/detail/232408/police-fire-ema
 - `36.png` under the sea - https://openclipart.org/detail/314003/mermaid-and-dolphins-line-art-by-richardsdrawings
+- `37.png` polar bear - https://openclipart.org/detail/281295/polar-bear-line-art

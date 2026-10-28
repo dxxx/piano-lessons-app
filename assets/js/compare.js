@@ -177,7 +177,6 @@ var compare = (function () {
   function enable(onoff) { locked = !onoff; [].forEach.call(document.querySelectorAll("#cmStage .cmpick, #cmAns button"), function (b) { b.disabled = !onoff; }); }
   function next() {
     if (!on) return;
-    if (window.concepts && prog.stars > 0 && concepts.maybe("compare", next, 0.3)) return;   // now and then a quick concept game
     var tries = 0;
     do { q = makeQ(prog.stage); } while (key(q) === lastKey && ++tries < 20);
     lastKey = key(q); picked = [];

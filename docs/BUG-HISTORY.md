@@ -6,6 +6,24 @@ When a tablet test in [FEATURES.md](FEATURES.md) fails, add an entry here once i
 
 ---
 
+### 1.36 — Follow the keys: the right key did not count (repeats + "lucky hit" rule)
+- **Symptom:** the operator, watching live on the tablet (Linkin Park – Crawling): after a right note he pressed the same key again several times, in the song's rhythm; then the right next key (G#) did not count twice, and the song felt stuck. With the fixed 0.8× fall and a stop at every note the song never sounded like the real song.
+- **Cause:** the anti-banging rule counted ANY wrong press, so repeating the last note 3× in 1.5 s blocked the right key; the fall speed was fixed.
+- **Fix:** a flurry is now 3+ DIFFERENT wrong keys; the note just played, pressed again, is only a sound. The song falls at his speed (0.45–1.5×), an early right key counts at once, a chord counts at half its keys. Device check FOL-1 presses the last note 6× then the right one.
+- **Lesson / check next time:** watch the child play (adb DevTools + a key log via a `follow.note` wrap) before designing anti-cheat rules; a rule against banging must not punish rhythm. CDP `Page.captureScreenshot` does not show the falling-notes canvas: dump it with `toDataURL` instead.
+
+### 1.36 — Sponsor jingle at the start of songs (Faint, One More Light)
+- **Symptom:** the first notes of two songs were not the song (operator).
+- **Cause:** a Skoove sponsor screen with a jingle: the logo circles read as lit keys and the jingle "confirmed" them in the video+audio fusion; the intro trim ran only on the video notes.
+- **Fix:** the fusion trims a few notes cut off by ≥ 2.5 s silence at the start/end too (piano-tutorials 5e7a007).
+- **Lesson / check next time:** a rule applied to one source must be applied again after fusing with another source.
+
+### 1.36 — The app opened straight into a maths question
+- **Symptom:** "I press to open piano and I get directly to math!"
+- **Cause:** a quiz left pending (also by device tests) was shown again on start; no grace before the first question.
+- **Fix:** a pending quiz is dropped on first load; the first question comes after 2–4 lessons (Menu, default 3). Device tests back up and restore localStorage.
+- **Lesson / check next time:** state left by tests is real state on a family device; restore it.
+
 ### 1.35 — Menu and Close hidden under the maths quiz
 - **Symptom:** during the maths quiz between lessons (also the quick concept game and the calm screen) the 🔒 Menu and ✕ Close buttons could not be tapped until the sum was solved. In Maths-only, Writing, Colouring and Bigger or smaller there was no Close at all (found by the first run of `tests/device-check.mjs` on the tablet).
 - **Cause:** the quiz layer is `position: fixed`, `z-index: 9`, full screen, so it covered the header with both buttons.

@@ -12,8 +12,14 @@
 //     is the pause signal (it does not count as a note) and the song waits again at the note he was on (operator 2026-10-27)
 //   - in the list: ONE tap plays the song to listen to (the whole song, both hands), TWO quick taps pick it and he plays along
 //     (operator: "single click makes songs play, double click selects it, so I can hear before I commit")
-//   - no lucky hits: a right key pressed in a flurry of wrong ones (3+ wrong keys in the last 1.5 s) does not move the song on,
+//   - the song falls at HIS speed (0.45-1.5x, learned from his last steps); a right key pressed early counts at once; a chord
+//     counts once half its keys are down (the rest sound softly) - so a fluent run sounds like the real song (operator 2026-10-28)
+//   - no lucky hits: a right key pressed in a flurry of wrong ones (3+ DIFFERENT wrong keys in the last 1.5 s; the note he just
+//     played, pressed again, never counts) does not move the song on,
 //     so banging keys never plays the song for him; one calm press of the right key does
+//   - every song opens on ITS OWN sound (index.json "snd", picked per song on the PC: carols = celesta, Bach = harpsichord, Linkin
+//     Park = rock guitar...). He can change it: that pick is remembered for that song (songSnd). Leaving the song gives him back his
+//     own sound (operator 2026-10-28: "the default instrument per song must be auto selected", "we can change")
 //   - the keyboard is set once to cover the whole song (all its notes, fewest keys), and goes back to his own zoom at the end
 // Research: answer on the keyboard, notes from his songs, errorless (research/06 R9-R12, 01 R9). Uses L, voice, diary, pianoKeys,
 // pianoPlayNote (index.html). Progress: localStorage songProg { id: { best, plays, last } }; settings: songCfg { hand, acc }.
@@ -23,12 +29,21 @@ var follow = (function () {
   var LV = ["", "⭐", "⭐⭐", "⭐⭐⭐"];
   var SPEED = 0.8, LEAD = 2.2;                                   // song seconds per real second while falling; first notes start this far above
   var pos = 0, lastF = 0, arrived = false, pops = [], lis = null;
+  // HIS SPEED (operator 2026-10-28: "if he plays faster let him go faster... don't stop the play", "more flexibility"): the song
+  // falls at HIS pace, not a fixed 0.8. Every step he finishes compares his gap with the song's gap and nudges the speed
+  // (smoothed, 0.45-1.5x); a right key pressed while its note is still falling counts at once and the song jumps there. It
+  // still waits at a note he does not know - only then.
+  var speed = SPEED, lastOk = 0, SPEED_MIN = 0.45, SPEED_MAX = 1.5;
   var index = null, loading = false, song = null, steps = [], si = 0, pressed = {}, firstTry = true, okFirst = 0, misses = 0, t0 = 0, tab = 1;
   var cfg = { hand: "RL", acc: 1 }, prog = {}, wrong = [];
   var LUCKY_N = 3, LUCKY_MS = 1500;
   try { var c = JSON.parse(localStorage.getItem("songCfg") || "{}"); if (/^(R|L|RL)$/.test(c.hand)) cfg.hand = c.hand; if (c.acc === 0) cfg.acc = 0; } catch (e) {}
   try { prog = JSON.parse(localStorage.getItem("songProg") || "{}") || {}; } catch (e) { prog = {}; }
   function saveCfg() { try { localStorage.setItem("songCfg", JSON.stringify(cfg)); } catch (e) {} }
+  var own = null, songSnd = {};                                  // own = his sound before the song; songSnd = { id: sound he picked }
+  try { songSnd = JSON.parse(localStorage.getItem("songSnd") || "{}") || {}; } catch (e) { songSnd = {}; }
+  // the sound picker calls this while a song is open: his pick belongs to this song, not to his everyday sound
+  window.followSound = function (id) { if (!song) return false; songSnd[song.id] = id; try { localStorage.setItem("songSnd", JSON.stringify(songSnd)); } catch (e) {} return true; };
   function saveProg() { try { localStorage.setItem("songProg", JSON.stringify(prog)); } catch (e) {} }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
   function solo() { var b = document.body.classList; return b.contains("solo") && b.contains("play") && !b.contains("athome"); }
@@ -123,7 +138,8 @@ var follow = (function () {
       var other = cfg.hand === "RL" ? [] : d.notes.filter(function (n) { return cfg.hand.indexOf(n[3]) < 0; });
       song = { id: id, t: meta.t, other: other, all: d.notes };
       si = 0; pressed = {}; firstTry = true; okFirst = 0; misses = 0; wrong = []; t0 = Date.now();
-      pos = steps.length ? steps[0].t - LEAD : 0; lastF = 0; arrived = false; pops = []; lis = null; hintLabel();
+      pos = steps.length ? steps[0].t - LEAD : 0; lastF = 0; speed = SPEED; lastOk = 0; arrived = false; pops = []; lis = null; hintLabel();
+      if (window.pianoSound) { if (own === null) own = pianoSound.now(); pianoSound.set(songSnd[id] || meta.snd || "grand"); }
       closeList(); document.body.classList.add("infollow"); $("follow").hidden = false;
       $("fwTitle").textContent = meta.t;
       if (window.pianoKeys && pianoKeys.fit && steps.length) {      // the whole song on one keyboard (operator 2026-10-28)
@@ -155,13 +171,13 @@ var follow = (function () {
     $("fwCount").textContent = si + " / " + steps.length;
   }
   // Called by the Piano only canvas every frame: moves the song on (up to the note he has to play) and says what to draw
-  function frame(now) {
+  function frame(now) {                                          // (speed: see HIS SPEED above)
     if (!song || !steps[si]) return null;
     var dt = lastF ? Math.min(0.1, (now - lastF) / 1000) : 0; lastF = now;
     pops = pops.filter(function (p) { return now - p.t < 450; });
     if (lis) return listenFrame(now, dt);
     var target = steps[si].t;
-    if (pos < target) { pos = Math.min(target, pos + dt * SPEED); if (pos >= target - 0.001 && !arrived) { arrived = true; want(); } }
+    if (pos < target) { pos = Math.min(target, pos + dt * speed); if (pos >= target - 0.001 && !arrived) { arrived = true; want(); } }
     var vis = [];                                                // notes he already caught stay until they have flowed into the key (long notes)
     for (var i = Math.max(0, si - 12); i < steps.length && steps[i].t - pos < 6; i++) if (i >= si || stepEnd(steps[i]) > pos) vis.push(steps[i]);
     return { pos: pos, steps: vis, cur: steps[si], waiting: arrived, pops: pops, now: now };
@@ -171,15 +187,30 @@ var follow = (function () {
     if (lis) { endListen(); return; }                            // any key while listening = pause; it is not a note of the song
     var st = steps[si];
     var now = Date.now();
-    while (wrong.length && now - wrong[0] > LUCKY_MS) wrong.shift();
-    if (st.m.indexOf(m) < 0 || wrong.length >= LUCKY_N) {         // not this one (or a lucky hit in a flurry): no penalty, the right key glows brighter
-      if (st.m.indexOf(m) < 0) wrong.push(now);
+    while (wrong.length && now - wrong[0][0] > LUCKY_MS) wrong.shift();
+    // a flurry = 3+ DIFFERENT wrong keys in 1.5 s (banging). Pressing one key again and again - mostly the note he just played,
+    // in the song's rhythm - is not banging and must never block the right key (tablet 2026-10-28: Crawling, B pressed 8 times
+    // after it was done, then the right G# did not count twice; he thought the app was broken)
+    var prev = si > 0 ? steps[si - 1].m : [], flurry = wrong.filter(function (w, i, a) { return a.findIndex(function (x) { return x[1] === w[1]; }) === i; }).length >= LUCKY_N;
+    if (st.m.indexOf(m) < 0 || flurry) {                         // not this one (or a lucky hit in a flurry): no penalty, the right key glows brighter
+      if (st.m.indexOf(m) < 0 && prev.indexOf(m) >= 0) return;    // the note he just played, again: just a sound, not a miss
+      if (st.m.indexOf(m) < 0) wrong.push([now, m]);
       firstTry = false; misses++;
       st.m.forEach(function (x) { var k = pianoKeys.el(x); if (k && !pressed[x]) { k.classList.remove("wantx"); void k.offsetWidth; k.classList.add("wantx"); } });
       return;
     }
     pressed[m] = true; var k = pianoKeys.el(m); if (k) k.classList.remove("want", "wantx");
-    for (var i = 0; i < st.m.length; i++) if (!pressed[st.m[i]]) return;
+    // a chord counts once HALF its keys are down (rounded up): the app plays the rest softly, so the song keeps flowing
+    var got = st.m.filter(function (x) { return pressed[x]; }).length;
+    if (got < Math.ceil(st.m.length / 2)) return;
+    st.m.forEach(function (x) { if (!pressed[x] && window.pianoPlayNote) pianoPlayNote(x, 0.35, 350); var kk = pianoKeys.el(x); if (kk) kk.classList.remove("want", "wantx"); });
+    var nowS = performance.now();
+    if (lastOk && si > 0) {                                      // his gap vs the song's gap -> speed (a long pause = thinking, not his tempo)
+      var songGap = st.t - steps[si - 1].t, hisGap = (nowS - lastOk) / 1000, aim = songGap / Math.max(0.05, hisGap);
+      if (songGap > 0.05 && aim >= 0.3) speed = Math.max(SPEED_MIN, Math.min(SPEED_MAX, speed * 0.7 + aim * 0.3));
+    }
+    lastOk = nowS;
+    if (pos < st.t) pos = st.t;                                  // caught while still falling: the song jumps to him
     if (firstTry) okFirst++;
     var tnow = performance.now(); st.m.forEach(function (x) { pops.push({ m: x, h: st.h, t: tnow }); });
     accompany(st.t, steps[si + 1] ? steps[si + 1].t : st.t + 2);
@@ -211,6 +242,8 @@ var follow = (function () {
     song = null; steps = []; lis = null; hintLabel(); clearKeys();
     $("follow").hidden = true; document.body.classList.remove("infollow");
     if (window.pianoKeys) pianoKeys.restore();
+    if (own !== null && window.pianoSound) pianoSound.set(own);
+    own = null;
   }
   // ---- Listen: the whole song plays from his note on, falling in real time, until a key is pressed (or Listen again) ----
   function hintLabel() { var b = $("fwHint"); if (b) b.innerHTML = lis ? "&#9208; " + L("Pause", "Pausa") : "&#128066; " + L("Listen", "Escuchar"); }
@@ -256,5 +289,5 @@ var follow = (function () {
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 
   return { note: note, open: openList, start: start, stop: stop, isOn: function () { return !!song; }, cfg: cfg, frame: frame, PX: 150,
-           _state: function () { return { si: si, steps: steps.length, ok: okFirst, miss: misses, want: steps[si] && steps[si].m }; } };
+           _state: function () { return { speed: Math.round(speed * 100) / 100, si: si, steps: steps.length, ok: okFirst, miss: misses, want: steps[si] && steps[si].m }; } };
 })();

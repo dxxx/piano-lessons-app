@@ -48,6 +48,8 @@ window.__t = {
     if (document.documentElement.scrollWidth > innerWidth + 1) bad.push("page scrolls sideways");
     return bad; },
   solo(on) { if (document.body.classList.contains("solo") !== on && this.vis("soloBtn")) this.$("soloBtn").click(); },
+  // close kid layers the app may bring up on its own (a quiz still owed from before, the timed quick game)
+  clear() { ["quiz", "concept"].forEach(i => this.$(i).classList.remove("open")); this.$("qred").classList.remove("on"); this.$("calm").classList.remove("on"); },
   grown() { const r = []; if (!this.tap("lock")) r.push("Menu not tappable"); if (!this.tap("quitBtn")) r.push("Close not tappable"); return r; },
   home() { if (this.vis("homeBtn")) this.$("homeBtn").click(); }
 };`;
@@ -57,10 +59,12 @@ const C = [];   // [id, what it checks, page body returning {ok, info}, screensh
 const add = (id, what, body, sh) => C.push([id, what, body, sh]);
 const T = "const t = window.__t;";
 
-add("SCR-1", "Start screen: 5 tiles visible, fit the screen, Menu + Close tappable",
-  T + `t.home(); await t.S(600); const tiles = ["homePiano","homeMath","homeWrite","homeColour","homeCompare"].filter(i => t.vis(i) && t.inside(t.$(i)));
-  const g = t.$("homeHi").textContent; const bad = t.layout("home");
-  return { ok: tiles.length === 5 && !/undefined|null/.test(g) && !bad.length && t.tap("lock"), info: tiles.length + " tiles; greeting " + (g ? "set" : "EMPTY") + (bad.length ? "; " + bad.join(", ") : "") + (t.tap("lock") ? "" : "; Menu not tappable") }`, "01-home");
+add("SCR-1", "Start screen: every tile the grown-up left on (of 6) is visible and inside the screen, hidden ones are gone, Menu + Close tappable",
+  T + `t.home(); await t.S(600); t.clear(); await t.S(300); const K = { piano: "homePiano", play: "homePlay", math: "homeMath", write: "homeWrite", colour: "homeColour", compare: "homeCompare" };
+  const want = Object.keys(K).filter(k => appMode.shown(k)).map(k => K[k]), tiles = want.filter(i => t.vis(i) && t.inside(t.$(i)));
+  const ghost = Object.values(K).filter(i => want.indexOf(i) < 0 && t.$(i).getBoundingClientRect().width > 0);
+  const g = t.$("homeHi").textContent; const bad = t.layout("home").concat(ghost.map(i => "hidden tile takes space: " + i));
+  return { ok: tiles.length === want.length && !/undefined|null/.test(g) && !bad.length && t.tap("lock"), info: tiles.length + "/" + want.length + " tiles; greeting " + (g ? "set" : "EMPTY") + (bad.length ? "; " + bad.join(", ") : "") + (t.tap("lock") ? "" : "; Menu not tappable") }`, "01-home");
 add("LES-1", "Piano tile opens lessons: list built, video area, keyboard, top bar fits",
   T + `t.$("homePiano").click(); await t.S(1500); t.solo(false); await t.S(700); const pop = t.vis("songPop"); if (pop) { t.$("songX").click(); await t.S(400); } const n = t.$("list").children.length, k = t.$("keys").querySelectorAll("[data-m]").length;
   const bad = t.layout(document.querySelector("header")).concat(t.grown());
@@ -98,6 +102,14 @@ add("SNG-1", "Songs: list opens with 5 tabs, songs in each, favourite hearts",
   return { ok: tabs.length === 5 && per.every(x => !/:0$/.test(x)) && !bad.length, info: per.join(" | ") + "; hearts " + hearts + (bad.length ? "; " + bad.slice(0, 3).join(", ") : "") }`, "05-songs");
 add("SNG-2", "Songs: close the list",
   T + `if (t.vis("songX")) t.$("songX").click(); await t.S(400); return { ok: !t.vis("songPop"), info: "" }`);
+add("FOL-1", "Follow the keys: a song opens on its own sound; pressing the note just played again (rhythm) never blocks the right key; leaving gives his sound back",
+  T + `const own = pianoSound.now(); await new Promise(r => fetch("songs/index.json").then(x => x.json()).then(ix => { window._ix = ix; r(); }));
+  const s = _ix.find(x => x.snd && x.snd !== "grand" && x.n > 20) || _ix[0]; t.solo(true); await t.S(600); follow.start(s.id); await t.S(1500);
+  const snd = pianoSound.now(); const go = async () => { for (let i = 0; i < 60 && !(follow.frame(performance.now()) || {}).waiting; i++) await t.S(100); };
+  await go(); const a = follow._state(); a.want.forEach(m => follow.note(m)); await go();
+  const prev = a.want[0], b = follow._state(); for (let i = 0; i < 6; i++) follow.note(prev); const r = follow._state(); r.want.forEach(m => follow.note(m)); const c = follow._state();
+  follow.stop(); await t.S(300); const back = pianoSound.now();
+  return { ok: snd === (s.snd || "grand") && r.miss === b.miss && c.si === r.si + 1 && back === own, info: s.t + ": sound " + snd + " (want " + s.snd + "); 6 repeats of the last note: misses " + b.miss + " -> " + r.miss + ", then the right key: step " + r.si + " -> " + c.si + "; sound after " + back + " (was " + own + ")" }`);
 add("LES-2", "Next / previous lesson changes the lesson number",
   T + `const a = t.$("num").textContent; t.$("next").click(); await t.S(800); const b = t.$("num").textContent; t.$("prev").click(); await t.S(800); const c = t.$("num").textContent;
   const q = t.$("quiz").classList.contains("open"); return { ok: a !== b && (c === a || q), info: a + " -> " + b + " -> " + c + (q ? "; maths quiz came up first (expected: quiz after a lesson)" : "") }`);
@@ -128,8 +140,8 @@ add("COL-1", "Colouring: opens with pictures and palette, Menu + Close tappable"
   T + `t.home(); await t.S(600); t.$("homeColour").click(); await t.S(1200); const v = t.vis("colour"), pics = t.$("cGal").children.length || t.$("cPics").children.length, pal = t.$("cPal").children.length, g = t.grown(), bad = t.layout("colour");
   return { ok: v && pal > 0 && !g.length && !bad.length, info: pics + " pictures, " + pal + " colours" + (g.length ? "; " + g.join(", ") : "") + (bad.length ? "; " + bad.slice(0, 3).join(", ") : "") }`, "09-colouring");
 add("CMP-1", "Bigger or smaller: opens with a question and answers, Menu + Close tappable",
-  T + `t.home(); await t.S(600); t.$("homeCompare").click(); await t.S(1200); const v = t.vis("compare"), a = t.$("cmAns").querySelectorAll("button").length, g = t.grown(), bad = t.layout("compare");
-  return { ok: v && a > 0 && !g.length && !bad.length, info: a + " answers, stage " + t.$("cmStage").textContent.trim().slice(0, 30) + (g.length ? "; " + g.join(", ") : "") + (bad.length ? "; " + bad.join(", ") : "") }`, "10-compare");
+  T + `t.home(); await t.S(600); t.$("homeCompare").click(); await t.S(1200); const qg = t.$("concept").classList.contains("open"); t.clear(); await t.S(400); const v = t.vis("compare"), a = t.$("cmAns").querySelectorAll("button").length + t.$("cmStage").querySelectorAll(".cmpick").length, g = t.grown(), bad = t.layout("compare");   // answers = the answer row OR the pictures themselves (.cmpick)
+  return { ok: v && a > 0 && !g.length && !bad.length, info: (qg ? "quick game came up first (by design); " : "") + a + " answers, stage " + t.$("cmStage").textContent.trim().slice(0, 30) + (g.length ? "; " + g.join(", ") : "") + (bad.length ? "; " + bad.join(", ") : "") }`, "10-compare");
 add("EYE-1", "Eye guard cover: Menu reachable or the cover has its own way out",
   T + `t.home(); await t.S(500); t.$("eyecov").classList.add("on"); await t.S(300); const g = t.tap("lock"), own = [...t.$("eyecov").querySelectorAll("button")].some(b => t.vis(b));
   t.$("eyecov").classList.remove("on"); await t.S(200); return { ok: true, info: "Menu tappable " + g + ", own button " + own + " (cover is meant to block; noted)" }`);

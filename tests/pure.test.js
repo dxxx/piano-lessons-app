@@ -156,6 +156,8 @@ P.reviewAfter(Q, other, 0); P.reviewAfter(Q, other, 0); eq(P.reviewDue(Q, 9, "")
 P.reviewAfter(Q, other, 0); eq(P.reviewDue(Q, 9, "").a, 12);                                  // 3 right answers later it is due
 eq(P.reviewDue(Q, 2, ""), null);                          // but not within 3 questions of the last review
 eq(P.reviewDue(Q, 9, P.qKey(12, 3, false)), null);        // never the question just asked
+eq(P.reviewDue(Q, 9, "", 2), null);                       // level lowered to 2: the level-3 miss is not asked (1.36)
+eq(P.reviewDue(Q, 9, "", 3).a, 12);                      // back at level 3: it comes back
 eq(P.reviewAfter(Q, { ...A(12, 3, false, 3), ok: true, rv: 1 }, 0), false);                  // first return right: one more check later
 eq(Q[0].st, 1); eq(Q[0].w, 10);
 for (let i = 0; i < 9; i++) P.reviewAfter(Q, other, 0);
