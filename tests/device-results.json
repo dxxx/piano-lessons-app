@@ -1,5 +1,5 @@
 {
- "when": "2026-10-28T09:02:11.055Z",
+ "when": "2026-10-28T09:55:06.838Z",
  "version": null,
  "size": "1024x640",
  "results": [
@@ -7,7 +7,7 @@
    "id": "SCR-1",
    "what": "Start screen: every tile the grown-up left on (of 6) is visible and inside the screen, hidden ones are gone, Menu + Close tappable",
    "ok": true,
-   "info": "5/5 tiles; greeting set"
+   "info": "6/6 tiles; greeting set"
   },
   {
    "id": "LES-1",
@@ -76,10 +76,16 @@
    "info": "Mexican Hat Dance: sound accordion (want accordion); 6 repeats of the last note: misses 0 -> 0, then the right key: step 4 -> 5; sound after grand (was grand)"
   },
   {
+   "id": "CON-2",
+   "what": "Concept pictures (research 08): the new and fixed concepts open, every answer is tappable inside the screen, the asked word is in the prompt",
+   "ok": true,
+   "info": "16 questions ok"
+  },
+  {
    "id": "LES-2",
    "what": "Next / previous lesson changes the lesson number",
    "ok": true,
-   "info": "Lesson 22 of 43 -> Lesson 23 of 43 -> Lesson 22 of 43; maths quiz came up first (expected: quiz after a lesson)"
+   "info": "Lesson 22 of 43 -> Lesson 23 of 43 -> Lesson 22 of 43"
   },
   {
    "id": "MTH-1",
@@ -139,7 +145,7 @@
    "id": "CMP-1",
    "what": "Bigger or smaller: opens with a question and answers, Menu + Close tappable",
    "ok": true,
-   "info": "2 answers, stage 105"
+   "info": "3 answers, stage 3🍎🍎🍎7🍎🍎🍎🍎🍎🍎🍎"
   },
   {
    "id": "EYE-1",
@@ -151,7 +157,7 @@
    "id": "TIM-1",
    "what": "Screen time: summary readable",
    "ok": true,
-   "info": "103 min / 130 min (no limit today)"
+   "info": "122 min / 130 min (no limit today)"
   },
   {
    "id": "BAR-1",
@@ -164,24 +170,6 @@
    "what": "Menu: wrong PIN is refused",
    "ok": true,
    "info": "Wrong PIN"
-  },
-  {
-   "id": "MENU-1",
-   "what": "Menu: right PIN opens it; every section renders, fits, no 'undefined'",
-   "ok": true,
-   "info": "Today:8 | Start screen:7 | Piano:8 | Maths:15 | Writing:2 | Colouring:7 | Voice & language:5 | Screen time:10 | Eye guard:4 | General:1"
-  },
-  {
-   "id": "MENU-2",
-   "what": "Menu: Activity and Maths results panels open and close",
-   "ok": true,
-   "info": ""
-  },
-  {
-   "id": "MENU-3",
-   "what": "Menu: tap outside the card closes and locks it",
-   "ok": true,
-   "info": ""
   },
   {
    "id": "LAY-1",

@@ -33,6 +33,7 @@ var concepts = (function () {
   var NAME = { "🐶": ["dog", "el perro"], "🐱": ["cat", "el gato"], "🐻": ["bear", "el oso"], "🐸": ["frog", "la rana"], "🦊": ["fox", "el zorro"],
     "🐰": ["rabbit", "el conejo"], "🐷": ["pig", "el cerdo"], "🐵": ["monkey", "el mono"], "🦁": ["lion", "el león"], "🐼": ["panda", "el panda"],
     "🐨": ["koala", "el koala"], "🐯": ["tiger", "el tigre"] };
+  var COLS = [["red", "roja", "#e53935"], ["blue", "azul", "#1e88e5"], ["green", "verde", "#43a047"], ["yellow", "amarilla", "#fdd835"], ["purple", "morada", "#8e24aa"]]   // no orange: that is HIS colour in mine/ours;
   var TOYS = ["⚽", "🍎", "🎈", "🚗", "⭐", "🍓", "🧸", "🎁", "🍩", "🌼"];
   function card(inner, bg) { return VB + '<rect width="240" height="180" rx="18" fill="' + (bg || "#fffdf5") + '"/>' + inner + "</svg>"; }
 
@@ -168,7 +169,24 @@ var concepts = (function () {
           return card('<ellipse cx="120" cy="160" rx="' + (hi ? 92 : 34) + '" ry="' + (hi ? 16 : 7) + '" fill="' + (hi ? "#ffe06699" : "#ffe06644") + '"/>' +
             '<circle cx="120" cy="70" r="' + r + '" fill="#ffe066' + (hi ? "66" : "33") + '"/>' + rays +
             '<circle cx="120" cy="70" r="30" fill="' + (hi ? "#fff6a8" : "#e8d27a") + '" stroke="#1e1b2e" stroke-width="4"/><rect x="106" y="98" width="28" height="22" rx="5" fill="#9aa" stroke="#1e1b2e" stroke-width="4"/><line x1="120" y1="120" x2="120" y2="158" stroke="#1e1b2e" stroke-width="5"/>', "#1d1a3a"); }); } },
-    // ---- whose is it? (research 08 #23-24). "mine" is only ever said by the OWL, shown speaking; "you" = the bottom of the screen ----
+    // ---- whose is it? (research 08 #23-26). "mine" is only ever said by the OWL, shown speaking; "you" = the bottom of the screen ----
+    { id: "whose", cat: "owner", scene: true, w: [["whose? (the owner)", "¿de quién? (el dueño)"], ["the cat's (its thing)", "el del gato (su cosa)"]],
+      why: [["The owner stands on the same colour as the thing.", "El dueño está sobre el mismo color que la cosa."], ["The thing in the animal's colour belongs to it.", "La cosa del color del animal es suya."]],
+      gen: function (side) {                                // research 08 #26: ownership without a pronoun; owner colour = mat under the animal + the thing's colour
+        var an = shuffle(THINGS.slice()).slice(0, 2), cs = shuffle(COLS.slice()).slice(0, 2), it = pick(["ball", "star"]), q = rnd(0, 1);
+        var s = VB + '<rect width="240" height="180" rx="18" fill="#fffdf5"/>';
+        for (var i = 0; i < 2; i++) { var x = i ? 176 : 64;   // the two owners, each on a mat in its colour
+          var g = '<ellipse cx="' + x + '" cy="78" rx="44" ry="12" fill="' + cs[i][2] + '"/>' + emo(an[i], x, 50, 56);
+          s += side === 0 ? '<g class="ccopt" data-i="' + i + '">' + g + "</g>" : g; }
+        var flip = rnd(0, 1);                               // the things sit in a row below, NOT always under their owner
+        for (var j = 0; j < 2; j++) { var o = flip ? 1 - j : j, xt = j ? 166 : 74;
+          var th = '<g transform="translate(' + xt + ' 134) scale(0.42)">' + SHAPES[it](cs[o][2]) + "</g>";
+          s += side === 1 ? '<g class="ccopt" data-i="' + o + '">' + th + "</g>" : th; }
+        var c = cs[q], n = NAME[an[q]], thing = it === "ball" ? ["ball", "la pelota"] : ["star", "la estrella"];
+        var de = n[1].indexOf("el ") === 0 ? "del " + n[1].slice(3) : "de " + n[1];
+        return { scene: s + "</svg>", ans: q, say: side === 0
+          ? ["Whose " + thing[0] + " is " + c[0] + "? Tap its owner.", "¿De quién es " + thing[1] + " " + c[1] + "? Toca a su dueño."]
+          : ["Tap the " + n[0] + "'s " + thing[0] + ".", "Toca " + thing[1] + " " + de + "."] }; } },
     { id: "mine", cat: "owner", scene: true, w: [["yours", "tuyo"], ["mine (the owl's)", "mío (del búho)"]],
       why: [["It is next to you, at the bottom, with your orange ring.", "Está a tu lado, abajo, con tu aro naranja."], ["The owl says mine: it is the owl's, up by the owl, with the purple ring.", "El búho dice mío: es del búho, arriba junto al búho, con el aro morado."]],
       gen: function (side) { var t = pick(TOYS), xo = rnd(0, 1) ? 70 : 170, xy = 240 - xo;
@@ -186,7 +204,22 @@ var concepts = (function () {
           emo("👦", xb, 70, 56) + emo("👧", xg, 70, 56);
         s += '<g class="ccopt" data-i="0"><circle cx="' + xb + '" cy="126" r="24" fill="#8fd3ff66"/>' + emo(it, xb, 126, 34) + "</g>";
         s += '<g class="ccopt" data-i="1"><circle cx="' + xg + '" cy="126" r="24" fill="#ffa3cf66"/>' + emo(it, xg, 126, 34) + "</g>";
-        return { scene: s + "</svg>", ans: side, say: side ? ["Tap hers: the girl's one.", "Toca el de ella: el de la niña."] : ["Tap his: the boy's one.", "Toca el de él: el del niño."] }; } }
+        return { scene: s + "</svg>", ans: side, say: side ? ["Tap hers: the girl's one.", "Toca el de ella: el de la niña."] : ["Tap his: the boy's one.", "Toca el de él: el del niño."] }; } },
+    { id: "ours", cat: "owner", scene: true, w: [["ours (the owl's and yours)", "nuestro (del búho y tuyo)"], ["theirs (the other team's)", "suyo (del otro equipo)"]],
+      why: [["Ours: the basket of our team, the owl and you, in orange.", "Nuestro: la cesta de nuestro equipo, el búho y tú, en naranja."], ["Theirs: the basket of the other two, in blue.", "Suyo: la cesta de los otros dos, en azul."]],
+      gen: function (side) {                                // research 08 #25: two teams of two; the OWL (with you) says it, never the narrator
+        var usLeft = rnd(0, 1), an = shuffle(THINGS.slice()).slice(0, 2), fr = pick(["🍎", "🍓", "🍌", "🍊", "🍇"]);
+        var s = VB + '<rect width="240" height="180" rx="18" fill="#fffdf5"/>';
+        function team(x0, us) { var col = us ? "#ff8a3d" : "#3d8bff", bg = us ? "#ffe2c4" : "#d4e6ff";
+          var g = '<rect x="' + x0 + '" y="44" width="112" height="132" rx="14" fill="' + bg + '" stroke="' + col + '" stroke-width="4"/>' +
+            (us ? emo("🦉", x0 + 30, 72, 36) + emo("🧒", x0 + 82, 74, 34) : emo(an[0], x0 + 30, 74, 36) + emo(an[1], x0 + 82, 74, 36));
+          return g + '<g class="ccopt" data-i="' + (us ? 0 : 1) + '"><circle cx="' + (x0 + 56) + '" cy="136" r="30" fill="#fff" stroke="' + col + '" stroke-width="6"/>' +
+            emo("🧺", x0 + 56, 142, 36) + emo(fr, x0 + 48, 124, 18) + emo(fr, x0 + 64, 126, 18) + "</g>"; }
+        var xu = usLeft ? 4 : 124; s += team(xu, true) + team(usLeft ? 124 : 4, false);
+        var bx = Math.min(Math.max(xu + 30, 46), 194);       // speech bubble above the owl
+        s += '<rect x="' + (bx - 42) + '" y="4" width="84" height="28" rx="9" fill="#fff" stroke="#7c5cff" stroke-width="3"/><path d="M' + (xu + 24) + ' 31 l6 12 l6 -12" fill="#fff" stroke="#7c5cff" stroke-width="3"/>' +
+          '<text x="' + bx + '" y="19" font-size="15" font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#3a2a8a">' + (es() ? (side ? "¡El suyo!" : "¡El nuestro!") : (side ? "Theirs!" : "Ours!")) + "</text>";
+        return { scene: s + "</svg>", ans: side, say: side ? ["The owl says: Tap theirs! The other team's basket.", "El búho dice: ¡Toca el suyo! La cesta del otro equipo."] : ["The owl says: Tap ours! The basket of the owl and you.", "El búho dice: ¡Toca el nuestro! La cesta del búho y tuya."] }; } }
   ];
   var BY = {}; C.forEach(function (c, i) { c.n = i; BY[c.id] = c; });
   function askText(c, side) {

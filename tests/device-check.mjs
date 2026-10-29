@@ -111,7 +111,7 @@ add("FOL-1", "Follow the keys: a song opens on its own sound; pressing the note 
   follow.stop(); await t.S(300); const back = pianoSound.now();
   return { ok: snd === (s.snd || "grand") && r.miss === b.miss && c.si === r.si + 1 && back === own, info: s.t + ": sound " + snd + " (want " + s.snd + "); 6 repeats of the last note: misses " + b.miss + " -> " + r.miss + ", then the right key: step " + r.si + " -> " + c.si + "; sound after " + back + " (was " + own + ")" }`);
 add("CON-2", "Concept pictures (research 08): the new and fixed concepts open, every answer is tappable inside the screen, the asked word is in the prompt",
-  T + `const ids = ["far", "front", "between", "heavy", "hot", "bright", "mine", "his"], bad = [];
+  T + `const ids = ["far", "front", "between", "heavy", "hot", "bright", "whose", "mine", "his", "ours"], bad = [];
   for (const id of ids) for (const side of [0, 1]) { concepts._one(id, side, false); await t.S(500); const q = concepts._q().q, box = t.$("ccOpts");
     const opts = q.scene ? [...box.querySelectorAll(".ccopt")] : [...box.querySelectorAll("button")]; const ask = t.$("ccAsk").textContent;
     if (opts.length < 2 || opts.some(o => !t.inside(o)) || !ask || /undefined/.test(ask)) bad.push(id + "/" + side + ": " + opts.length + " opts, ask '" + ask.slice(0, 40) + "'"); }

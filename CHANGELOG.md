@@ -4,6 +4,11 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.38 — 2026-10-28
+- **Two more "whose is it?" games** (research/08 #25–26):
+  - **Whose?** Two animals each stand on a mat in their own colour; their two things sit in a row below, not always under their owner. "Whose ball is red? Tap its owner." or "Tap the cat's star."
+  - **Ours / theirs:** two teams of two, the owl and him (orange) and two animals (blue), each with a fruit basket. The owl says it in its speech bubble: "Tap ours!" / "Tap theirs!"
+
 ## 1.37 — 2026-10-28
 - **Concept games drawn the way a 6-year-old reads them** (research/08): each picture changes one thing only, around a named anchor.
   - Fixed 5 pictures that could be answered without knowing the word: *between* now names the two neighbours ("between the cat and the dog") and the answer moves; *in front of / behind* uses a house with a door (the one behind peeks out, partly hidden); *brighter / dimmer* is the same lamp, both on, with a big or small glow and lit floor; *heavier / lighter* puts two identical boxes on the see-saw, so only the tilt tells; *hot / cold* is the same mug with steam or with ice.
