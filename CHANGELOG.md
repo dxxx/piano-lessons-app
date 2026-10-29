@@ -7,6 +7,7 @@ Every version, newest first. Each released version has a download on the
 ## 1.42 (2026-10-29)
 
 - Songs (Follow the keys): a player bar. Previous song, Start again (from the first note), Listen / Pause, Next song. Previous and Next go through the list he picked from (same tab or search) and wrap round.
+- Songs: a speed button in the same bar: Auto (the song follows his pace, as before) or a fixed 50%, 75% or 100%. A fixed speed sets the falling notes, Listen and the other hand alike. Remembered.
 
 ## 1.41 (2026-10-29)
 

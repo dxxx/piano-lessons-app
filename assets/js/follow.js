@@ -23,6 +23,8 @@
 //   - player bar (operator 2026-10-29: "restart button, play pause, next, previous, like a player"): Previous / Next song go
 //     through the list he picked from (same tab or search, wrapping round), Start again restarts this song from its first note,
 //     Listen / Pause is the Listen above
+//   - speed button (operator 2026-10-29): Auto (HIS SPEED below) or a fixed 50 / 75 / 100 %; a fixed speed sets the falling notes,
+//     Listen and the other hand alike, and stops the auto nudging. Remembered in songCfg.spd (0 = Auto)
 //   - the keyboard is set once to cover the whole song (all its notes, fewest keys), and goes back to his own zoom at the end
 // Research: answer on the keyboard, notes from his songs, errorless (research/06 R9-R12, 01 R9). Uses L, voice, diary, pianoKeys,
 // pianoPlayNote (index.html). Progress: localStorage songProg { id: { best, plays, last } }; settings: songCfg { hand, acc }.
@@ -38,11 +40,14 @@ var follow = (function () {
   // still waits at a note he does not know - only then.
   var speed = SPEED, lastOk = 0, SPEED_MIN = 0.45, SPEED_MAX = 1.5;
   var index = null, loading = false, song = null, steps = [], si = 0, pressed = {}, firstTry = true, okFirst = 0, misses = 0, t0 = 0, tab = 1;
-  var cfg = { hand: "RL", acc: 1 }, prog = {}, wrong = [];
+  var cfg = { hand: "RL", acc: 1, spd: 0 }, prog = {}, wrong = [], SPDS = [0, 0.5, 0.75, 1];
   var LUCKY_N = 3, LUCKY_MS = 1500;
   var queue = [], curId = null;                                  // player bar: the list he picked from, and the song on (kept after the end)
   try { var c = JSON.parse(localStorage.getItem("songCfg") || "{}"); if (/^(R|L|RL)$/.test(c.hand)) cfg.hand = c.hand; if (c.acc === 0) cfg.acc = 0; } catch (e) {}
   try { prog = JSON.parse(localStorage.getItem("songProg") || "{}") || {}; } catch (e) { prog = {}; }
+  try { var c2 = JSON.parse(localStorage.getItem("songCfg") || "{}"); if (SPDS.indexOf(c2.spd) >= 0) cfg.spd = c2.spd; } catch (e) {}
+  function rate() { return cfg.spd || speed; }                  // song seconds per real second while falling
+  function spdLabel() { var b = $("fwSpd"); if (b) b.textContent = { 0: "✨ " + L("Auto", "Auto"), 0.5: "🐢 50%", 0.75: "🚶 75%", 1: "🏃 100%" }[cfg.spd]; }
   function saveCfg() { try { localStorage.setItem("songCfg", JSON.stringify(cfg)); } catch (e) {} }
   var own = null, songSnd = {};                                  // own = his sound before the song; songSnd = { id: sound he picked }
   try { songSnd = JSON.parse(localStorage.getItem("songSnd") || "{}") || {}; } catch (e) { songSnd = {}; }
@@ -186,7 +191,7 @@ var follow = (function () {
     pops = pops.filter(function (p) { return now - p.t < 450; });
     if (lis) return listenFrame(now, dt);
     var target = steps[si].t;
-    if (pos < target) { pos = Math.min(target, pos + dt * speed); if (pos >= target - 0.001 && !arrived) { arrived = true; want(); } }
+    if (pos < target) { pos = Math.min(target, pos + dt * rate()); if (pos >= target - 0.001 && !arrived) { arrived = true; want(); } }
     var vis = [];                                                // notes he already caught stay until they have flowed into the key (long notes)
     for (var i = Math.max(0, si - 12); i < steps.length && steps[i].t - pos < 6; i++) if (i >= si || stepEnd(steps[i]) > pos) vis.push(steps[i]);
     return { pos: pos, steps: vis, cur: steps[si], waiting: arrived, pops: pops, now: now };
@@ -216,7 +221,7 @@ var follow = (function () {
     var nowS = performance.now();
     if (lastOk && si > 0) {                                      // his gap vs the song's gap -> speed (a long pause = thinking, not his tempo)
       var songGap = st.t - steps[si - 1].t, hisGap = (nowS - lastOk) / 1000, aim = songGap / Math.max(0.05, hisGap);
-      if (songGap > 0.05 && aim >= 0.3) speed = Math.max(SPEED_MIN, Math.min(SPEED_MAX, speed * 0.7 + aim * 0.3));
+      if (!cfg.spd && songGap > 0.05 && aim >= 0.3) speed = Math.max(SPEED_MIN, Math.min(SPEED_MAX, speed * 0.7 + aim * 0.3));
     }
     lastOk = nowS;
     if (pos < st.t) pos = st.t;                                  // caught while still falling: the song jumps to him
@@ -230,8 +235,8 @@ var follow = (function () {
     if (!cfg.acc || !song.other.length || !window.pianoPlayNote) return;
     song.other.forEach(function (n) {
       if (n[1] >= from - 0.03 && n[1] < to - 0.03) {
-        var ms = Math.max(120, Math.min(1500, (n[2] - n[1]) * 1000));
-        setTimeout(function () { if (song) pianoPlayNote(n[0], 0.45, ms); }, Math.min(1500, (n[1] - from) * 1000));
+        var r = rate(), ms = Math.max(120, Math.min(1500, (n[2] - n[1]) * 1000 / r));
+        setTimeout(function () { if (song) pianoPlayNote(n[0], 0.45, ms); }, Math.min(1500, (n[1] - from) * 1000 / r));
       }
     });
   }
@@ -267,10 +272,10 @@ var follow = (function () {
   }
   function stepEnd(s) { var e = 0; s.n.forEach(function (n) { e = Math.max(e, n[2]); }); return e; }
   function listenFrame(now, dt) {
-    var from = lis.pos; lis.pos += dt;
+    var r = cfg.spd || 1, from = lis.pos; lis.pos += dt * r;   // Listen: the real tempo in Auto, else the fixed speed
     song.all.forEach(function (n) {
       if (n[1] > from && n[1] <= lis.pos) {
-        pianoPlayNote(n[0], n[3] === "R" ? 0.7 : 0.5, Math.max(120, Math.min(2000, (n[2] - n[1]) * 1000)));
+        pianoPlayNote(n[0], n[3] === "R" ? 0.7 : 0.5, Math.max(120, Math.min(2000, (n[2] - n[1]) * 1000 / r)));
         pops.push({ m: n[0], h: n[3], t: now });
       }
     });
@@ -297,6 +302,8 @@ var follow = (function () {
     $("fwRe").onclick = function () { if (curId) start(curId); };
     $("fwPrev").onclick = function () { skip(-1); };
     $("fwNext").onclick = function () { skip(1); };
+    $("fwSpd").onclick = function () { cfg.spd = SPDS[(SPDS.indexOf(cfg.spd) + 1) % SPDS.length]; saveCfg(); spdLabel(); };
+    spdLabel(); if (window.onLang) onLang(spdLabel);
     $("songBtn").innerHTML = "🎵 " + L("Songs", "Canciones");
     // leaving Piano only ends the song
     new MutationObserver(function () { if ((song || !$("follow").hidden) && !solo()) stop(); }).observe(document.body, { attributes: true, attributeFilter: ["class"] });
