@@ -1,7 +1,8 @@
 // ---- Compare: bigger, smaller, the same. Its own activity (home tile), in three stages that follow how school teaches it
 // (words before symbols, things before numbers, tens first for two-digit numbers; NCETM Mastering Number, White Rose Y1/Y2):
-//   1 Items        two rows of things lined up one under the other, so the extra ones stick out: tap the row with more / fewer,
-//                  or "The same". Quick: 4 right in a row moves on.
+//   1 Items        "Which number is bigger, 9 or 2?" (or smaller): each number sits on its row of things, lined up one under
+//                  the other, so he SEES the extra ones (operator 2026-10-29: ask about the numbers, the rows show why; no
+//                  "which row has more", no "the same" here). Quick: 4 right in a row moves on.
 //   2 Numbers to 20  a ? b with ten-frames under the numbers: pick < = > (the buttons also say smaller / the same / bigger).
 //                  A slip is explained on a number line: the further along, the bigger.
 //   3 Numbers to 99  tens-sticks and ones-cubes: tens first, then the ones (47 vs 42, 36 vs 63, 39 vs 41); now and then
@@ -70,10 +71,10 @@ var compare = (function () {
 
   // ---- Questions ----
   function other(lo, hi, not) { var v; do { v = rnd(lo, hi); } while (not.indexOf(v) >= 0); return v; }
-  function rows() {                                         // two rows of things: more / fewer / the same
-    var a = rnd(1, 9), b = Math.random() < 0.2 ? a : other(1, 9, [a]);
-    var kind = a === b ? "same" : (Math.random() < 0.6 ? "more" : "fewer");
-    return { s: 1, t: "rows", a: a, b: b, kind: kind, thing: THINGS[rnd(0, THINGS.length - 1)], ans: kind === "same" ? "same" : ((kind === "more") === (a > b) ? "a" : "b") };
+  function rows() {                                         // two numbers, each on its row of things: which number is bigger / smaller
+    var a = rnd(1, 9), b = other(1, 9, [a]);
+    var kind = Math.random() < 0.65 ? "big" : "small";
+    return { s: 1, t: "rows", a: a, b: b, kind: kind, thing: THINGS[rnd(0, THINGS.length - 1)], ans: (kind === "big") === (a > b) ? "a" : "b" };
   }
   function pair(r) {                                        // two numbers in range r (1: to 10, 2: to 20, 3: to 99, with the classic traps)
     if (r < 3) { var hi = r === 1 ? 10 : 20, a = rnd(1, hi); return [a, Math.random() < 0.2 ? a : other(1, hi, [a])]; }
@@ -118,8 +119,8 @@ var compare = (function () {
   // ---- Words ----
   function askText(x) {
     var e = !es();
-    if (x.s === 1) return x.kind === "same" ? (e ? "Which row has more? Or are they the same?" : "¿Qué fila tiene más? ¿O son iguales?")
-      : x.kind === "more" ? (e ? "Which row has more?" : "¿Qué fila tiene más?") : (e ? "Which row has fewer?" : "¿Qué fila tiene menos?");
+    if (x.s === 1) return x.kind === "big" ? (e ? "Which number is bigger, " + x.a + " or " + x.b + "?" : "¿Qué número es mayor, " + x.a + " o " + x.b + "?")
+      : (e ? "Which number is smaller, " + x.a + " or " + x.b + "?" : "¿Qué número es menor, " + x.a + " o " + x.b + "?");
     if (x.kind === "sign") return e ? "Which sign goes in the middle: smaller, the same, or bigger?" : "¿Qué signo va en medio: menor, igual o mayor?";
     if (x.t === "pick") return x.kind === "big" ? (e ? "Tap the bigger number." : "Toca el número mayor.") : (e ? "Tap the smaller number." : "Toca el número menor.");
     return x.kind === "up" ? (e ? "Tap the smallest first, then the next, then the biggest." : "Toca primero el menor, luego el siguiente, luego el mayor.")
@@ -127,8 +128,8 @@ var compare = (function () {
   }
   function why(x) {                                         // how we know, in school words
     var e = !es(), a = x.a, b = x.b, big = Math.max(a, b), small = Math.min(a, b);
-    if (x.s === 1) return a === b ? (e ? "Every one in the top row has a partner in the bottom row. They are the same." : "Cada uno de arriba tiene pareja abajo. Son iguales.")
-      : (e ? "Line them up. The " + (a > b ? "top" : "bottom") + " row has " + (big - small) + " left over, so it has more: " + big + " is more than " + small + "." : "Alinéalos. La fila de " + (a > b ? "arriba" : "abajo") + " tiene " + (big - small) + " de sobra, así que tiene más: " + big + " es más que " + small + ".");
+    if (x.s === 1) return e ? "Look at the rows: " + big + " has " + (big - small) + " more than " + small + ", so " + big + " is bigger and " + small + " is smaller."
+      : "Mira las filas: " + big + " tiene " + (big - small) + " más que " + small + ", así que " + big + " es mayor y " + small + " es menor.";
     if (x.t === "order") return (e ? "In order: " : "En orden: ") + x.ans.join(", ") + ".";
     if (a === b) return e ? "Both are " + a + ", so the sign is equals: " + a + " = " + b + "." : "Los dos son " + a + ", así que el signo es igual: " + a + " = " + b + ".";
     var rule = x.t === "pick" ? "" : e ? " The open side of the sign faces the bigger number: " + a + " " + signOf(a, b) + " " + b + "." : " El lado abierto del signo mira al mayor: " + a + " " + signOf(a, b) + " " + b + ".";
@@ -138,9 +139,8 @@ var compare = (function () {
   }
   function worked(x) {                                      // the solved question in words
     var e = !es();
-    if (x.s === 1) return x.a === x.b ? (e ? "Both rows have " + x.a + ". The same!" : "Las dos filas tienen " + x.a + ". ¡Iguales!") : (e ? Math.max(x.a, x.b) + " is more than " + Math.min(x.a, x.b) + "." : Math.max(x.a, x.b) + " es más que " + Math.min(x.a, x.b) + ".");
     if (x.t === "order") return (e ? "In order: " : "En orden: ") + x.ans.join(", ") + ".";
-    if (x.t === "pick") { var w = x.ans === "a" ? x.a : x.b, o = x.ans === "a" ? x.b : x.a; return w + (e ? " is " : " es ") + (x.kind === "big" ? L("bigger than", "mayor que") : L("smaller than", "menor que")) + " " + o + "."; }
+    if (x.t === "pick" || x.t === "rows") { var w = x.ans === "a" ? x.a : x.b, o = x.ans === "a" ? x.b : x.a; return w + (e ? " is " : " es ") + (x.kind === "big" ? L("bigger than", "mayor que") : L("smaller than", "menor que")) + " " + o + "."; }
     return x.a + (e ? " is " : " es ") + cmpWord(x.ans) + " " + x.b + ".";
   }
 
@@ -156,7 +156,6 @@ var compare = (function () {
     st.className = "cmstage s" + x.s; an.innerHTML = ""; st.innerHTML = "";
     if (x.s === 1) {
       st.innerHTML = '<button class="cmpick ' + A + '" data-v="a">' + rowHtml(x.a, x.thing) + '</button><button class="cmpick ' + B + '" data-v="b">' + rowHtml(x.b, x.thing) + "</button>";
-      an.appendChild(btn(L("The same", "Iguales"), "same", "same"));
     } else if (x.kind === "sign") {
       st.innerHTML = '<div class="cmeq"><span class="' + A + '">' + x.a + '</span><span class="cq" id="cmQ">?</span><span class="' + B + '">' + x.b + "</span></div>" +
         '<div class="cmpics"><div class="' + A + '">' + (x.s === 2 ? frameHtml(x.a) : blocksHtml(x.a)) + '</div><div class="' + B + '">' + (x.s === 2 ? frameHtml(x.b) : blocksHtml(x.b)) + "</div></div>" +
@@ -189,7 +188,7 @@ var compare = (function () {
   function markAnswer(x) {                                  // show the result on the picture
     var qb = $("cmQ"); if (qb && x.kind === "sign") { qb.textContent = x.ans; qb.classList.add("got"); }
     if (x.t === "rows" || x.t === "pick") {
-      var win = x.t === "pick" ? x.ans : x.a === x.b ? null : (x.a > x.b) === (x.kind === "more") ? "a" : "b";
+      var win = x.ans;
       [].forEach.call(document.querySelectorAll("#cmStage .cmpick"), function (b) { b.classList.toggle("win", b.dataset.v === win); b.classList.toggle("tie", !win); });
     }
     if (x.s === 2 && (x.t === "sign" || x.t === "pick") && $("cmWhy")) $("cmWhy").innerHTML = lineSvg(0, 20, [[x.a, A], [x.b, B]]);   // the number line under it

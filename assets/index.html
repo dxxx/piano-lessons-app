@@ -651,6 +651,71 @@
   .compare { position: fixed; left: 10px; right: 10px; top: var(--wtop, 56px); bottom: 10px; z-index: 4; display: none; flex-direction: column; gap: 6px; }
   body.incompare .compare { display: flex; }
   body.incompare .stage > :not(header), body.incompare aside { display: none !important; }
+  /* 1.41 Mini games: the Brick Game console (assets/js/brick.js). Same place on screen as Compare; yellow handheld, grey-green LCD */
+  .brick { position: fixed; left: 10px; right: 10px; top: var(--wtop, 56px); bottom: 10px; z-index: 4; display: none; user-select: none; -webkit-user-select: none; }
+  body.ingames .brick { display: block; }
+  body.ingames .stage > :not(header), body.ingames aside { display: none !important; }
+  .bkroom { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3vh; }
+  .bkroom h2 { margin: 0; font-size: 34px; }
+  .bkcards { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; max-width: 960px; }
+  .bkcard { width: 168px; height: 176px; border: 0; border-radius: 24px; background: linear-gradient(160deg, #ffe066, #f4a516 75%); box-shadow: 0 8px 0 #a86200;
+    font: 700 20px Fredoka, system-ui, sans-serif; color: #3a2600; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+  .bkcard b { font-size: 64px; line-height: 1; font-weight: 400; }
+  .bkcard small { font-size: 14px; opacity: .75; }
+  .bkcard:active { transform: translateY(6px); box-shadow: 0 2px 0 #a86200; }
+  .bkstat { font-size: 16px; color: var(--muted); }
+  .bkdev { position: absolute; inset: 0; display: none; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 18px; border-radius: 36px;
+    background: linear-gradient(170deg, #ffe066, #f2a516 80%); box-shadow: inset 0 4px 0 #fff8, 0 8px 0 #a86200; touch-action: none; }
+  .brick.playing .bkroom { display: none; } .brick.playing .bkdev { display: flex; }
+  .brick.swap .bkdev { flex-direction: row-reverse; }
+  .bkpad { flex: none; width: 216px; height: 216px; position: relative; border-radius: 50%; background: #0000001a; touch-action: none; }
+  .bkpad i, .bkpad span { position: absolute; width: 74px; height: 74px; background: #2b2b35; color: #d9d9e3; font-style: normal; font-size: 30px;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 0 #111; pointer-events: none; }
+  .bkpad i[data-d="up"] { left: 71px; top: 0; border-radius: 16px 16px 4px 4px; } .bkpad i[data-d="down"] { left: 71px; bottom: 0; border-radius: 4px 4px 16px 16px; }
+  .bkpad i[data-d="left"] { left: 0; top: 71px; border-radius: 16px 4px 4px 16px; } .bkpad i[data-d="right"] { right: 0; top: 71px; border-radius: 4px 16px 16px 4px; }
+  .bkpad span { left: 71px; top: 71px; box-shadow: none; }
+  .bkpad i.on { background: #4a4a5c; transform: translateY(4px); box-shadow: 0 1px 0 #111; color: #ffe066; }
+  .bkmid { flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .bktop { display: flex; align-items: center; gap: 10px; }
+  .bktop button { border: 0; border-radius: 14px; background: #2b2b35; color: #fff; font-size: 22px; width: 54px; height: 44px; box-shadow: 0 4px 0 #111; }
+  .bktop button:active { transform: translateY(3px); box-shadow: 0 1px 0 #111; }
+  .bkname { color: #3a2600; font-size: 20px; min-width: 150px; text-align: center; }
+  .bklcd { flex: 1; min-height: 0; display: flex; gap: 8px; padding: 10px; border-radius: 18px; background: #2c3024; box-shadow: inset 0 3px 8px #000a; }
+  .bkscreen { position: relative; align-self: center; line-height: 0; border-radius: 4px; box-shadow: 0 0 0 3px #7f8c66; }
+  .bkscreen canvas { display: block; touch-action: none; border-radius: 4px; }
+  .bkside { width: 132px; background: #9eac82; border-radius: 4px; padding: 8px; color: #1b2213; font: 700 13px/1.15 "Courier New", monospace;
+    display: flex; flex-direction: column; gap: 6px; overflow: hidden; }
+  .bkside b { display: block; font: 800 20px Fredoka, system-ui, sans-serif; } .bkside b.big { font-size: 26px; }
+  .bkside canvas { display: block; margin-top: 3px; }
+  .bkq { display: none; font: 800 24px/1.1 Fredoka, system-ui, sans-serif; text-align: center; background: #cdd7b2; border: 2.5px solid #1b2213; border-radius: 8px; padding: 6px 4px; overflow-wrap: anywhere; }
+  .bkq.show { display: block; } .bkq.ok { background: #a8e6a1; font-size: 17px; } .bkq.no { background: #f2c48f; font-size: 17px; }
+  .bkpow { font-weight: 800; } .bkhelp { margin-top: auto; font: 600 12px/1.25 Fredoka, system-ui, sans-serif; opacity: .8; }
+  .bkbrand { font: 800 15px Fredoka, system-ui, sans-serif; letter-spacing: 4px; color: #a86200; }
+  .bkpaused { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; text-align: center; padding: 12px;
+    font: 800 26px/1.2 Fredoka, system-ui, sans-serif; color: #1b2213; background: #9eac82cc; pointer-events: none; }
+  .bkpaused.on { display: flex; }
+  .bkchoose { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: #9eac82ee; line-height: 1.2; }
+  .bkchoose.on { display: flex; }
+  .bkchoose button { width: 86%; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 3px solid #1b2213; border-radius: 12px;
+    background: #cdd7b2; color: #1b2213; font: 800 30px Fredoka, system-ui, sans-serif; }
+  .bkchoose svg { width: 64px; height: 32px; fill: #1b2213; }
+  .bkchoose button.sel { outline: 4px solid #f4a516; } .bkchoose button.right { background: #a8e6a1; } .bkchoose button.wrong { background: #f2a0a0; }
+  .bkbtns { flex: none; width: 216px; height: 216px; position: relative; touch-action: none; }
+  .bkbtns button { position: absolute; border: 0; border-radius: 50%; color: #fff; font-family: Fredoka, system-ui, sans-serif; font-weight: 800; touch-action: none; }
+  #bkA { right: 0; top: 14px; width: 128px; height: 128px; font-size: 40px; background: radial-gradient(circle at 35% 30%, #ff8080, #d62828 70%); box-shadow: 0 8px 0 #7d1010; }
+  #bkB { left: 0; bottom: 4px; width: 88px; height: 88px; font-size: 28px; background: radial-gradient(circle at 35% 30%, #80bcff, #2b6bd6 70%); box-shadow: 0 6px 0 #173d80; }
+  .brick.swap #bkA { right: auto; left: 0; } .brick.swap #bkB { left: auto; right: 0; }
+  .bkbtns button.on { transform: translateY(6px); box-shadow: 0 2px 0 #0008; }
+  .bkask { position: absolute; inset: 0; z-index: 2; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 22px; border-radius: 36px; background: #1d1640f2; }
+  .bkask.on { display: flex; }
+  .bkask h2 { margin: 0; font-size: 34px; color: #ffd86b; }
+  .bkaskq { font: 800 76px Fredoka, system-ui, sans-serif; }
+  .bkaskc { display: flex; gap: 26px; }
+  .bkaskc button { width: 150px; height: 120px; border: 0; border-radius: 26px; font: 800 52px Fredoka, system-ui, sans-serif; color: #fff; box-shadow: 0 8px 0 #0006; }
+  .bkaskc .c0 { background: #3a8dff; } .bkaskc .c1 { background: #2fbf71; } .bkaskc .c2 { background: #ff6b9a; }
+  .bkaskc button.right { outline: 6px solid #ffd86b; } .bkaskc button.wrong { opacity: .45; }
+  .bkaskm { font-size: 28px; min-height: 34px; }
+  #homeGames { --edge: #a86200; background: linear-gradient(160deg, #ffe066, #f4a516 70%); }
   .cmask { text-align: center; font-size: 26px; font-weight: 800; min-height: 32px; }
   .cmstage { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
   .cmstage.shake { animation: wshake .35s; }
@@ -699,6 +764,7 @@
   .home .opts button[hidden] { display: none !important; }   /* a tile the grown-up hid is GONE (display:flex above beat [hidden]: 1.36 device check) */
   .home .opts.many { flex-wrap: wrap; row-gap: 2.5vh; max-width: 88vw; overflow-x: visible; }   /* 6 tiles: two rows of three */
   .home .opts.many button { width: min(25vw, 250px, 33vh); min-width: 0; }
+  .home .opts.lots { column-gap: 3vw; max-width: 96vw; } .home .opts.lots button { width: min(20vw, 210px, 31vh); }   /* 7-8 tiles (1.41 Games): two rows of four */
   #homeCompare { --edge: #7a3d9c; background: linear-gradient(160deg, #d9a6ff, #8b5cf6 70%); }
   /* Concepts: quick games that pop up (js/concepts.js) */
   .concept { position: fixed; inset: 0; z-index: 9; display: none; align-items: center; justify-content: center; background: radial-gradient(ellipse at 20% 0, #4a35a8 0, transparent 55%), rgba(14,12,32,.97); }
@@ -901,6 +967,7 @@
         <button data-s="maths"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h6M7 4v6M14 7h6M4.5 15.5l5 5M9.5 15.5l-5 5M14 16h6M14 20h6"/></svg><span>Maths</span></button>
         <button data-s="write"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l4.5-1 11-11a2.1 2.1 0 0 0-3-3l-11 11z"/><path d="M14.5 6.5l3 3"/></svg><span>Writing</span></button>
         <button data-s="colour"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0 0 18c1.4 0 2-1 2-2 0-1.3-1-1.7-1-3 0-1 .8-1.8 2-1.8h2.3A3.7 3.7 0 0 0 21 10.5C21 6.4 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10.5" cy="7" r="1.2"/><circle cx="15.5" cy="7.5" r="1.2"/></svg><span>Colouring</span></button>
+        <button data-s="games"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><rect x="8.5" y="5" width="7" height="6" rx="1"/><path d="M9 15.5h3M10.5 14v3"/><circle cx="15" cy="15" r="1.2"/></svg><span>Mini games</span></button>
         <button data-s="voice"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg><span>Voice &amp; language</span></button>
         <button data-s="time"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg><span>Screen time</span></button>
         <button data-s="eye"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>Eye guard</span></button>
@@ -1001,6 +1068,34 @@
         <input type="file" id="cFile" accept="image/*" hidden>
         <div class="note">Your own pictures stay on this tablet. Black-and-white pages work best.</div>
       </section>
+      <section data-s="games"><h3>Mini games</h3>
+        <div class="mlist">
+          <button class="set" id="gmOn"></button>
+        </div>
+        <h4>Games he can pick</h4>
+        <div class="mlist">
+          <button class="set dep" id="gm_snake"></button>
+          <button class="set dep" id="gm_blocks"></button>
+          <button class="set dep" id="gm_space"></button>
+          <button class="set dep" id="gm_bricks"></button>
+          <button class="set dep" id="gm_tank"></button>
+        </div>
+        <h4>Learning</h4>
+        <div class="mlist">
+          <button class="set dep" id="gmLearn"></button>
+          <button class="set dep" id="gmEvery"></button>
+          <button class="set dep" id="gmNeed"></button>
+          <button class="set" id="gmStats"></button>
+        </div>
+        <pre class="note" id="gmLog" style="white-space: pre-wrap; font: inherit;"></pre>
+        <h4>Play</h4>
+        <div class="mlist">
+          <button class="set dep" id="gmSlow"></button>
+          <button class="set dep" id="gmAuto"></button>
+          <button class="set dep" id="gmLeft"></button>
+        </div>
+        <div class="note">Games stay hidden from him until this is ON. Game time counts toward the daily screen time, and bedtime still locks them. A wrong answer in a game never ends it: the game shows and says the right one.</div>
+      </section>
       <section data-s="voice"><h3>Voice &amp; language</h3>
         <div class="mlist">
           <button class="set" id="vLang"></button>
@@ -1081,7 +1176,7 @@
       <g><rect x="22" y="40" width="44" height="90" rx="10" fill="#ff8fb1"/><rect x="22" y="40" width="44" height="10" rx="5" fill="#fff5"/><text x="44" y="30" font-size="30" font-weight="900" fill="#fff" text-anchor="middle">3</text></g>
       <g><rect x="134" y="12" width="44" height="118" rx="10" fill="#8fd3ff"/><rect x="134" y="12" width="44" height="10" rx="5" fill="#fff5"/><text x="156" y="8" font-size="0" fill="#fff"></text><text x="156" y="42" font-size="30" font-weight="900" fill="#2b2160" text-anchor="middle">7</text></g>
       <path d="M78 60 L118 84 L78 108" fill="none" stroke="#ffd86b" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="30" cy="18" r="5" fill="#fff8"/><circle cx="110" cy="24" r="4" fill="#fff8"/><circle cx="120" cy="124" r="3" fill="#fff6"/></svg><span></span></button></div></div>
+      <circle cx="30" cy="18" r="5" fill="#fff8"/><circle cx="110" cy="24" r="4" fill="#fff8"/><circle cx="120" cy="124" r="3" fill="#fff6"/></svg><span></span></button><button id="homeGames" hidden><svg class="art" viewBox="0 0 200 140" aria-hidden="true"><rect x="52" y="6" width="96" height="130" rx="14" fill="#ffd23f" stroke="#a86200" stroke-width="4"/><rect x="64" y="18" width="72" height="56" rx="4" fill="#2c3024"/><rect x="70" y="24" width="60" height="44" fill="#9eac82"/><g fill="#1b2213"><rect x="96" y="28" width="8" height="8"/><rect x="88" y="36" width="8" height="8"/><rect x="96" y="36" width="8" height="8"/><rect x="104" y="36" width="8" height="8"/><rect x="74" y="58" width="8" height="8"/><rect x="82" y="58" width="8" height="8"/><rect x="90" y="58" width="8" height="8"/><rect x="110" y="58" width="8" height="8"/><rect x="118" y="58" width="8" height="8"/></g><path d="M70 98h10v-10h10v10h10v10h-10v10h-10v-10h-10z" fill="#2b2b35"/><circle cx="128" cy="96" r="11" fill="#d62828"/><circle cx="114" cy="114" r="8" fill="#2b6bd6"/></svg><span></span></button></div></div>
 <div class="write" id="write"><div class="wbar"><div class="wlv" id="wLv"></div><div class="wrow" id="wRow"></div><div class="wdots" id="wDots"></div>
   <button id="wHear" hidden>&#128266;</button><button id="wShow">&#128064; <span></span></button><button id="wClear">&#8634;</button></div>
   <div class="wpad" id="wPad"><canvas id="wBg"></canvas><canvas id="wInk"></canvas></div></div>
@@ -1152,6 +1247,7 @@
 
 <script src="js/icons.js"></script>
 <script src="js/compare.js"></script>
+<script src="js/brick.js"></script>
 <script src="js/concepts.js"></script>
 <script src="js/metronome.js"></script>
 <script src="js/follow.js"></script>
@@ -1561,6 +1657,7 @@
         if (document.body.classList.contains("solo")) { d.so = (d.so || 0) + dt; ses.so += dt; }
         if (document.body.classList.contains("math")) d.mt = (d.mt || 0) + dt;   // math-only mode time
         if (document.body.classList.contains("incompare")) d.cm = (d.cm || 0) + dt;   // Compare time
+        if (document.body.classList.contains("ingames")) d.gm = (d.gm || 0) + dt;     // Mini games time (1.41)
         if (player && player.getPlayerState && player.getPlayerState() === 1) {
           var vd = player.getVideoData ? player.getVideoData() : null, id = vd && vd.video_id;
           if (id) {
@@ -1621,7 +1718,7 @@
   function save(i) { try { localStorage.setItem(KEY, String(i)); } catch (e) {} }
 
   function onYouTubeIframeAPIReady() {
-    if (player || document.body.classList.contains("math") || document.body.classList.contains("inwrite") || document.body.classList.contains("incolour") || document.body.classList.contains("incompare") || document.body.classList.contains("athome")) return;   // maths, writing, colouring and the start screen never load the videos
+    if (player || document.body.classList.contains("math") || document.body.classList.contains("inwrite") || document.body.classList.contains("incolour") || document.body.classList.contains("incompare") || document.body.classList.contains("ingames") || document.body.classList.contains("athome")) return;   // maths, writing, colouring and the start screen never load the videos
     player = new YT.Player("player", {
       playerVars: {
         listType: "playlist", list: PLAYLIST, index: firstLesson(),
@@ -4022,8 +4119,9 @@
       show: show,
       mathStart: function () { stars = 0; sessRight = 0; show(); },
       earnStart: function () { earnOnly = true; stars = 0; sessRight = 0; show(); },   // locked for screen time: a math session that only earns minutes
-      resume: function () { if (appMode.home() || appMode.write() || appMode.colour()) return; if (appMode.math()) appMode.start(); else if (get("quizPending", "0") === "1") { if (cfg.on) show(); else put("quizPending", 0); } },   // 1.39: never while the quiz is OFF (a stale flag reopened it forever); after a lock
+      resume: function () { if (appMode.home() || appMode.write() || appMode.colour() || appMode.games()) return; if (appMode.math()) appMode.start(); else if (get("quizPending", "0") === "1") { if (cfg.on) show(); else put("quizPending", 0); } },   // 1.39: never while the quiz is OFF (a stale flag reopened it forever); after a lock
       log: function () { return log; },
+      gameSum: function () { return make(level); },   // 1.41 mini games: a sum at his level (not logged here: games keep gamesProg)
       practising: function () { return { list: review.slice(), mastered: masteredToday() }; },
       mathStop: function () {
         open = false; qid++; stopVoice(); stopAnim(); clearTimeout(thinkTimer); earnOnly = false; manual = false; voice.hush(true);
@@ -4941,16 +5039,17 @@
 
   var appMode = (function () {
     var m = "piano", start = "choose", atHome = false, homeEl = document.getElementById("home");
-    try { m = localStorage.getItem("appMode"); if (m !== "math" && m !== "write" && m !== "colour" && m !== "compare") m = "piano"; var sm = localStorage.getItem("startMode"); if (sm === "piano" || sm === "math" || sm === "write" || sm === "colour" || sm === "compare") start = sm; } catch (e) {}
+    try { m = localStorage.getItem("appMode"); if (m !== "math" && m !== "write" && m !== "colour" && m !== "compare" && !(m === "games" && brick.visible())) m = "piano"; var sm = localStorage.getItem("startMode"); if (sm === "piano" || sm === "math" || sm === "write" || sm === "colour" || sm === "compare") start = sm; } catch (e) {}
     function apply(next) {
       atHome = false; document.body.classList.remove("athome"); homeEl.classList.remove("on");
       m = next;
       try { localStorage.setItem("appMode", m); } catch (e) {}
       document.body.classList.toggle("math", m === "math"); document.body.classList.toggle("inwrite", m === "write"); document.body.classList.toggle("incolour", m === "colour");
-      document.body.classList.toggle("incompare", m === "compare");
+      document.body.classList.toggle("incompare", m === "compare"); document.body.classList.toggle("ingames", m === "games");
       if (m !== "write") writing.stop();
       if (m !== "colour") colouring.stop();
       if (m !== "compare") compare.stop();
+      if (m !== "games") brick.stop();
       if (m === "math") {
         if (player && player.pauseVideo) player.pauseVideo();
         quiz.mathStop(); quiz.mathStart();
@@ -4963,6 +5062,9 @@
       } else if (m === "compare") {
         if (player && player.pauseVideo) player.pauseVideo();
         quiz.mathStop(); compare.start();
+      } else if (m === "games") {
+        if (player && player.pauseVideo) player.pauseVideo();
+        quiz.mathStop(); brick.start();
       } else {
         quiz.mathStop();
         if (!player && window.YT && YT.Player) onYouTubeIframeAPIReady();   // first time in this run
@@ -4970,9 +5072,9 @@
       }
     }
     function home() {
-      quiz.mathStop(); writing.stop(); colouring.stop(); compare.stop(); voice.hush(true);
+      quiz.mathStop(); writing.stop(); colouring.stop(); compare.stop(); brick.stop(); voice.hush(true);
       if (player && player.pauseVideo) player.pauseVideo();
-      atHome = true; document.body.classList.remove("math", "inwrite", "incolour", "incompare"); document.body.classList.add("athome"); homeEl.classList.add("on");
+      atHome = true; document.body.classList.remove("math", "inwrite", "incolour", "incompare", "ingames"); document.body.classList.add("athome"); homeEl.classList.add("on");
     }
     function fixed() { document.body.classList.toggle("fixedStart", start !== "choose"); }
     var CARD = { piano: "homePiano", play: "homePlay", math: "homeMath", write: "homeWrite", colour: "homeColour", compare: "homeCompare" }, hide = [];
@@ -4980,7 +5082,7 @@
     if (hide.length > 5) hide = [];
     function cards() {
       Object.keys(CARD).forEach(function (k) { document.getElementById(CARD[k]).hidden = hide.indexOf(k) >= 0; });
-      homeEl.querySelector(".opts").classList.toggle("many", Object.keys(CARD).length - hide.length > 5);
+      homeEl.querySelector(".opts").classList.toggle("many", homeEl.querySelectorAll(".opts button:not([hidden])").length > 5); homeEl.querySelector(".opts").classList.toggle("lots", homeEl.querySelectorAll(".opts button:not([hidden])").length > 6);   // 1.41: the Games tile counts too
     }
     cards();
     onLang(function () {
@@ -4999,6 +5101,7 @@
     document.getElementById("homeWrite").onclick = function () { apply("write"); };
     document.getElementById("homeColour").onclick = function () { apply("colour"); };
     document.getElementById("homeCompare").onclick = function () { apply("compare"); };
+    document.getElementById("homeGames").onclick = function () { if (brick.visible()) apply("games"); };
     document.getElementById("homeBtn").onclick = function () { if (start === "choose" && !(quiz.isOpen() && m !== "math")) home(); };   // never a way out of the quiz between lessons
     fixed();
     return {
@@ -5006,6 +5109,8 @@
       write: function () { return m === "write"; },
       colour: function () { return m === "colour"; },
       compare: function () { return m === "compare"; },
+      games: function () { return m === "games"; },
+      cards: function () { cards(); },
       home: function () { return atHome; },
       startMode: function () { return start; },
       shown: function (k) { return hide.indexOf(k) < 0; },
@@ -5262,7 +5367,13 @@
     // Unlocked only in memory, only while the menu is open; 60 s without a touch locks it again
     var idleTimer = null;
     function armIdle() { clearTimeout(idleTimer); idleTimer = setTimeout(lock, 60000); }
+    // The 4th digit reacts on touch-down, so the click that comes when the finger lifts would land on the menu row that
+    // now sits under it (1.41: "Show a quiz now" opened maths). That one click is eaten; a new touch ends the guard.
+    var eatUntil = 0;
+    gate.addEventListener("click", function (e) { if (Date.now() < eatUntil) { eatUntil = 0; e.preventDefault(); e.stopPropagation(); } }, true);
+    gate.addEventListener("pointerdown", function () { eatUntil = 0; }, true);
     function unlock() {
+      eatUntil = Date.now() + 3000;
       pad.hidden = true; choices.textContent = "";
       choices.appendChild($("menuTpl").content.cloneNode(true));
       choices.hidden = false; bindMenu(); sheet(); armIdle();
@@ -5311,11 +5422,11 @@
     window.lockMenu = lock;
     // TOP BAR: the single source of truth for which top-bar items each screen shows ("*" = all). 🔒 Menu and ✕ Close are
     // not in the table: they are the fixed grown-up corner, on every screen (CSS #lock, #quitBtn). A new screen = one row here.
-    var BAR = { lesson: "*", home: "", math: "homeBtn", write: "homeBtn", colour: "homeBtn", compare: "homeBtn", locked: "" };
+    var BAR = { lesson: "*", home: "", math: "homeBtn", write: "homeBtn", colour: "homeBtn", compare: "homeBtn", games: "homeBtn", locked: "" };
     function screenNow() {
       var c = document.body.classList;
       return c.contains("locked") ? "locked" : c.contains("athome") ? "home" : c.contains("math") ? "math" : c.contains("inwrite") ? "write"
-        : c.contains("incolour") ? "colour" : c.contains("incompare") ? "compare" : "lesson";
+        : c.contains("incolour") ? "colour" : c.contains("incompare") ? "compare" : c.contains("ingames") ? "games" : "lesson";
     }
     function topBar() {
       var show = BAR[screenNow()];
@@ -5367,6 +5478,7 @@
 
     // The menu content exists only while unlocked; its handlers are bound each time it is cloned in
     function bindMenu() {
+      if (window.brick && brick.menu) brick.menu();          // 1.41: Mini games rows (the menu is cloned from #menuTpl at every unlock)
     // Quiz settings, behind the PIN; each tap cycles to the next choice
     function label() {
       var c = quiz.cfg;

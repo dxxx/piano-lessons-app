@@ -4,6 +4,18 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.41 (2026-10-29)
+
+- New: **Mini games**, a Brick Game console (the 9999-in-1 handheld) with five cartridges: Snake, Falling Blocks, Space Defenders, Brick Breaker and Tank Battle. Hidden until a grown-up turns them on in Menu > Mini games; then a Games tile shows on the start screen.
+- One set of controls for every game: arrow pad, big A and small B buttons, pause, sound and back. Swipe on the screen works as the arrows, drag moves the paddle or ship, and a PC keyboard maps to the same buttons. The arrow pad is on the right and A, B on the left (he is right-handed); Menu > Mini games switches the sides.
+- Learning inside the games, about every 20 seconds: eat, shoot or hit the answer. Questions are spoken. Default: sums at his level taking turns with "which number is bigger?". A wrong answer never ends a game; it shows and says the right one.
+- A boss question pauses the game every 10 minutes of play (5, 10, 15 or 20 in the menu). Game time counts toward screen time; anything over the screen pauses the game.
+- Snake is endless: the walls wrap round, and biting the tail only makes it shorter.
+- Bigger or smaller, stage 1: asks "Which number is bigger, 9 or 2?" (or smaller); each number sits on its row of things so he sees why. No more "which row has more", no "the same" at this stage.
+- Start screen: 7 or 8 tiles fit as two rows of four.
+- Fixed: typing the PIN sometimes opened the maths quiz. The last digit reacts on touch-down and opens the menu at once, so lifting the finger clicked the menu row under it ("Show a quiz now"). That click is now ignored.
+- Mini games questions show both numbers on screen ("Bigger: 9 or 2?").
+
 ## 1.40.1 (2026-10-29)
 
 - Fixed: in Big video with the piano closed, Menu and Close covered the Song lessons button, so a tap opened the PIN or closed the lesson. The lesson strip now starts under them.
