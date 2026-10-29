@@ -228,6 +228,8 @@
     background: linear-gradient(#120f2a 55%, #120f2a00); border-radius: 16px 16px 0 0; }   /* falling notes fade in under the song bar */
   .fwtop { display: flex; align-items: center; gap: 10px; color: #fbf8ff; }
   .fwtop b { font-size: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .fwtop span { color: #c9bff5; font-size: 14px; margin-right: auto; }
+  .fwctl { display: flex; gap: 8px; }                     /* 1.42 player bar: previous, start again, listen/pause, next */
+  .fwtop .fwctl button { min-width: 50px; min-height: 44px; font-size: 20px; }
   .fwbar { height: 6px; border-radius: 3px; background: #ffffff22; overflow: hidden; } .fwbar i { display: block; height: 100%; width: 0; background: #5fd38f; transition: width .2s; }
   .fwtiles { display: flex; gap: 8px; align-items: flex-end; min-height: 74px; }
   .fwtiles:empty { display: none; }
@@ -926,7 +928,7 @@
     </div>
     <div class="fly" id="fly"><canvas id="flyCv"></canvas>
       <div class="follow" id="follow" hidden><div class="fwtop"><b id="fwTitle"></b><span id="fwCount"></span>
-          <button id="fwHint">&#128066; Listen</button><button id="fwStop" aria-label="Stop the song">&#10005;</button></div>
+          <span class="fwctl"><button id="fwPrev" aria-label="Previous song">&#9198;</button><button id="fwRe" aria-label="Start again">&#8634;</button><button id="fwHint">&#9654; Listen</button><button id="fwNext" aria-label="Next song">&#9197;</button></span><button id="fwStop" aria-label="Stop the song">&#10005;</button></div>
         <div class="fwbar"><i id="fwBar"></i></div><div class="fwtiles" id="fwTiles"></div></div>
       <div class="beatfly" id="beatFly"><div class="beatdots" id="beatDots"></div><b class="beathits" id="beatHits"></b></div>
       <div class="beatpanel" id="beatPanel" hidden><button class="beatx" id="beatX" aria-label="Close">&#10005;</button>

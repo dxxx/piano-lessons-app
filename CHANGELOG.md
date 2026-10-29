@@ -4,6 +4,10 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.42 (2026-10-29)
+
+- Songs (Follow the keys): a player bar. Previous song, Start again (from the first note), Listen / Pause, Next song. Previous and Next go through the list he picked from (same tab or search) and wrap round.
+
 ## 1.41 (2026-10-29)
 
 - New: **Mini games**, a Brick Game console (the 9999-in-1 handheld) with five cartridges: Snake, Falling Blocks, Space Defenders, Brick Breaker and Tank Battle. Hidden until a grown-up turns them on in Menu > Mini games; then a Games tile shows on the start screen.

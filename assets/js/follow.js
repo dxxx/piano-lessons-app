@@ -20,6 +20,9 @@
 //   - every song opens on ITS OWN sound (index.json "snd", picked per song on the PC: carols = celesta, Bach = harpsichord, Linkin
 //     Park = rock guitar...). He can change it: that pick is remembered for that song (songSnd). Leaving the song gives him back his
 //     own sound (operator 2026-10-28: "the default instrument per song must be auto selected", "we can change")
+//   - player bar (operator 2026-10-29: "restart button, play pause, next, previous, like a player"): Previous / Next song go
+//     through the list he picked from (same tab or search, wrapping round), Start again restarts this song from its first note,
+//     Listen / Pause is the Listen above
 //   - the keyboard is set once to cover the whole song (all its notes, fewest keys), and goes back to his own zoom at the end
 // Research: answer on the keyboard, notes from his songs, errorless (research/06 R9-R12, 01 R9). Uses L, voice, diary, pianoKeys,
 // pianoPlayNote (index.html). Progress: localStorage songProg { id: { best, plays, last } }; settings: songCfg { hand, acc }.
@@ -37,6 +40,7 @@ var follow = (function () {
   var index = null, loading = false, song = null, steps = [], si = 0, pressed = {}, firstTry = true, okFirst = 0, misses = 0, t0 = 0, tab = 1;
   var cfg = { hand: "RL", acc: 1 }, prog = {}, wrong = [];
   var LUCKY_N = 3, LUCKY_MS = 1500;
+  var queue = [], curId = null;                                  // player bar: the list he picked from, and the song on (kept after the end)
   try { var c = JSON.parse(localStorage.getItem("songCfg") || "{}"); if (/^(R|L|RL)$/.test(c.hand)) cfg.hand = c.hand; if (c.acc === 0) cfg.acc = 0; } catch (e) {}
   try { prog = JSON.parse(localStorage.getItem("songProg") || "{}") || {}; } catch (e) { prog = {}; }
   function saveCfg() { try { localStorage.setItem("songCfg", JSON.stringify(cfg)); } catch (e) {} }
@@ -127,6 +131,10 @@ var follow = (function () {
 
   // ---- Play one song ----
   function start(id) {
+    if (song && si > 0 && window.diary) diary.ev("song_stop", { id: song.id, at: si, steps: steps.length });   // skipped or restarted
+    var q = [].map.call($("songList").querySelectorAll("button[data-id]"), function (b) { return b.dataset.id; });
+    if (q.indexOf(id) >= 0) queue = q; else if (queue.indexOf(id) < 0) queue = index ? index.map(function (s) { return s.id; }) : [id];
+    curId = id;
     getSong(id).then(function (d) {
       var meta = index.filter(function (s) { return s.id === id; })[0] || { id: id, t: d.t };
       var mine = d.notes.filter(function (n) { return cfg.hand.indexOf(n[3]) >= 0; });
@@ -247,7 +255,8 @@ var follow = (function () {
     own = null;
   }
   // ---- Listen: the whole song plays from his note on, falling in real time, until a key is pressed (or Listen again) ----
-  function hintLabel() { var b = $("fwHint"); if (b) b.innerHTML = lis ? "&#9208; " + L("Pause", "Pausa") : "&#128066; " + L("Listen", "Escuchar"); }
+  function skip(d) { var i = queue.indexOf(curId); if (i >= 0 && queue.length) start(queue[(i + d + queue.length) % queue.length]); }
+  function hintLabel() { var b = $("fwHint"); if (b) b.innerHTML = lis ? "&#9208; " + L("Pause", "Pausa") : "&#9654; " + L("Listen", "Escuchar"); }
   function hint() {
     if (!song || !steps[si]) return;
     if (lis) { endListen(); return; }
@@ -285,6 +294,9 @@ var follow = (function () {
     $("songList").onclick = function (e) { var h = e.target.closest(".heart"), b = e.target.closest("button[data-id]"); if (!b) return; if (h) { stopPreview(); toggleFav(b.dataset.id); } else tapSong(b); };
     $("fwStop").onclick = stop;
     $("fwHint").onclick = hint;
+    $("fwRe").onclick = function () { if (curId) start(curId); };
+    $("fwPrev").onclick = function () { skip(-1); };
+    $("fwNext").onclick = function () { skip(1); };
     $("songBtn").innerHTML = "🎵 " + L("Songs", "Canciones");
     // leaving Piano only ends the song
     new MutationObserver(function () { if ((song || !$("follow").hidden) && !solo()) stop(); }).observe(document.body, { attributes: true, attributeFilter: ["class"] });
