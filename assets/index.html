@@ -3936,7 +3936,7 @@
       show: show,
       mathStart: function () { stars = 0; sessRight = 0; show(); },
       earnStart: function () { earnOnly = true; stars = 0; sessRight = 0; show(); },   // locked for screen time: a math session that only earns minutes
-      resume: function () { if (appMode.home() || appMode.write() || appMode.colour()) return; if (appMode.math()) appMode.start(); else if (get("quizPending", "0") === "1") show(); },   // after a lock
+      resume: function () { if (appMode.home() || appMode.write() || appMode.colour()) return; if (appMode.math()) appMode.start(); else if (get("quizPending", "0") === "1") { if (cfg.on) show(); else put("quizPending", 0); } },   // 1.39: never while the quiz is OFF (a stale flag reopened it forever); after a lock
       log: function () { return log; },
       practising: function () { return { list: review.slice(), mastered: masteredToday() }; },
       mathStop: function () {
@@ -3945,6 +3945,7 @@
         $("qred").classList.remove("on"); $("quiz").classList.remove("open");
       },
       lessonChanged: function (firstLoad) {
+        if (firstLoad && !open) { put("quizPending", 0); played = 0; if (!cfg.on) return; }   // 1.39: also when OFF
         if (!cfg.on || open) return;
         // Opening the app (or Piano) never starts with maths: a quiz left over from last time is dropped, and the first
         // question comes after cfg.first lessons played this session (operator 1.36: "let him play 2-3-4 songs first").
@@ -3958,7 +3959,8 @@
       clearRecords: clearRecords,
       save: function () {
         put("quizOn", cfg.on ? 1 : 0); put("quizEvery", cfg.every); put("quizNeed", cfg.need); put("quizFirst", cfg.first); put("quizRepeat", cfg.review ? 1 : 0); put("hintAfter", cfg.hint); put("hintStyle", cfg.style);
-        if (!cfg.on) { count = 1; put("quizCount", 1); put("quizPending", 0); }
+        if (!cfg.on) { count = 1; put("quizCount", 1); put("quizPending", 0);
+          if (open && !manual && !earnOnly && !appMode.math()) finish(); }   // 1.39: OFF means gone, also the one on screen
       }
     };
   })();

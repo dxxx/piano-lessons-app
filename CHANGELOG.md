@@ -4,9 +4,10 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
-## 1.39 — 2026-10-29
+## 1.39.1 — 2026-10-29
 - **Play along fits the screen again.** The top bar needed more room than its column, so the page grew to 1047 px on the 1024 px tablet and slid sideways: the left edge and the lesson strip were cut off and the strip was hard to scroll. The grid can no longer grow past the screen.
 - **Menu and Close no longer cover the lesson thumbnails.** In Play along the lesson strip now starts under the top bar.
+- **Maths quiz OFF now means off.** A quiz left due from before kept coming back every time Piano lessons opened, even with the quiz switched off, and it sat under the Menu so closing the Menu showed it again. Now a due quiz only returns while the quiz is on, switching it off also closes one on screen, and opening the app drops a left-over one either way.
 
 ## 1.38 — 2026-10-28
 - **Two more "whose is it?" games** (research/08 #25–26):
