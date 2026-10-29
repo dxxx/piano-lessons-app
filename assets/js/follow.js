@@ -77,15 +77,16 @@ var follow = (function () {
     if (!index.length) { box.innerHTML = '<p class="songnone">' + L("No songs on this tablet yet. A grown-up adds them from the computer.", "Todavía no hay canciones en esta tableta.") + "</p>"; return; }
     // 4th tab "Modern music": songs that are not from Synthesia (our playlist videos, cat "custom"); 5th "My lessons": the songs of the
     // YouTube lesson videos he watches (lessonIds), in the lesson order. Operator 2026-10-27.
-    var custom = tab === "c", lessons = tab === "l";
-    var mine = index.filter(function (s) { return lessons ? s.yt && ids.indexOf(s.yt) >= 0 : custom ? s.cat === "custom" : s.lv === tab && s.cat !== "custom"; });
+    var custom = tab === "c", lessons = tab === "l", q = $("songFind") ? $("songFind").value : "", find = !!q.trim();   // 1.40: typing searches every tab
+    if (find) [].forEach.call($("songTabs").children, function (b) { b.classList.remove("sel"); });
+    var mine = index.filter(function (s) { return find ? window.findMatch(s.t, q) : lessons ? s.yt && ids.indexOf(s.yt) >= 0 : custom ? s.cat === "custom" : s.lv === tab && s.cat !== "custom"; });
     mine.sort(function (a, b) { return (fav.indexOf(b.id) >= 0) - (fav.indexOf(a.id) >= 0) || (ids.indexOf(b.yt) >= 0) - (ids.indexOf(a.yt) >= 0) || (lessons ? ids.indexOf(a.yt) - ids.indexOf(b.yt) : 0) || (custom ? a.lv - b.lv : 0) || a.n - b.n; });   // hearted first, then songs from his lessons
     box.innerHTML = mine.map(function (s) {
       var p = prog[s.id], stars = p ? LV[p.best] : "", lesson = s.yt && ids.indexOf(s.yt) >= 0;
       var hf = fav.indexOf(s.id) >= 0;
       return '<button data-id="' + s.id + '"' + (hf ? ' class="fav"' : "") + '><i class="heart" role="button" aria-label="' + L("Favourite", "Favorita") + '">' + (hf ? "&#10084;&#65039;" : "&#9825;") + "</i><b>" + esc(s.t) + "</b><span>" + (lesson && !lessons ? "🎬 " + L("from your lessons", "de tus lecciones") + " · " : "") +
         (custom || lessons ? LV[s.lv] + " · " : "") + s.n + " " + L("notes", "notas") + (stars ? ' · <i class="st">' + stars + "</i>" : "") + "</span></button>";
-    }).join("") || '<p class="songnone">' + (lessons ? L("The songs from his video lessons show here.", "Aquí salen las canciones de sus lecciones en vídeo.") : "—") + "</p>";
+    }).join("") || '<p class="songnone">' + (find ? L("No song with that name.", "Ninguna canción con ese nombre.") : lessons ? L("The songs from his video lessons show here.", "Aquí salen las canciones de sus lecciones en vídeo.") : "—") + "</p>";
   }
   // ---- Listen first: one tap plays the song (all of it; a slow tap again, another song or closing the list stops it); two quick taps (within 0.45 s) pick it ----
   var PREVIEW_S = 1e9, DOUBLE_MS = 450, cache = {}, pv = { id: null, timers: [] }, lastTap = { id: null, t: 0 };
@@ -277,7 +278,9 @@ var follow = (function () {
     $("songBtn").onclick = function () { if (song) stop(); openList(); };
     $("songX").onclick = closeList;
     $("songPop").onclick = function (e) { if (e.target === $("songPop")) closeList(); };
-    $("songTabs").onclick = function (e) { var b = e.target.closest("button"); if (b) { tab = /^[cl]$/.test(b.dataset.lv) ? b.dataset.lv : +b.dataset.lv; list(); } };
+    $("songFind").oninput = list;
+    $("songFind").placeholder = L("Search a song…", "Busca una canción…");
+    $("songTabs").onclick = function (e) { var b = e.target.closest("button"); if (b) { $("songFind").value = ""; tab = /^[cl]$/.test(b.dataset.lv) ? b.dataset.lv : +b.dataset.lv; list(); } };
     $("songHand").onclick = function (e) { var b = e.target.closest("button"); if (b) { cfg.hand = b.dataset.h; saveCfg(); list(); } };
     $("songList").onclick = function (e) { var h = e.target.closest(".heart"), b = e.target.closest("button[data-id]"); if (!b) return; if (h) { stopPreview(); toggleFav(b.dataset.id); } else tapSong(b); };
     $("fwStop").onclick = stop;

@@ -203,6 +203,15 @@
   .songx { margin-left: auto; width: 44px; height: 44px; padding: 0; font-size: 18px; }
   .songlist { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); grid-auto-rows: min-content; gap: 10px; align-content: start; padding: 2px 2px 8px; }
   .songlist button { position: relative; text-align: left; display: block; min-height: 58px; height: auto; min-width: 0; overflow: hidden; padding-right: 46px; }   /* block, not flex: a two-line title grows the card */
+  /* 1.40 search box (Follow the keys + Song lessons) and the Song lessons pop-up: same card as Follow the keys */
+  .songfind { flex: 1; min-width: 140px; font: 600 18px Fredoka, system-ui, sans-serif; padding: 8px 14px; border-radius: 12px; border: 2px solid #5b4bb0; background: #100c2a; color: #fbf8ff; }
+  .songfind::placeholder { color: #9d93d6; }
+  #slPop { position: fixed; inset: 0; z-index: 8; display: none; align-items: center; justify-content: center; background: rgba(10,8,20,.7); }
+  #slPop.open { display: flex; }
+  .songlist button.slcard { display: flex; align-items: center; gap: 10px; padding: 6px 10px 6px 6px; }
+  .slcard img { width: 112px; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; flex: none; background: #100c2a; }
+  .slbtn { display: block; width: 100%; margin: 0 0 6px; border: 0; border-radius: 10px; padding: 8px 6px; background: linear-gradient(#ffd86b, #f0b429); color: #2a1f00;
+    font: 700 14px Fredoka, system-ui, sans-serif; box-shadow: 0 3px 0 #9a7a12; position: sticky; top: 0; z-index: 1; }
   .songlist button b, .songlist button span { display: block; overflow-wrap: anywhere; } .songlist button span { margin-top: 3px; }
   .songlist button b { font-size: 15px; line-height: 1.25; } .songlist button span { font-size: 12px; font-weight: 500; color: #c9bff5; } .songlist .st { font-style: normal; }
   .songlist .heart { position: absolute; top: 4px; right: 4px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font: normal 22px system-ui, sans-serif; color: #c9bff5; border-radius: 50%; }
@@ -815,12 +824,15 @@
 </style>
 </head>
 <body>
-<div id="songPop"><div class="songcard"><div class="songhead"><b>&#127925; Follow the keys</b>
+<div id="songPop"><div class="songcard"><div class="songhead"><b>&#127925; Follow the keys</b><input class="songfind" id="songFind" type="search" autocomplete="off" enterkeyhint="search">
   <div class="songseg" id="songHand"><button data-h="RL">&#128080; Both hands</button><button data-h="R">&#9995; Right</button><button data-h="L">&#129306; Left</button></div>
   <button class="songx" id="songX" aria-label="Close">&#10005;</button></div>
   <div class="songseg tabs" id="songTabs"><button data-lv="1">&#11088; Easy</button><button data-lv="2">&#11088;&#11088; Medium</button><button data-lv="3">&#11088;&#11088;&#11088; Hard</button><button data-lv="c">&#127928; Modern music</button><button data-lv="l">&#127916; My lessons</button></div>
   <div class="songtip" id="songTip"></div>
   <div class="songlist" id="songList"></div></div></div>
+<div id="slPop"><div class="songcard"><div class="songhead"><b id="slHead">&#127916; Song lessons</b><input class="songfind" id="slFind" type="search" autocomplete="off" enterkeyhint="search">
+  <button class="songx" id="slX" aria-label="Close">&#10005;</button></div>
+  <div class="songlist" id="slList"></div></div></div>
 <div id="instPop"><div class="grid" id="instGrid"></div></div>
 <div class="app">
   <section class="stage">
@@ -863,7 +875,7 @@
         <button class="oct zoom" id="zoomIn" aria-label="Bigger keys">+</button></div>
     </div>
   </section>
-  <aside><h2 id="allLessons">All lessons</h2><div id="list"></div></aside>
+  <aside><button class="slbtn" id="slBtn">&#128269; Song lessons</button><h2 id="allLessons">All lessons</h2><div id="list"></div></aside>
 </div>
 
 <div class="gate" id="gate">
@@ -1643,6 +1655,7 @@
   }
   function pos(i) { var k = order.indexOf(i); return k < 0 ? i : k; }
   function stepLesson(d) {                              // Back / Next follow the list as shown
+    if (songLesson.on()) { songLesson.step(d); return; }
     var k = pos(player.getPlaylistIndex()) + d;
     if (k >= 0 && k < order.length) player.playVideoAt(order[k]);
   }
@@ -1655,10 +1668,80 @@
       b.className = "lesson"; b.dataset.i = i;
       b.innerHTML = '<img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + id + '/mqdefault.jpg"><span class="num">' + (k + 1) + "</span>" +
         (seen ? '<span class="seen" title="watched to the end">&#10003;' + seen + "</span>" : "");
-      b.onclick = function () { player.playVideoAt(i); };
+      b.onclick = function () { songLesson.lesson(i); };
       box.appendChild(b);
     });
   }
+
+  // Search (1.40): every word typed must be in the title; no accents, no case ("amelie" finds "Amélie")
+  window.findMatch = function (text, q) {
+    function n(x) { return String(x || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " "); }
+    var t = " " + n(text) + " "; return n(q).split(" ").filter(Boolean).every(function (w) { return t.indexOf(w) >= 0; });
+  };
+  // ---- Song lessons (1.40): the tutorial video of every song on the tablet, played by its own video id, OUTSIDE the lesson
+  // playlist (an embedded YouTube playlist gives the app at most 200 videos, and this playlist adds new videos at the TOP, which
+  // pushed his 43 lessons out: 2026-10-29). A lesson tapped in the strip goes back to the playlist.
+  var songLesson = (function () {
+    var vid = null, order = [], all = null, hits = [];
+    function $(id) { return document.getElementById(id); }
+    function esc(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+    function load(done) {
+      if (all) return done();
+      fetch("songs/index.json").then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) {
+        var seen = {}; all = (d || []).filter(function (s) { if (!s.yt || seen[s.yt]) return false; seen[s.yt] = 1; return true; })
+          .sort(function (a, b) { return a.t.localeCompare(b.t); });
+        done();
+      }).catch(function () { all = []; done(); });
+    }
+    function list() {
+      var box = $("slList");
+      if (!all) { box.innerHTML = '<p class="songnone">' + L("Loading songs…", "Cargando canciones…") + "</p>"; return; }
+      hits = all.filter(function (s) { return findMatch(s.t, $("slFind").value); });
+      box.innerHTML = hits.map(function (s) {
+        return '<button class="slcard" data-yt="' + s.yt + '"><img loading="lazy" alt="" src="https://i.ytimg.com/vi/' + s.yt + '/mqdefault.jpg"><b>' + esc(s.t) + "</b></button>";
+      }).join("") || '<p class="songnone">' + (all.length ? L("No song with that name.", "Ninguna canción con ese nombre.") : L("No songs on this tablet yet.", "Todavía no hay canciones en esta tableta.")) + "</p>";
+    }
+    function open() { $("slPop").classList.add("open"); list(); load(list); }
+    function close() { $("slPop").classList.remove("open"); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }
+    function play(id) {
+      vid = id; cover.classList.remove("on");
+      [].forEach.call(document.querySelectorAll(".lesson.current"), function (el) { el.classList.remove("current"); });
+      if (player && player.loadVideoById) player.loadVideoById(id);
+      label();
+    }
+    function title(id) { var s = (all || []).filter(function (x) { return x.yt === id; })[0]; return s ? s.t : ""; }
+    function label() {
+      var k = order.indexOf(vid), n = order.length;
+      $("num").textContent = L("Song lesson " + (k + 1) + " of " + n, "Canción " + (k + 1) + " de " + n);
+      $("vt").textContent = title(vid);
+      $("prev").disabled = k <= 0; $("next").disabled = k >= n - 1;
+    }
+    $("slBtn").onclick = function () { if (player) open(); };
+    $("slX").onclick = close;
+    $("slPop").onclick = function (e) { if (e.target === $("slPop")) close(); };
+    $("slFind").oninput = list;
+    $("slList").onclick = function (e) {
+      var b = e.target.closest("button[data-yt]"); if (!b) return;
+      order = hits.map(function (s) { return s.yt; });       // Next / Back follow the list he picked from (search included)
+      close(); play(b.dataset.yt);
+    };
+    onLang(function () {
+      $("slBtn").innerHTML = "&#128269; " + L("Song lessons", "Canciones");
+      $("slHead").innerHTML = "&#127916; " + L("Song lessons", "Canciones en vídeo");
+      $("slFind").placeholder = L("Search a song…", "Busca una canción…");
+    });
+    return {
+      on: function () { return !!vid; },
+      pos: function () { return order.indexOf(vid); },
+      count: function () { return order.length; },
+      label: label,
+      step: function (d) { var k = order.indexOf(vid) + d; if (k >= 0 && k < order.length) play(order[k]); },
+      lesson: function (i) {                                  // a lesson from the strip: back to the playlist
+        if (!vid) { player.playVideoAt(i); return; }
+        vid = null; current = null; player.loadPlaylist({ listType: "playlist", list: PLAYLIST, index: i });
+      }
+    };
+  })();
 
   // Paused or finished → cover the player with our own button (hides YouTube's suggestions).
   var cover = document.getElementById("cover"), coverBtn = document.getElementById("coverBtn");
@@ -1668,14 +1751,14 @@
     if (st === 1 || st === 3) player.pauseVideo(); else player.playVideo();
   };
   function setCover(state) {
-    var i = player.getPlaylistIndex(), k = pos(i), last = k >= ids.length - 1;
+    var sl = songLesson.on(), i = sl ? -1 : player.getPlaylistIndex(), k = sl ? songLesson.pos() : pos(i), last = k >= (sl ? songLesson.count() : ids.length) - 1;
     if (state === 2 || state === 5 || state === -1) {   // paused, or loaded but not started yet
       coverBtn.innerHTML = "&#9654; " + L("Play", "Ver"); coverSub.textContent = "";
       coverAction = function () { player.playVideo(); };
     } else if (state === 0) {                // ended
-      coverBtn.innerHTML = last ? "&#8635; " + L("Start again", "Empezar otra vez") : L("Next lesson", "Siguiente lección") + " &#9654;";
-      coverSub.textContent = last ? L("You finished all the lessons!", "¡Terminaste todas las lecciones!") : L("Lesson " + (k + 2) + " is next", "Ahora viene la lección " + (k + 2));
-      coverAction = function () { last ? player.playVideoAt(order[0]) : stepLesson(1); };
+      coverBtn.innerHTML = last ? "&#8635; " + L("Start again", "Empezar otra vez") : (sl ? L("Next song", "Siguiente canción") : L("Next lesson", "Siguiente lección")) + " &#9654;";
+      coverSub.textContent = sl ? "" : last ? L("You finished all the lessons!", "¡Terminaste todas las lecciones!") : L("Lesson " + (k + 2) + " is next", "Ahora viene la lección " + (k + 2));
+      coverAction = function () { if (sl) { if (last) { player.seekTo(0, true); player.playVideo(); } else stepLesson(1); } else last ? player.playVideoAt(order[0]) : stepLesson(1); };
     } else { cover.classList.remove("on"); return; }
     cover.classList.add("on");
   }
@@ -1683,6 +1766,7 @@
 
   function refresh(e) {
     if (e && e.data === 1) failures = 0; // playing again
+    if (songLesson.on()) { if (e && typeof e.data === "number") setCover(e.data); songLesson.label(); if ((quiz.isOpen() || guard.locked()) && player.getPlayerState() === 1) player.pauseVideo(); return; }
     if (e && typeof e.data === "number" && player.getPlaylistIndex) setCover(e.data);
     if (!player || !player.getPlaylistIndex) return;
     var i = player.getPlaylistIndex();
@@ -2435,7 +2519,7 @@
     var natMo = new MutationObserver(function () { clearTimeout(natT); natT = setTimeout(natKeys, 30); });
     natMo.observe(document.body, { attributes: true, attributeFilter: ["class"], childList: true });
     // every layer that can open over the keys: Menu, sound picker, maths quiz and its red screen, concept game, eye-guard cover, lock screen
-    ["gate", "act", "res", "instPop", "quiz", "qred", "concept", "eyecov", "lockscr", "calm"].forEach(function (id) { var el = document.getElementById(id); if (el) natMo.observe(el, { attributes: true, attributeFilter: ["class", "hidden", "style"] }); });
+    ["gate", "act", "res", "instPop", "quiz", "qred", "concept", "eyecov", "lockscr", "calm", "songPop", "slPop"].forEach(function (id) { var el = document.getElementById(id); if (el) natMo.observe(el, { attributes: true, attributeFilter: ["class", "hidden", "style"] }); });
     window.addEventListener("resize", natKeys);
     window.pianoNat = function (m, on) {
       var el = keysEl.querySelector('[data-m="' + m + '"]'); if (!el) return;

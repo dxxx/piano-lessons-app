@@ -4,6 +4,11 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.40 — 2026-10-29
+- **Song lessons:** a 🔎 Song lessons button at the top of the lesson strip opens the tutorial video of every song on the tablet, with a picture each and a search box. A tap plays it; Next and Back go through the songs; tapping a lesson in the strip goes back to the lessons. The songs are not added to the YouTube lesson playlist: YouTube gives the app only 200 videos of a playlist, and that playlist puts new videos at the top, which pushed the 43 lessons out.
+- **Search in Follow the keys:** type part of a name ("pink", "amelie") and it finds the song in every tab at once; tapping a tab clears the search.
+- The piano's native touch layer now steps aside the moment either song list opens (before: up to 0.4 s late, so a tap near the bottom of the list could play a key).
+
 ## 1.39.1 — 2026-10-29
 - **Play along fits the screen again.** The top bar needed more room than its column, so the page grew to 1047 px on the 1024 px tablet and slid sideways: the left edge and the lesson strip were cut off and the strip was hard to scroll. The grid can no longer grow past the screen.
 - **Menu and Close no longer cover the lesson thumbnails.** In Play along the lesson strip now starts under the top bar.
