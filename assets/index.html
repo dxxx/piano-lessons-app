@@ -175,6 +175,8 @@
      the top bar then only keeps room for the part of Menu + Close that reaches into its column */
   body.play:not(.solo) aside { grid-row: 2 / 3; }
   body.play:not(.solo) header { padding-right: 40px; }
+  /* 1.40.1 Big video without the piano: same rule, the strip starts under Menu + Close (they covered the Song lessons button) */
+  body.big:not(.play) aside { margin-top: 38px; }
   /* Piano only (inside Play along): no video, no lesson strip; the notes he plays fly up out of the keys like Synthesia's free play */
   #soloBtn { display: none; }
   body.play #soloBtn { display: block; }
