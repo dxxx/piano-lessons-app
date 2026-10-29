@@ -4,6 +4,10 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.39 — 2026-10-29
+- **Play along fits the screen again.** The top bar needed more room than its column, so the page grew to 1047 px on the 1024 px tablet and slid sideways: the left edge and the lesson strip were cut off and the strip was hard to scroll. The grid can no longer grow past the screen.
+- **Menu and Close no longer cover the lesson thumbnails.** In Play along the lesson strip now starts under the top bar.
+
 ## 1.38 — 2026-10-28
 - **Two more "whose is it?" games** (research/08 #25–26):
   - **Whose?** Two animals each stand on a mat in their own colour; their two things sit in a row below, not always under their owner. "Whose ball is red? Tap its owner." or "Tap the cat's star."

@@ -14,7 +14,7 @@
   html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink);
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden;
     -webkit-user-select: none; user-select: none; }
-  .app { display: grid; grid-template-columns: 1fr 300px; gap: 16px; height: 100%; padding: 16px; }
+  .app { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; height: 100%; padding: 16px; }
   .stage { display: flex; flex-direction: column; min-width: 0; min-height: 0; gap: 12px; }
   header { display: flex; align-items: center; gap: 10px; }
   header h1 { margin: 0; font-size: 22px; letter-spacing: .3px; }
@@ -168,6 +168,13 @@
   body.play .player-wrap { grid-column: 1; grid-row: 2; min-height: 0; }
   body.play aside { grid-column: 2; grid-row: 1 / 3; min-height: 0; }
   body.play .piano { grid-column: 1 / -1; grid-row: 3; }
+  /* 1.39: the page must never be wider than the screen. A 1fr column grows to its widest content (the top bar), which made the page
+     1047 px on a 1024 px tablet and slid it sideways (left edge and the lesson strip cut off, the strip hard to scroll). */
+  body.big .app, body.play .app { grid-template-columns: minmax(0, 1fr) 150px; }
+  /* Play along: the lesson strip starts UNDER the top bar, so Menu + Close sit above it, not over its first video;
+     the top bar then only keeps room for the part of Menu + Close that reaches into its column */
+  body.play:not(.solo) aside { grid-row: 2 / 3; }
+  body.play:not(.solo) header { padding-right: 40px; }
   /* Piano only (inside Play along): no video, no lesson strip; the notes he plays fly up out of the keys like Synthesia's free play */
   #soloBtn { display: none; }
   body.play #soloBtn { display: block; }
