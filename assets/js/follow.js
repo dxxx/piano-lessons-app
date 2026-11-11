@@ -26,6 +26,12 @@
 //   - speed button (operator 2026-10-29): Auto (HIS SPEED below) or a fixed 50 / 75 / 100 %; a fixed speed sets the falling notes,
 //     Listen and the other hand alike, and stops the auto nudging. Remembered in songCfg.spd (0 = Auto)
 //   - the keyboard is set once to cover the whole song (all its notes, fewest keys), and goes back to his own zoom at the end
+//   - 🔁 Repeat a bit (1.43, flowkey's loop, research/09): tap 🔁 where the hard bit starts, play it, tap 🔁 again where it ends
+//     (tapped twice at once = the next 8 notes). That bit comes round again until he plays it clean (every note right first
+//     time) TWICE in a row, then the song carries on by itself. A third tap ends the repeat. The bit shows yellow on the bar.
+//     Stars count each note's LAST try, so practising a bit never spoils (or inflates) the song's stars.
+//   - Carry on (1.43): leaving a song half way remembers it (songResume { id, t, si, n, hand }); the start screen offers
+//     "Carry on: <song>" and opens it at that note. Finishing the song forgets it.
 // Research: answer on the keyboard, notes from his songs, errorless (research/06 R9-R12, 01 R9). Uses L, voice, diary, pianoKeys,
 // pianoPlayNote (index.html). Progress: localStorage songProg { id: { best, plays, last } }; settings: songCfg { hand, acc }.
 var follow = (function () {
@@ -43,6 +49,13 @@ var follow = (function () {
   var cfg = { hand: "RL", acc: 1, spd: 0 }, prog = {}, wrong = [], SPDS = [0, 0.5, 0.75, 1];
   var LUCKY_N = 3, LUCKY_MS = 1500;
   var queue = [], curId = null;                                  // player bar: the list he picked from, and the song on (kept after the end)
+  var okArr = [], loop = null, mark = -1, LOOP_DEF = 8, LOOP_CLEAN = 2;   // okArr[i] = step i right first time (its last try); 🔁 repeat
+  function getResume() { try { var r = JSON.parse(localStorage.getItem("songResume") || "null"); return r && r.id && r.si > 0 ? r : null; } catch (e) { return null; } }
+  function saveResume() {
+    if (!song || si <= 0 || si >= steps.length) return;
+    try { localStorage.setItem("songResume", JSON.stringify({ id: song.id, t: song.t, si: si, n: steps.length, hand: cfg.hand })); } catch (e) {}
+  }
+  function dropResume(id) { var r = getResume(); if (r && r.id === id) try { localStorage.removeItem("songResume"); } catch (e) {} }
   try { var c = JSON.parse(localStorage.getItem("songCfg") || "{}"); if (/^(R|L|RL)$/.test(c.hand)) cfg.hand = c.hand; if (c.acc === 0) cfg.acc = 0; } catch (e) {}
   try { prog = JSON.parse(localStorage.getItem("songProg") || "{}") || {}; } catch (e) { prog = {}; }
   try { var c2 = JSON.parse(localStorage.getItem("songCfg") || "{}"); if (SPDS.indexOf(c2.spd) >= 0) cfg.spd = c2.spd; } catch (e) {}
@@ -135,7 +148,7 @@ var follow = (function () {
   function closeList() { stopPreview(); $("songPop").classList.remove("open"); }
 
   // ---- Play one song ----
-  function start(id) {
+  function start(id, at) {
     if (song && si > 0 && window.diary) diary.ev("song_stop", { id: song.id, at: si, steps: steps.length });   // skipped or restarted
     var q = [].map.call($("songList").querySelectorAll("button[data-id]"), function (b) { return b.dataset.id; });
     if (q.indexOf(id) >= 0) queue = q; else if (queue.indexOf(id) < 0) queue = index ? index.map(function (s) { return s.id; }) : [id];
@@ -151,8 +164,9 @@ var follow = (function () {
       });
       var other = cfg.hand === "RL" ? [] : d.notes.filter(function (n) { return cfg.hand.indexOf(n[3]) < 0; });
       song = { id: id, t: meta.t, other: other, all: d.notes };
-      si = 0; pressed = {}; firstTry = true; okFirst = 0; misses = 0; wrong = []; t0 = Date.now();
-      pos = steps.length ? steps[0].t - LEAD : 0; lastF = 0; speed = SPEED; lastOk = 0; arrived = false; pops = []; lis = null; hintLabel();
+      si = at > 0 && at < steps.length ? at : 0; pressed = {}; firstTry = true; okFirst = 0; misses = 0; wrong = []; t0 = Date.now();
+      okArr = []; loop = null; mark = -1; loopLabel();
+      pos = steps.length ? steps[si].t - LEAD : 0; lastF = 0; speed = SPEED; lastOk = 0; arrived = false; pops = []; lis = null; hintLabel();
       if (window.pianoSound) { if (own === null) own = pianoSound.now(); pianoSound.set(songSnd[id] || meta.snd || "grand"); }
       closeList(); document.body.classList.add("infollow"); $("follow").hidden = false;
       $("fwTitle").textContent = meta.t;
@@ -182,6 +196,8 @@ var follow = (function () {
     arrived = pos >= cur.t - 0.001; if (arrived) want();
     $("fwTiles").innerHTML = "";
     $("fwBar").style.width = Math.round(si / steps.length * 100) + "%";
+    var lr = $("fwLoopR"), a = loop ? loop.a : mark, b = loop ? loop.b : si;
+    if (lr) { lr.hidden = a < 0; if (a >= 0) { lr.style.left = (a / steps.length * 100) + "%"; lr.style.width = (Math.max(1, b - a) / steps.length * 100) + "%"; } }
     $("fwCount").textContent = si + " / " + steps.length;
   }
   // Called by the Piano only canvas every frame: moves the song on (up to the note he has to play) and says what to draw
@@ -225,11 +241,52 @@ var follow = (function () {
     }
     lastOk = nowS;
     if (pos < st.t) pos = st.t;                                  // caught while still falling: the song jumps to him
-    if (firstTry) okFirst++;
+    okArr[si] = firstTry;
+    if (loop && !firstTry) loop.clean = false;
     var tnow = performance.now(); st.m.forEach(function (x) { pops.push({ m: x, h: st.h, t: tnow }); });
     accompany(st.t, steps[si + 1] ? steps[si + 1].t : st.t + 2);
     si++; pressed = {}; firstTry = true;
-    if (si >= steps.length) finish(); else show();
+    if (loop && si >= loop.b && loopRound()) return;
+    if (si >= steps.length) finish(); else { saveResume(); show(); }
+  }
+  // ---- 🔁 Repeat a bit (see the top) ----
+  function loopLabel() {
+    var b = $("fwLoop"); if (!b) return;
+    b.classList.toggle("on", !!loop || mark >= 0);
+    b.innerHTML = loop ? "&#128257; " + loop.passes + "/" + LOOP_CLEAN : mark >= 0 ? "&#128257; &#8230;" : "&#128257;";
+    b.setAttribute("aria-label", loop ? L("Stop repeating", "Dejar de repetir") : mark >= 0 ? L("The bit ends here", "Aquí acaba el trozo") : L("Repeat a bit", "Repetir un trozo"));
+  }
+  function goTo(i) { si = i; pressed = {}; firstTry = true; pos = steps[si].t - 1.2; arrived = false; lastOk = 0; show(); }
+  function loopTap() {
+    if (!song || !steps.length) return;
+    if (lis) endListen();
+    if (loop) {                                                  // third tap: stop repeating, the song goes on from where he is
+      if (window.diary) diary.ev("song_loop_off", { id: song.id, a: loop.a, b: loop.b, passes: loop.passes });
+      loop = null; loopLabel(); show();
+      return;
+    }
+    if (mark >= 0) { loopEnd(); return; }                        // second tap: the bit ends here
+    mark = si; loopLabel(); show();                              // first tap: the bit starts here
+  }
+  function loopEnd() {                                           // second tap: the bit is mark .. here (or the next LOOP_DEF notes)
+    var a = mark, b = si - a >= 2 ? si : Math.min(steps.length, a + LOOP_DEF);
+    if (b - a < 2) { mark = -1; loopLabel(); show(); return; }   // too close to the end of the song for a bit
+    loop = { a: a, b: b, passes: 0, clean: true }; mark = -1; loopLabel();
+    if (window.diary) diary.ev("song_loop", { id: song.id, a: a, b: b });
+    if (window.voice && voice.say) voice.say(L("Let's play this bit again.", "Toquemos este trozo otra vez."));
+    goTo(a);
+  }
+  function loopRound() {                                         // he reached the end of the bit: again, or on with the song
+    loop.passes = loop.clean ? loop.passes + 1 : 0; loop.clean = true;
+    if (loop.passes >= LOOP_CLEAN) {
+      if (window.diary) diary.ev("song_loop_done", { id: song.id, a: loop.a, b: loop.b });
+      loop = null; loopLabel();
+      if (window.voice && voice.say) voice.say(L("Brilliant! Now carry on.", "¡Genial! Ahora sigue."));
+      return false;                                              // the song goes on from here
+    }
+    loopLabel();
+    goTo(loop.a);
+    return true;
   }
   function accompany(from, to) {                                 // the other hand plays its notes of this stretch, softly, in time
     if (!cfg.acc || !song.other.length || !window.pianoPlayNote) return;
@@ -241,6 +298,7 @@ var follow = (function () {
     });
   }
   function finish() {
+    okFirst = okArr.filter(Boolean).length; dropResume(song.id);
     var total = steps.length, pct = total ? okFirst / total : 0, stars = pct >= 0.9 ? 3 : pct >= 0.7 ? 2 : 1, sec = Math.round((Date.now() - t0) / 1000);
     var p = prog[song.id] || { best: 0, plays: 0 }; p.plays++; p.best = Math.max(p.best, stars); p.last = new Date().toISOString().slice(0, 10); prog[song.id] = p; saveProg();
     if (window.diary) diary.ev("song", { id: song.id, t: song.t, hand: cfg.hand, steps: total, first: okFirst, miss: misses, sec: sec, stars: stars });
@@ -253,7 +311,8 @@ var follow = (function () {
   }
   function stop() {
     if (song && si > 0 && window.diary) diary.ev("song_stop", { id: song.id, at: si, steps: steps.length });
-    song = null; steps = []; lis = null; hintLabel(); clearKeys();
+    saveResume();
+    song = null; steps = []; lis = null; loop = null; mark = -1; loopLabel(); hintLabel(); clearKeys();
     $("follow").hidden = true; document.body.classList.remove("infollow");
     if (window.pianoKeys) pianoKeys.restore();
     if (own !== null && window.pianoSound) pianoSound.set(own);
@@ -303,13 +362,23 @@ var follow = (function () {
     $("fwPrev").onclick = function () { skip(-1); };
     $("fwNext").onclick = function () { skip(1); };
     $("fwSpd").onclick = function () { cfg.spd = SPDS[(SPDS.indexOf(cfg.spd) + 1) % SPDS.length]; saveCfg(); spdLabel(); };
-    spdLabel(); if (window.onLang) onLang(spdLabel);
+    if ($("fwLoop")) $("fwLoop").onclick = loopTap;
+    spdLabel(); loopLabel(); if (window.onLang) onLang(function () { spdLabel(); loopLabel(); });
     $("songBtn").innerHTML = "🎵 " + L("Songs", "Canciones");
     // leaving Piano only ends the song
     new MutationObserver(function () { if ((song || !$("follow").hidden) && !solo()) stop(); }).observe(document.body, { attributes: true, attributeFilter: ["class"] });
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 
+  // Carry on (start screen): the song he left half way, at the note he was on, with the hand he was playing
+  function resume() {
+    var r = getResume(); if (!r) return false;
+    if (/^(R|L|RL)$/.test(r.hand)) { cfg.hand = r.hand; saveCfg(); }
+    load(function () { start(r.id, r.si); });
+    return true;
+  }
   return { note: note, open: openList, start: start, stop: stop, isOn: function () { return !!song; }, cfg: cfg, frame: frame, PX: 150,
-           _state: function () { return { speed: Math.round(speed * 100) / 100, si: si, steps: steps.length, ok: okFirst, miss: misses, want: steps[si] && steps[si].m }; } };
+           resumeInfo: getResume, resume: resume,
+           _state: function () { return { speed: Math.round(speed * 100) / 100, si: si, steps: steps.length, ok: okArr.filter(Boolean).length, miss: misses, want: steps[si] && steps[si].m,
+             loop: loop && { a: loop.a, b: loop.b, passes: loop.passes }, mark: mark }; } };
 })();

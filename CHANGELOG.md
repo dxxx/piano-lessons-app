@@ -4,6 +4,12 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.43 (2026-11-11)
+
+- Songs (Follow the keys): **🔁 Repeat a bit**. Tap 🔁 where the hard bit starts, play it, tap 🔁 again where it ends (two taps at once = the next 8 notes). That bit comes round again until he plays it clean twice in a row (every note right first time), then the song carries on by itself. The bit shows yellow on the progress bar and the button counts the clean rounds (1/2, 2/2). A third tap stops repeating.
+- Stars now count each note's last try, so practising a bit never spoils or inflates a song's stars.
+- Start screen: **▶ Carry on**. Leaving a song half way remembers it; the start screen shows "Carry on: <song> (12 / 40)" and opens it at that note, with the same hand. Finishing the song removes it.
+
 ## 1.42 (2026-10-29)
 
 - Songs (Follow the keys): a player bar. Previous song, Start again (from the first note), Listen / Pause, Next song. Previous and Next go through the list he picked from (same tab or search) and wrap round.

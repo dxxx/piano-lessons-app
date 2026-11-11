@@ -231,6 +231,11 @@
   .fwctl { display: flex; gap: 8px; }                     /* 1.42 player bar: previous, start again, listen/pause, next */
   .fwtop .fwctl button { min-width: 50px; min-height: 44px; font-size: 20px; }
   .fwbar { height: 6px; border-radius: 3px; background: #ffffff22; overflow: hidden; } .fwbar i { display: block; height: 100%; width: 0; background: #5fd38f; transition: width .2s; }
+  .fwbar { position: relative; } .fwbar b { position: absolute; top: 0; bottom: 0; background: #ffd86bcc; border-radius: 3px; }   /* 1.43: the 🔁 bit */
+  .fwtop .fwctl #fwLoop.on { background: #ffd86b; color: #2b2160; box-shadow: 0 3px 0 #a07a00; }
+  .home .cont { border: 0; border-radius: 22px; padding: 1.6vh 3vw; font: 700 clamp(16px, 3.4vh, 24px) Fredoka, system-ui, sans-serif; color: #2b2160;
+    background: linear-gradient(90deg, #ffd86b, #ffb36b); box-shadow: 0 5px 0 #a0600099; max-width: 80vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .home .cont:active { transform: translateY(4px); box-shadow: 0 1px 0 #a0600099; }
   .fwtiles { display: flex; gap: 8px; align-items: flex-end; min-height: 74px; }
   .fwtiles:empty { display: none; }
   body.infollow .beatfly { top: 62px; transform: translateX(-50%) scale(.7); transform-origin: top center; }
@@ -928,8 +933,8 @@
     </div>
     <div class="fly" id="fly"><canvas id="flyCv"></canvas>
       <div class="follow" id="follow" hidden><div class="fwtop"><b id="fwTitle"></b><span id="fwCount"></span>
-          <span class="fwctl"><button id="fwPrev" aria-label="Previous song">&#9198;</button><button id="fwRe" aria-label="Start again">&#8634;</button><button id="fwHint">&#9654; Listen</button><button id="fwNext" aria-label="Next song">&#9197;</button><button id="fwSpd" aria-label="Speed"></button></span><button id="fwStop" aria-label="Stop the song">&#10005;</button></div>
-        <div class="fwbar"><i id="fwBar"></i></div><div class="fwtiles" id="fwTiles"></div></div>
+          <span class="fwctl"><button id="fwPrev" aria-label="Previous song">&#9198;</button><button id="fwRe" aria-label="Start again">&#8634;</button><button id="fwHint">&#9654; Listen</button><button id="fwNext" aria-label="Next song">&#9197;</button><button id="fwLoop" aria-label="Repeat a bit">&#128257;</button><button id="fwSpd" aria-label="Speed"></button></span><button id="fwStop" aria-label="Stop the song">&#10005;</button></div>
+        <div class="fwbar"><i id="fwBar"></i><b id="fwLoopR" hidden></b></div><div class="fwtiles" id="fwTiles"></div></div>
       <div class="beatfly" id="beatFly"><div class="beatdots" id="beatDots"></div><b class="beathits" id="beatHits"></b></div>
       <div class="beatpanel" id="beatPanel" hidden><button class="beatx" id="beatX" aria-label="Close">&#10005;</button>
         <div class="bpt"><h3 id="beatL1"></h3><div class="beattempos" id="beatTempos"></div></div>
@@ -1178,7 +1183,7 @@
       <g><rect x="22" y="40" width="44" height="90" rx="10" fill="#ff8fb1"/><rect x="22" y="40" width="44" height="10" rx="5" fill="#fff5"/><text x="44" y="30" font-size="30" font-weight="900" fill="#fff" text-anchor="middle">3</text></g>
       <g><rect x="134" y="12" width="44" height="118" rx="10" fill="#8fd3ff"/><rect x="134" y="12" width="44" height="10" rx="5" fill="#fff5"/><text x="156" y="8" font-size="0" fill="#fff"></text><text x="156" y="42" font-size="30" font-weight="900" fill="#2b2160" text-anchor="middle">7</text></g>
       <path d="M78 60 L118 84 L78 108" fill="none" stroke="#ffd86b" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="30" cy="18" r="5" fill="#fff8"/><circle cx="110" cy="24" r="4" fill="#fff8"/><circle cx="120" cy="124" r="3" fill="#fff6"/></svg><span></span></button><button id="homeGames" hidden><svg class="art" viewBox="0 0 200 140" aria-hidden="true"><rect x="52" y="6" width="96" height="130" rx="14" fill="#ffd23f" stroke="#a86200" stroke-width="4"/><rect x="64" y="18" width="72" height="56" rx="4" fill="#2c3024"/><rect x="70" y="24" width="60" height="44" fill="#9eac82"/><g fill="#1b2213"><rect x="96" y="28" width="8" height="8"/><rect x="88" y="36" width="8" height="8"/><rect x="96" y="36" width="8" height="8"/><rect x="104" y="36" width="8" height="8"/><rect x="74" y="58" width="8" height="8"/><rect x="82" y="58" width="8" height="8"/><rect x="90" y="58" width="8" height="8"/><rect x="110" y="58" width="8" height="8"/><rect x="118" y="58" width="8" height="8"/></g><path d="M70 98h10v-10h10v10h10v10h-10v10h-10v-10h-10z" fill="#2b2b35"/><circle cx="128" cy="96" r="11" fill="#d62828"/><circle cx="114" cy="114" r="8" fill="#2b6bd6"/></svg><span></span></button></div></div>
+      <circle cx="30" cy="18" r="5" fill="#fff8"/><circle cx="110" cy="24" r="4" fill="#fff8"/><circle cx="120" cy="124" r="3" fill="#fff6"/></svg><span></span></button><button id="homeGames" hidden><svg class="art" viewBox="0 0 200 140" aria-hidden="true"><rect x="52" y="6" width="96" height="130" rx="14" fill="#ffd23f" stroke="#a86200" stroke-width="4"/><rect x="64" y="18" width="72" height="56" rx="4" fill="#2c3024"/><rect x="70" y="24" width="60" height="44" fill="#9eac82"/><g fill="#1b2213"><rect x="96" y="28" width="8" height="8"/><rect x="88" y="36" width="8" height="8"/><rect x="96" y="36" width="8" height="8"/><rect x="104" y="36" width="8" height="8"/><rect x="74" y="58" width="8" height="8"/><rect x="82" y="58" width="8" height="8"/><rect x="90" y="58" width="8" height="8"/><rect x="110" y="58" width="8" height="8"/><rect x="118" y="58" width="8" height="8"/></g><path d="M70 98h10v-10h10v10h10v10h-10v10h-10v-10h-10z" fill="#2b2b35"/><circle cx="128" cy="96" r="11" fill="#d62828"/><circle cx="114" cy="114" r="8" fill="#2b6bd6"/></svg><span></span></button></div><button id="homeCont" class="cont" hidden></button></div>
 <div class="write" id="write"><div class="wbar"><div class="wlv" id="wLv"></div><div class="wrow" id="wRow"></div><div class="wdots" id="wDots"></div>
   <button id="wHear" hidden>&#128266;</button><button id="wShow">&#128064; <span></span></button><button id="wClear">&#8634;</button></div>
   <div class="wpad" id="wPad"><canvas id="wBg"></canvas><canvas id="wInk"></canvas></div></div>
@@ -5077,6 +5082,7 @@
       quiz.mathStop(); writing.stop(); colouring.stop(); compare.stop(); brick.stop(); voice.hush(true);
       if (player && player.pauseVideo) player.pauseVideo();
       atHome = true; document.body.classList.remove("math", "inwrite", "incolour", "incompare", "ingames"); document.body.classList.add("athome"); homeEl.classList.add("on");
+      setTimeout(contBtn, 0);   // after follow.js has saved the song he just left (its class observer runs after this)
     }
     function fixed() { document.body.classList.toggle("fixedStart", start !== "choose"); }
     var CARD = { piano: "homePiano", play: "homePlay", math: "homeMath", write: "homeWrite", colour: "homeColour", compare: "homeCompare" }, hide = [];
@@ -5099,6 +5105,14 @@
     document.getElementById("homePiano").onclick = function () { apply("piano"); if (window.pianoLessons) pianoLessons(); };
     // Play along on its own (operator 2026-10-28): the piano screen straight in Piano only - his keyboard, songs, Follow the keys
     document.getElementById("homePlay").onclick = function () { apply("piano"); if (window.pianoOnly) pianoOnly(); };
+    // 1.43 Carry on: the song he left half way (follow.js songResume), straight back at the note he was on
+    function contBtn() {
+      var b = document.getElementById("homeCont"), r = window.follow && follow.resumeInfo();
+      b.hidden = !r || hide.indexOf("play") >= 0;
+      if (r) b.textContent = "▶ " + L("Carry on", "Sigue con") + ": " + r.t + " (" + r.si + " / " + r.n + ")";
+    }
+    document.getElementById("homeCont").onclick = function () { apply("piano"); if (window.pianoOnly) pianoOnly(); if (window.follow) follow.resume(); };
+    onLang(contBtn);
     document.getElementById("homeMath").onclick = function () { apply("math"); };
     document.getElementById("homeWrite").onclick = function () { apply("write"); };
     document.getElementById("homeColour").onclick = function () { apply("colour"); };
