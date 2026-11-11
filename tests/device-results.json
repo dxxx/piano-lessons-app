@@ -1,5 +1,5 @@
 {
- "when": "2026-10-28T09:55:06.838Z",
+ "when": "2026-10-29T13:28:01.842Z",
  "version": null,
  "size": "1024x640",
  "results": [
@@ -7,13 +7,13 @@
    "id": "SCR-1",
    "what": "Start screen: every tile the grown-up left on (of 6) is visible and inside the screen, hidden ones are gone, Menu + Close tappable",
    "ok": true,
-   "info": "6/6 tiles; greeting set"
+   "info": "5/5 tiles; greeting set"
   },
   {
    "id": "LES-1",
    "what": "Piano tile opens lessons: list built, video area, keyboard, top bar fits",
    "ok": true,
-   "info": "43 lessons, 49 keys, video shown"
+   "info": "43 lessons, 32 keys, video shown"
   },
   {
    "id": "LES-3",
@@ -25,13 +25,13 @@
    "id": "PNO-1",
    "what": "Zoom in / out changes the number of keys, octave buttons work",
    "ok": true,
-   "info": "keys 49/37/49, lowest 60->48, octave buttons shown (keyboard locked by a song)"
+   "info": "keys 32/25/32, lowest 60->72, octave buttons shown"
   },
   {
    "id": "PNO-2",
    "what": "Key names shown on the keys",
    "ok": true,
-   "info": "49 of 49 keys labelled (both)"
+   "info": "32 of 32 keys labelled (both)"
   },
   {
    "id": "SND-1",
@@ -61,7 +61,7 @@
    "id": "SNG-1",
    "what": "Songs: list opens with 5 tabs, songs in each, favourite hearts",
    "ok": true,
-   "info": "⭐ Easy:19 | ⭐⭐ Medium:32 | ⭐⭐⭐ Hard:156 | 🎸 Modern musi:51 | 🎬 My lessons:37; hearts 62"
+   "info": "⭐ Easy:19 | ⭐⭐ Medium:32 | ⭐⭐⭐ Hard:156 | 🎸 Modern musi:265 | 🎬 My lessons:37; hearts 62"
   },
   {
    "id": "SNG-2",
@@ -79,13 +79,13 @@
    "id": "CON-2",
    "what": "Concept pictures (research 08): the new and fixed concepts open, every answer is tappable inside the screen, the asked word is in the prompt",
    "ok": true,
-   "info": "16 questions ok"
+   "info": "20 questions ok"
   },
   {
    "id": "LES-2",
    "what": "Next / previous lesson changes the lesson number",
    "ok": true,
-   "info": "Lesson 22 of 43 -> Lesson 23 of 43 -> Lesson 22 of 43"
+   "info": "Lesson 32 of 43 -> Lesson 33 of 43 -> Lesson 32 of 43"
   },
   {
    "id": "MTH-1",
@@ -145,7 +145,7 @@
    "id": "CMP-1",
    "what": "Bigger or smaller: opens with a question and answers, Menu + Close tappable",
    "ok": true,
-   "info": "3 answers, stage 3🍎🍎🍎7🍎🍎🍎🍎🍎🍎🍎"
+   "info": "2 answers, stage 14"
   },
   {
    "id": "EYE-1",
@@ -157,7 +157,7 @@
    "id": "TIM-1",
    "what": "Screen time: summary readable",
    "ok": true,
-   "info": "122 min / 130 min (no limit today)"
+   "info": "79 min / 120 min (no limit today)"
   },
   {
    "id": "BAR-1",
