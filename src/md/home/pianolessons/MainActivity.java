@@ -82,6 +82,7 @@ public class MainActivity extends Activity {
     }
     private EyeGuard eye;
     private NativePiano piano;   // low-latency grand piano (window.NPiano)
+    private RemoteLock remote;   // grown-up's lock switch on the home PC (window.NRemote)
     private boolean eyeOn, eyeMenuOpen, eyeResumed;
 
     @Override
@@ -123,6 +124,8 @@ public class MainActivity extends Activity {
         });
         web.addJavascriptInterface(new Eye(), "Eye");
         web.addJavascriptInterface(new Diary(), "NDiary");
+        remote = new RemoteLock(this, web);
+        web.addJavascriptInterface(remote, "NRemote");
         web.setWebViewClient(new WebViewClient() {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
@@ -249,6 +252,7 @@ public class MainActivity extends Activity {
         web.evaluateJavascript("window.lockMenu&&window.lockMenu()", null);   // the grown-up menu relocks
         web.onPause();
         piano.pause();                          // free the low-latency audio stream in the background
+        remote.stop();                          // the lock switch is only checked while the app is on screen
     }
 
     @Override
@@ -566,6 +570,7 @@ public class MainActivity extends Activity {
         super.onResume();
         web.onResume();
         piano.resume();
+        remote.start();                         // checks the switch at once, then every 15 s
         eyeResumed = true; eyeRefresh();
         ensurePinned();
     }

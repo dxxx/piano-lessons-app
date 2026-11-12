@@ -1117,6 +1117,7 @@
         <div class="mlist">
           <button class="set" id="gLim"></button>
           <button class="set" id="gBed"></button>
+          <button class="set" id="gRem"></button>
         </div>
         <div class="mlist">
           <button class="set" id="gEarn"></button>
@@ -5230,8 +5231,8 @@
     var g = null;
     try { g = JSON.parse(get("guardState", "{}")); } catch (e) {}
     if (!g || typeof g !== "object") g = {};
-    ["used", "seen", "x", "e", "s", "lv0", "clr", "bedOk"].forEach(function (k) { g[k] = +g[k] || 0; });
-    g.day = g.day || ""; g.none = !!g.none; g.w = !!g.w; g.lock = g.lock && g.lock.r ? g.lock : null;   // lock: { r: mistakes|time|break, since, until }
+    ["used", "seen", "x", "e", "s", "lv0", "clr", "bedOk", "rOk"].forEach(function (k) { g[k] = +g[k] || 0; });
+    g.day = g.day || ""; g.none = !!g.none; g.w = !!g.w; g.lock = g.lock && g.lock.r ? g.lock : null;   // lock: { r: mistakes|time|break|bed|remote, since, until, rv }
     var earning = false, was = false, last = performance.now(), ticks = 0, noteCb = null, bannerT = null, HEART_BACK = 5;
     function es() { return voice.cfg.lang === "es"; }
     function two(n) { return n < 10 ? "0" + n : "" + n; }
@@ -5240,6 +5241,8 @@
     step();
     function words() {                                            // [icon, headline, line under it] for the lock screen
       var r = g.lock.r, u = g.lock.until ? new Date(g.lock.until) : null;
+      if (r === "remote") return ["📵", es() ? "Hora de descansar" : "Time for a break",
+        (es() ? "Mamá o papá han pausado la tableta" : "Mum or Dad paused the tablet") + (u ? (es() ? ". Vuelve a las " : ". Back at ") + two(u.getHours()) + ":" + two(u.getMinutes()) : "")];
       if (r === "bed") return ["\ud83c\udf19", es() ? "Hora de dormir" : "Bedtime", es() ? "\u00a1Que duermas bien! Hasta ma\u00f1ana" : "Sleep well! See you in the morning"];
       if (r === "time") return ["\u23f0", es() ? "Se acab\u00f3 el tiempo de pantalla por hoy" : "Screen time is over for today", es() ? "Pide a mam\u00e1 o a pap\u00e1" : "Ask Mum or Dad"];
       return ["\ud83d\uded1", es() ? "Hora de descansar" : "Time for a break",
@@ -5271,7 +5274,7 @@
       if (noteCb) noteCb();
     }
     function lock(reason, until) {
-      var fresh = !g.lock || (reason === "mistakes" && g.lock.r === "time");   // a mistake lock wins over screen time
+      var fresh = !g.lock || (reason === "mistakes" && g.lock.r === "time") || (reason === "remote" && g.lock.r !== "remote");   // a mistake lock wins over screen time; the grown-up's switch wins over all
       if (!g.lock) g.lock = { r: reason, since: Date.now(), until: until || 0 };
       else if (fresh) { g.lock.r = reason; g.lock.until = 0; }
       else if (until) g.lock.until = until;
@@ -5294,7 +5297,7 @@
       last = t; step();
       if (!document.hidden && !g.lock && dt > 0) g.used += dt;
       if (g.lock) {
-        if (g.lock.until && now >= g.lock.until && !clockBehind(g, now)) unlock("auto");
+        if (g.lock.until && now >= g.lock.until + (g.lock.r === "remote" ? 60000 : 0) && !clockBehind(g, now)) unlock("auto");   // remote: the PC says when; this is only the fallback when it can't be reached
         else if (g.lock.r === "time" && limitLeft(g, cfg.limit) > 0) unlock(earning ? "earned" : "more time");
       }
       if (g.lock && g.lock.r === "bed" && !inBed(now)) unlock("auto");             // bedtime switched off, or the morning came
@@ -5304,11 +5307,23 @@
         if (left <= 0) lock("time");
         else if (left <= 300 && !g.w) { g.w = true; banner(); }
       }
+      if (window.NRemote) try { NRemote.status((g.lock ? "LOCKED (" + g.lock.r + ")" : "playing") + ", " + Math.floor(g.used / 60) + " min today" + (cfg.limit ? " of " + (cfg.limit + g.x + g.e) : "")); } catch (e) {}
       if (++ticks % 5 === 0) store();
       if (noteCb && ticks % 15 === 0) noteCb();
     }
     setInterval(tick, 2000);
     $("lkEarn").onclick = function () { if (!canEarn()) return; earning = true; apply(); quiz.earnStart(); };   // a math session that only earns minutes
+    // 1.44 Remote lock: native RemoteLock asks the switch on the home PC every 15 s -> { on, v, until }. v changes on
+    // every flip; a grown-up's PIN unlock holds until the next flip (rOk), so the tablet doesn't re-lock 15 s later.
+    function remote(st) {
+      if (!st || typeof st.v !== "number") return;
+      var now = Date.now(), until = +st.until || 0, want = !!st.on && st.v !== g.rOk && !(until && now >= until + 60000);
+      if (want) {
+        if (!g.lock || g.lock.r !== "remote") lock("remote");
+        if (g.lock.until !== until || g.lock.rv !== st.v) { g.lock.until = until; g.lock.rv = st.v; store(); render(); }
+      } else if (g.lock && g.lock.r === "remote") unlock("remote");
+    }
+    window.remoteState = remote;
     window.addEventListener("pagehide", store);
     document.addEventListener("visibilitychange", function () { last = performance.now(); if (document.hidden) store(); });
     function fmt(m) { return m + " min"; }
@@ -5331,6 +5346,7 @@
       },
       unlockNow: function () {                                     // a grown-up's unlock at bedtime holds until the morning
         var now = Date.now(); g.clr = now; if (inBed(now)) g.bedOk = wake(now);
+        if (g.lock && g.lock.r === "remote") g.rOk = g.lock.rv || 0;   // stays unlocked until the switch is flipped again
         if (limitLeft(g, cfg.limit) <= 0) { g.x += 15; g.w = false; }   // screen time used up: give 15 more minutes, or the next tick locks again
         unlock("parent");
       },
@@ -5361,7 +5377,7 @@
       earnedText: function () { return cfg.earn ? fmt(g.e) + " / " + fmt(cfg.cap) : "off"; },
       note: function () {
         var t = "Today: " + (cfg.limit ? Math.floor(g.used / 60) + " min used of " + (cfg.limit + g.x + g.e) + (g.e ? " (" + g.e + " earned)" : "") : "no daily limit") + (g.none ? ", no limit today" : "") + ".";
-        if (g.lock) t += " LOCKED (" + (g.lock.r === "time" ? "screen time" : g.lock.r === "bed" ? "bedtime" : g.lock.r === "break" ? "break" : "too many mistakes") + ") since " + two(new Date(g.lock.since).getHours()) + ":" + two(new Date(g.lock.since).getMinutes()) + ".";
+        if (g.lock) t += " LOCKED (" + (g.lock.r === "time" ? "screen time" : g.lock.r === "bed" ? "bedtime" : g.lock.r === "break" ? "break" : g.lock.r === "remote" ? "remote lock" : "too many mistakes") + ") since " + two(new Date(g.lock.since).getHours()) + ":" + two(new Date(g.lock.since).getMinutes()) + ".";
         return t;
       }
     };
@@ -5650,7 +5666,7 @@
         (p.list.length ? '<div class="miss">' + p.list.map(function (x) { return x.a + (x.plus ? " + " : " \u2212 ") + x.b + " (level " + x.lv + ")"; }).join(" &middot; ") + "</div>" : "");
     }
     function lockHtml() {
-      var D = act.data(), LN = { mistakes: "too many mistakes", time: "screen time over", "break": "break" }, h = row("Earned today", guard.earnedText()) + '<div class="sub">Locks</div>';
+      var D = act.data(), LN = { mistakes: "too many mistakes", time: "screen time over", "break": "break", bed: "bedtime", remote: "remote lock (phone)" }, h = row("Earned today", guard.earnedText()) + '<div class="sub">Locks</div>';
       function when(iso) { var t = new Date(iso); return t.getDate() + "/" + (t.getMonth() + 1) + " " + two(t.getHours()) + ":" + two(t.getMinutes()); }
       (D.lk || []).slice(-8).reverse().forEach(function (e) {
         h += '<div class="miss">' + when(e.t) + " &middot; " + LN[e.r] + " &middot; " + (e.ut ? "unlocked " + when(e.ut) + " (" + e.u + ")" : "still locked") + "</div>";
@@ -5771,7 +5787,12 @@
       $("gMax").textContent = "❤️ Hearts: " + c.max + " (a mistake breaks one, 5 right in a row win one back)"; $("gWin").textContent = "Within: " + c.win + " min";
       $("gMax").disabled = $("gWin").disabled = !c.lockOn;
       $("gCalm").textContent = "Mistake screen: " + (c.calm ? "Calm" : "Dramatic");
-      $("lkNow").hidden = !lk; $("lkBreak").hidden = lk && guard.reason() === "time";
+      $("lkNow").hidden = !lk; $("lkBreak").hidden = lk && (guard.reason() === "time" || guard.reason() === "remote");
+      if (!$("gRem").querySelector("input")) {
+        var R = window.NRemote;
+        $("gRem").textContent = "📱 Remote lock from a phone: " + (!R ? "only in the tablet app" : R.isOff() ? "OFF" :
+          (R.manual() ? R.url().replace("http://", "") : "find the PC by itself") + " · " + R.last());
+      }
       $("lkNow").textContent = lk && guard.reason() === "time" ? "Unlock now (+ 15 min)" : "Unlock now";
       $("tP15").disabled = $("tP30").disabled = $("tNone").disabled = !c.limit;
       $("gNote").textContent = guard.note() + " Earned today: " + guard.earnedText() + ".";
@@ -5791,6 +5812,24 @@
     $("gMax").onclick = function () { gset("max", [3, 5, 7, 10]); };
     $("gWin").onclick = function () { gset("win", [15, 30, 60]); };
     $("gCalm").onclick = function () { gset("calm"); };
+    $("gRem").onclick = function () {                      // type the PC's address, "auto" (find it by itself) or "off"
+      var b = this, R = window.NRemote; if (!R || b.querySelector("input")) return;
+      b.innerHTML = "📱 PC address: <input type=\"text\" maxlength=\"60\" autocapitalize=\"none\" enterkeyhint=\"done\" placeholder=\"auto, off or 192.168.1.5:47902\">" +
+        " <span class=\"nameok\" role=\"button\">✓ Save</span>";
+      b.dataset.done = b.textContent;
+      var i = b.querySelector("input"), ok = b.querySelector(".nameok"), saved = false;
+      i.value = R.isOff() ? "off" : R.manual() ? R.url().replace("http://", "") : "auto"; i.focus(); i.select();
+      function save() {
+        if (saved) return; saved = true;
+        var v = i.value.trim().toLowerCase();
+        if (v === "off") R.setOff(true); else R.setUrl(v === "auto" || v === "" ? "" : i.value.trim());
+        i.onblur = null; b.textContent = ""; delete b.dataset.done; glabel();
+        setTimeout(glabel, 2500);                            // the first check takes a moment
+      }
+      i.onkeydown = function (e) { if (e.key === "Enter" || e.keyCode === 13) { e.preventDefault(); save(); } };
+      ok.onpointerdown = function (e) { e.preventDefault(); e.stopPropagation(); save(); };
+      i.onblur = save; i.onclick = function (e) { e.stopPropagation(); };
+    };
     $("tP15").onclick = function () { guard.extend(15); glabel(); };
     $("tP30").onclick = function () { guard.extend(30); glabel(); };
     $("tNone").onclick = function () { guard.noLimit(); glabel(); };

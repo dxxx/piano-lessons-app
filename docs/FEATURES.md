@@ -316,6 +316,11 @@ node tools/tabjs.mjs $(port get piano-player tablet-devtools) "document.body.cla
 | TIM-5 | Locks survive a restart; setting the tablet clock back gives no time back; the day resets at local midnight | 1.8 | done | – |
 | TIM-6 | "Unlock now" on a used-up screen-time lock adds 15 minutes (the button says so) and stays unlocked | 1.21 | done | – |
 | TIM-7 | Bedtime 19:00–21:00 (Menu), locked until 07:00; a grown-up unlock holds until the morning | 1.11 | done | – |
+| TIM-9 | Remote lock from a phone: the PC switch (`tools/remote-lock-server.py`, LAN :47902) locks the tablet within 15 s while the app is open; 📵 "Time for a break / Mum or Dad paused the tablet" (Spanish too), video paused, quiz stopped | 1.44 | done | – |
+| TIM-10 | Timed remote lock (15 / 30 / 60 min) shows "Back at HH:MM" and lifts by itself; if the PC can't be reached it still lifts 1 min after that time | 1.44 | done | – |
+| TIM-11 | The grown-up PIN "Unlock now" beats the remote lock and holds until the switch is flipped again (no re-lock 15 s later); "Break 15 min" is hidden on a remote lock | 1.44 | done | – |
+| TIM-12 | The tablet finds the PC by itself (UDP broadcast on the Wi-Fi); Menu → Screen time → Remote lock takes an address, "auto" or "off" and shows the last check ("connected 23:20") | 1.44 | done | – |
+| TIM-13 | The control page shows the tablet's last check-in and what it is doing (playing / LOCKED, minutes today); the page needs the key, the tablet's check needs none | 1.44 | done | – |
 | TIM-8 | Lock rules written as a state machine (`docs/LOCKS.md`) and tested with a fake clock (roadmap B5) | – | idea | – |
 
 ## Grown-ups Menu, PIN and Close (MNU)

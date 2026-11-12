@@ -4,6 +4,15 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.44 (2026-11-12)
+
+- **Remote lock from a phone.** A small switch runs on the home PC (`tools/remote-lock-server.py`). From a phone on the home Wi-Fi a grown-up opens its page and taps Lock now, 15 min, 30 min, 1 hour or Unlock. While the app is open the tablet checks every 15 s (and straight away when the app comes back on screen), then shows 📵 "Time for a break. Mum or Dad paused the tablet" (or "Back at 20:15" for a timed lock). The video pauses and the quiz stops, like the other locks.
+- The tablet finds the PC by itself on the Wi-Fi. Menu → Screen time → Remote lock takes a typed address instead, or "off", and shows when it last connected.
+- The grown-up PIN still unlocks. That unlock holds until the switch is flipped again, so the tablet doesn't lock itself again 15 s later.
+- A lock survives a restart. If the PC is off, a timed remote lock still lifts on its own a minute after its time; an untimed one waits for the PIN or the switch.
+- The control page shows when the tablet last checked in and what it is doing (playing or locked, minutes used today).
+- Android: the app may now use plain HTTP, which the LAN check needs. The lesson page runs on an https origin, so it still cannot load anything over HTTP.
+
 ## 1.43 (2026-11-11)
 
 - Songs (Follow the keys): **🔁 Repeat a bit**. Tap 🔁 where the hard bit starts, play it, tap 🔁 again where it ends (two taps at once = the next 8 notes). That bit comes round again until he plays it clean twice in a row (every note right first time), then the song carries on by itself. The bit shows yellow on the progress bar and the button counts the clean rounds (1/2, 2/2). A third tap stops repeating.
