@@ -245,6 +245,9 @@
   .fwtiles i.lh { border-color: #3DA5FF; } .fwtiles i.now.lh { background: #3DA5FF; }
   .fwtiles sup { position: absolute; top: 2px; right: 4px; font-size: 13px; }
   .fwdone { font: 800 30px Fredoka, system-ui, sans-serif; color: #ffd86b; }
+  .fwtiles { align-items: center; } .fwtiles .fwenc { border: 0; border-radius: 18px; padding: 10px 20px; min-height: 52px; font: 700 22px Fredoka, system-ui, sans-serif;
+    color: #2b2160; background: linear-gradient(90deg, #ffd86b, #ffb36b); box-shadow: 0 4px 0 #a0600099; }   /* 1.45: tricky bit */
+  .fwtiles .fwenc:active { transform: translateY(3px); box-shadow: 0 1px 0 #a0600099; }
   #keys .want { background: linear-gradient(#ffe2a8, #ffb36b) !important; box-shadow: inset 0 -10px 0 #ff7a59, 0 0 18px #ffb36b; }
   #keys .bk.want { background: linear-gradient(#ff9d6b, #e9682a) !important; }
   #keys .want::after { content: ""; position: absolute; left: 50%; bottom: 18%; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: #e0503c; }

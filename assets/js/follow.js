@@ -32,6 +32,11 @@
 //     Stars count each note's LAST try, so practising a bit never spoils (or inflates) the song's stars.
 //   - Carry on (1.43): leaving a song half way remembers it (songResume { id, t, si, n, hand }); the start screen offers
 //     "Carry on: <song>" and opens it at that note. Finishing the song forgets it.
+//   - Tricky bits (1.45, research/09 R8 "one friendly replay of the tricky bars at the END, never mid-song"): the app notes every
+//     step he missed (hard[]). At the end it finds the 1-2 stretches (up to 8 notes, one note of run-up) with the most missed
+//     notes (at least 2) and offers "🔁 Tricky bit" next to the stars. One tap plays just that bit ONCE (yellow on the bar), then
+//     praise and the next one. Untapped, the song closes as before. Stars are saved before, so the replay never changes them.
+//     A bit he already cleared with 🔁 does not come back.
 // Research: answer on the keyboard, notes from his songs, errorless (research/06 R9-R12, 01 R9). Uses L, voice, diary, pianoKeys,
 // pianoPlayNote (index.html). Progress: localStorage songProg { id: { best, plays, last } }; settings: songCfg { hand, acc }.
 var follow = (function () {
@@ -50,9 +55,10 @@ var follow = (function () {
   var LUCKY_N = 3, LUCKY_MS = 1500;
   var queue = [], curId = null;                                  // player bar: the list he picked from, and the song on (kept after the end)
   var okArr = [], loop = null, mark = -1, LOOP_DEF = 8, LOOP_CLEAN = 2;   // okArr[i] = step i right first time (its last try); 🔁 repeat
+  var hard = [], encore = null, ENC_MIN = 2, ENC_WAIT = 20000;    // hard[i] = he missed step i at least once; encore = the tricky-bits offer
   function getResume() { try { var r = JSON.parse(localStorage.getItem("songResume") || "null"); return r && r.id && r.si > 0 ? r : null; } catch (e) { return null; } }
   function saveResume() {
-    if (!song || si <= 0 || si >= steps.length) return;
+    if (!song || encore || si <= 0 || si >= steps.length) return;   // a tricky-bit replay is after the song: nothing to carry on
     try { localStorage.setItem("songResume", JSON.stringify({ id: song.id, t: song.t, si: si, n: steps.length, hand: cfg.hand })); } catch (e) {}
   }
   function dropResume(id) { var r = getResume(); if (r && r.id === id) try { localStorage.removeItem("songResume"); } catch (e) {} }
@@ -165,7 +171,7 @@ var follow = (function () {
       var other = cfg.hand === "RL" ? [] : d.notes.filter(function (n) { return cfg.hand.indexOf(n[3]) < 0; });
       song = { id: id, t: meta.t, other: other, all: d.notes };
       si = at > 0 && at < steps.length ? at : 0; pressed = {}; firstTry = true; okFirst = 0; misses = 0; wrong = []; t0 = Date.now();
-      okArr = []; loop = null; mark = -1; loopLabel();
+      okArr = []; loop = null; mark = -1; hard = []; encore = null; loopLabel();
       pos = steps.length ? steps[si].t - LEAD : 0; lastF = 0; speed = SPEED; lastOk = 0; arrived = false; pops = []; lis = null; hintLabel();
       if (window.pianoSound) { if (own === null) own = pianoSound.now(); pianoSound.set(songSnd[id] || meta.snd || "grand"); }
       closeList(); document.body.classList.add("infollow"); $("follow").hidden = false;
@@ -196,7 +202,7 @@ var follow = (function () {
     arrived = pos >= cur.t - 0.001; if (arrived) want();
     $("fwTiles").innerHTML = "";
     $("fwBar").style.width = Math.round(si / steps.length * 100) + "%";
-    var lr = $("fwLoopR"), a = loop ? loop.a : mark, b = loop ? loop.b : si;
+    var on = encore && encore.on, lr = $("fwLoopR"), a = loop ? loop.a : on ? on.a : mark, b = loop ? loop.b : on ? on.b : si;
     if (lr) { lr.hidden = a < 0; if (a >= 0) { lr.style.left = (a / steps.length * 100) + "%"; lr.style.width = (Math.max(1, b - a) / steps.length * 100) + "%"; } }
     $("fwCount").textContent = si + " / " + steps.length;
   }
@@ -225,7 +231,7 @@ var follow = (function () {
     if (st.m.indexOf(m) < 0 || flurry) {                         // not this one (or a lucky hit in a flurry): no penalty, the right key glows brighter
       if (st.m.indexOf(m) < 0 && prev.indexOf(m) >= 0) return;    // the note he just played, again: just a sound, not a miss
       if (st.m.indexOf(m) < 0) wrong.push([now, m]);
-      firstTry = false; misses++;
+      firstTry = false; misses++; hard[si] = 1; if (encore && encore.on) encore.clean = false;
       st.m.forEach(function (x) { var k = pianoKeys.el(x); if (k && !pressed[x]) { k.classList.remove("wantx"); void k.offsetWidth; k.classList.add("wantx"); } });
       return;
     }
@@ -246,6 +252,7 @@ var follow = (function () {
     var tnow = performance.now(); st.m.forEach(function (x) { pops.push({ m: x, h: st.h, t: tnow }); });
     accompany(st.t, steps[si + 1] ? steps[si + 1].t : st.t + 2);
     si++; pressed = {}; firstTry = true;
+    if (encore && encore.on && si >= encore.on.b) { encoreDone(); return; }
     if (loop && si >= loop.b && loopRound()) return;
     if (si >= steps.length) finish(); else { saveResume(); show(); }
   }
@@ -258,7 +265,7 @@ var follow = (function () {
   }
   function goTo(i) { si = i; pressed = {}; firstTry = true; pos = steps[si].t - 1.2; arrived = false; lastOk = 0; show(); }
   function loopTap() {
-    if (!song || !steps.length) return;
+    if (!song || !steps.length || encore) return;               // the song is over: the tricky-bit replay is its own short pass
     if (lis) endListen();
     if (loop) {                                                  // third tap: stop repeating, the song goes on from where he is
       if (window.diary) diary.ev("song_loop_off", { id: song.id, a: loop.a, b: loop.b, passes: loop.passes });
@@ -280,6 +287,7 @@ var follow = (function () {
     loop.passes = loop.clean ? loop.passes + 1 : 0; loop.clean = true;
     if (loop.passes >= LOOP_CLEAN) {
       if (window.diary) diary.ev("song_loop_done", { id: song.id, a: loop.a, b: loop.b });
+      for (var i = loop.a; i < loop.b; i++) hard[i] = 0;          // cleared it twice: not a tricky bit any more
       loop = null; loopLabel();
       if (window.voice && voice.say) voice.say(L("Brilliant! Now carry on.", "¡Genial! Ahora sigue."));
       return false;                                              // the song goes on from here
@@ -305,14 +313,63 @@ var follow = (function () {
     clearKeys();
     $("fwTiles").innerHTML = '<span class="fwdone">' + LV[stars] + " " + L("You played it!", "¡La tocaste!") + "</span>";
     $("fwBar").style.width = "100%"; $("fwCount").textContent = total + " / " + total;
-    if (window.voice && voice.say) voice.say(L("Well done! You played ", "¡Muy bien! Tocaste ") + song.t + ".");
-    song = null;
-    setTimeout(function () { if (!song) stop(); }, 6000);
+    var bits = trickyBits();
+    if (window.voice && voice.say) voice.say(L("Well done! You played ", "¡Muy bien! Tocaste ") + song.t + "." +
+      (bits.length ? L(" Shall we try the tricky bit once more?", " ¿Probamos otra vez el trozo difícil?") : ""));
+    if (bits.length) { encore = { bits: bits, i: 0, on: null, clean: true }; encoreOffer(stars); return; }
+    closeSoon();
+  }
+  function closeSoon() { song = null; encore = null; setTimeout(function () { if (!song) stop(); }, 6000); }
+  // ---- Tricky bits (see the top): one friendly replay of the bits he missed most, after the song ----
+  function trickyBits() {
+    var W = Math.min(LOOP_DEF, steps.length), bits = [];
+    for (var k = 0; k < 2; k++) {
+      var best = -1, bs = 0;
+      for (var a = 0; a + W <= steps.length; a++) {
+        if (bits.some(function (b) { return a < b.b && a + W > b.a; })) continue;
+        var s = 0; for (var i = a; i < a + W; i++) if (hard[i]) s++;
+        if (s > bs) { bs = s; best = a; }
+      }
+      if (best < 0 || bs < ENC_MIN) break;
+      var f = best, l = best + W - 1;                             // trim to the missed notes, plus one note of run-up
+      while (!hard[f]) f++; while (!hard[l]) l--;
+      bits.push({ a: Math.max(0, f - 1), b: Math.min(steps.length, l + 1), n: bs });
+    }
+    return bits.sort(function (x, y) { return x.a - y.a; });
+  }
+  function encoreOffer(stars) {
+    var e = encore, more = e.i > 0, left = e.bits.length - e.i;
+    clearKeys();
+    $("fwTiles").innerHTML = '<span class="fwdone">' + (more ? "&#128079;" : LV[stars] + " " + L("You played it!", "¡La tocaste!")) + "</span>" +
+      '<button class="fwenc" id="fwEnc">&#128257; ' + (more ? L("One more tricky bit", "Otro trozo difícil") : L("Tricky bit", "Trozo difícil")) +
+      (left > 1 ? " (" + left + ")" : "") + "</button>";
+    $("fwBar").style.width = "100%"; $("fwCount").textContent = steps.length + " / " + steps.length; $("fwLoopR").hidden = true;
+    var tok = e.tok = Date.now();
+    setTimeout(function () { if (encore === e && !e.on && e.tok === tok) stop(); }, ENC_WAIT);   // not tapped: the song closes as before
+  }
+  function encorePlay() {
+    var e = encore; if (!e || e.on || !song) return;
+    e.on = e.bits[e.i]; e.clean = true;
+    if (window.diary) diary.ev("song_encore", { id: song.id, a: e.on.a, b: e.on.b, n: e.on.n });
+    $("fwTiles").innerHTML = "";
+    goTo(e.on.a);
+  }
+  function encoreDone() {
+    var e = encore, clean = e.clean;
+    if (window.diary) diary.ev("song_encore_done", { id: song.id, a: e.on.a, b: e.on.b, clean: clean });
+    if (window.voice && voice.say) voice.say(clean ? L("Perfect! That bit is yours now.", "¡Perfecto! Ese trozo ya es tuyo.")
+                                                   : L("Good practice! It gets easier every time.", "¡Buena práctica! Cada vez es más fácil."));
+    e.on = null; e.i++;
+    if (e.i < e.bits.length) { encoreOffer(); return; }
+    clearKeys(); $("fwLoopR").hidden = true;
+    $("fwTiles").innerHTML = '<span class="fwdone">&#128079; ' + L("Great practice!", "¡Gran práctica!") + "</span>";
+    $("fwBar").style.width = "100%"; $("fwCount").textContent = steps.length + " / " + steps.length;
+    closeSoon();
   }
   function stop() {
     if (song && si > 0 && window.diary) diary.ev("song_stop", { id: song.id, at: si, steps: steps.length });
     saveResume();
-    song = null; steps = []; lis = null; loop = null; mark = -1; loopLabel(); hintLabel(); clearKeys();
+    song = null; steps = []; lis = null; loop = null; mark = -1; encore = null; loopLabel(); hintLabel(); clearKeys();
     $("follow").hidden = true; document.body.classList.remove("infollow");
     if (window.pianoKeys) pianoKeys.restore();
     if (own !== null && window.pianoSound) pianoSound.set(own);
@@ -363,6 +420,7 @@ var follow = (function () {
     $("fwNext").onclick = function () { skip(1); };
     $("fwSpd").onclick = function () { cfg.spd = SPDS[(SPDS.indexOf(cfg.spd) + 1) % SPDS.length]; saveCfg(); spdLabel(); };
     if ($("fwLoop")) $("fwLoop").onclick = loopTap;
+    $("fwTiles").onclick = function (e) { if (e.target.closest("#fwEnc")) encorePlay(); };
     spdLabel(); loopLabel(); if (window.onLang) onLang(function () { spdLabel(); loopLabel(); });
     $("songBtn").innerHTML = "🎵 " + L("Songs", "Canciones");
     // leaving Piano only ends the song
@@ -380,5 +438,6 @@ var follow = (function () {
   return { note: note, open: openList, start: start, stop: stop, isOn: function () { return !!song; }, cfg: cfg, frame: frame, PX: 150,
            resumeInfo: getResume, resume: resume,
            _state: function () { return { speed: Math.round(speed * 100) / 100, si: si, steps: steps.length, ok: okArr.filter(Boolean).length, miss: misses, want: steps[si] && steps[si].m,
-             loop: loop && { a: loop.a, b: loop.b, passes: loop.passes }, mark: mark }; } };
+             loop: loop && { a: loop.a, b: loop.b, passes: loop.passes }, mark: mark,
+             hard: hard.reduce(function (s, v, i) { if (v) s.push(i); return s; }, []), encore: encore && { bits: encore.bits, i: encore.i, on: encore.on } }; } };
 })();

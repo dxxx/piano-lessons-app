@@ -4,6 +4,12 @@ Every version, newest first. Each released version has a download on the
 [Releases page](https://github.com/dxxx/piano-lessons-app/releases).
 `bash build.sh release <version>` publishes the APK with that version's section below as its notes.
 
+## 1.45 (2026-11-14)
+
+- Songs (Follow the keys): **🔁 Tricky bit** at the end of a song. The app remembers every note he missed. When the song ends it picks the 1 or 2 bits with the most missed notes (at least 2 in a bit; up to 8 notes, starting one note before the first miss) and shows a "🔁 Tricky bit" button next to the stars, and the voice asks "Shall we try the tricky bit once more?".
+- One tap plays just that bit **once** (yellow on the progress bar), then praise: "Perfect! That bit is yours now." or "Good practice! It gets easier every time." If there is a second bit, the button says "One more tricky bit".
+- Nothing interrupts the song itself. Not tapped within 20 s, the song closes as before. Stars are saved before the replay, so it never changes them, and a bit he already cleared with 🔁 Repeat does not come back.
+
 ## 1.44 (2026-11-12)
 
 - **Remote lock from a phone.** A small switch runs on the home PC (`tools/remote-lock-server.py`). From a phone on the home Wi-Fi a grown-up opens its page and taps Lock now, 15 min, 30 min, 1 hour or Unlock. While the app is open the tablet checks every 15 s (and straight away when the app comes back on screen), then shows 📵 "Time for a break. Mum or Dad paused the tablet" (or "Back at 20:15" for a timed lock). The video pauses and the quiz stops, like the other locks.
